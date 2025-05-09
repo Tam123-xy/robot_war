@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <random>
+#include "battlefield.h"
 using namespace std;
 template <typename T>
 
