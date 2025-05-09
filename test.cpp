@@ -52,13 +52,11 @@ int main() {
         return 1;
     }
 
-    // Add robots to field
     for (int i = 0; i < num_robots; ++i) {
         auto r = std::make_shared<GenericRobot>(names[i], initial_x[i], initial_y[i], M, N, &field);
         field.addRobot(r);
     }
 
-    // Simulate turns
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
         field.simulateTurn();

@@ -20,7 +20,7 @@ private:
     uniform_int_distribution<> yDist;
 
     void processRespawn();
-    shared_ptr<Robot> findRobotAt(int x, int y);
+    
     
 public:
     Battlefield(int w, int h);
@@ -32,6 +32,7 @@ public:
     void simulateTurn();
     void display();
     bool isEnemyAt(int x, int y) const;
+    shared_ptr<Robot> findRobotAt(int x, int y);
 
 
     // Action sequence methods

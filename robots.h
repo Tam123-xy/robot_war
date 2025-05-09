@@ -32,7 +32,7 @@ public:
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
     void destroy();
-    void respawn(int x, int y);
+    virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
     int getLives() const { return lives; }
@@ -71,34 +71,38 @@ class GenericRobot : public MovingRobot, public ShootingRobot,
 private:
     Battlefield* battlefield;
     int shells;
-    bool hasSelfDestructed;
     pair<int, int> lastShotTarget;
+    bool selfDestructed;
     
 protected:
     bool hasLooked = false;
     bool hasFired = false;
     bool hasMoved = false;
-    
-    void resetTurn() {
-        hasLooked = hasFired = hasMoved = false;
-    }
 
 public:
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
     
     // Action methods
+    void resetTurn() {
+        hasLooked = hasFired = hasMoved = false;
+    }
     void think() override;
     vector<string> look(int dx, int dy) override;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
+    vector<string> scout(int dx, int dy);
     
     // State check methods
     bool canLook() const { return !hasLooked; }
     bool canFire() const { return !hasFired && shells > 0; }
     bool canMove() const { return !hasMoved; }
     
-    // Other required methods
+    int getShells() const { return shells; }
+    bool hasSelfDestructed() const { return selfDestructed;}
     void destroy();     
+    bool shouldRespawn() const;
+    virtual void respawn(int x, int y);
+
     int getX() const;   
     int getY() const; 
     pair<int, int> getLastShotTarget() const override;

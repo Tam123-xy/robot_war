@@ -7,21 +7,21 @@ using namespace std;
 
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
-      hasSelfDestructed(false) {
+      selfDestructed(false) {
     cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
 void GenericRobot::think() {
     cout << name << " is thinking...\n";
 
-    auto surroundings = look(0,0);
-    hasLooked = false; 
+    // auto surroundings = look(0,0);
+    // hasLooked = false; 
     
-    // Analyze surroundings
-    int enemyCount = 0;
-    for (const auto& s : surroundings) {
-        if (s.find("Enemy") != string::npos) enemyCount++;
-    }
+    // // Analyze surroundings
+    // int enemyCount = 0;
+    // for (const auto& s : surroundings) {
+    //     if (s.find("Enemy") != string::npos) enemyCount++;
+    // }
 }
 
 vector<string> GenericRobot::look(int dx, int dy) {
@@ -127,6 +127,7 @@ void GenericRobot::move(int dx, int dy) {
 void GenericRobot::fire(int dx, int dy) {
     if (!canFire()) {
         cout << name << " cannot fire now!" << endl;
+        cout << shells << endl;
         return;
     }
 
@@ -142,6 +143,7 @@ void GenericRobot::fire(int dx, int dy) {
     
     if (shells <= 0) {
         cout << name << " has no shells left! Self-destructing..." << endl;
+        selfDestructed = true;
         destroy();
         return;
     }
@@ -152,10 +154,14 @@ void GenericRobot::fire(int dx, int dy) {
     lastShotTarget = {targetX, targetY};
     
     cout << name << " fires at (" << targetX << "," << targetY << ")";
-    
+    cout << " shells: " << shells;
     if (rand() % 100 < 70) {
         if (battlefield->isEnemyAt(targetX, targetY)) {
             cout << "Target hit!" << endl;
+            auto enemy = battlefield->findRobotAt(targetX, targetY);
+            if (enemy && enemy->alive()) {
+                enemy->destroy();
+            }
         }
     } 
     else {
@@ -164,11 +170,35 @@ void GenericRobot::fire(int dx, int dy) {
   
 }
 
-void GenericRobot::destroy() {
-    isAlive = false;
-    cout << name << " has been destroyed!" << endl;
+
+void GenericRobot::respawn(int x, int y) {
+    Robot::respawn(x, y);  
+    if (alive()) {
+        shells = 10;
+        selfDestructed = false;
+        resetTurn();
+    }
 }
 
+
+
+void GenericRobot::destroy() {
+    if (!selfDestructed) {
+        selfDestructed = true;
+        Robot::destroy();  
+    }
+    // cout << name << " has been destroyed! ";
+    // if (lives > 0) {
+    //     cout << "Waiting to respawn (" << lives << " lives remaining)" << endl;
+    // } else {
+    //     cout << "No lives remaining!" << endl;
+    // }
+}
+
+
+bool GenericRobot::shouldRespawn() const {
+    return !isAlive && lives > 0;
+}
 int GenericRobot::getX() const {
     return positionX;
 }
