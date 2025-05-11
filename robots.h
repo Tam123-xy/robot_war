@@ -1,62 +1,43 @@
 #ifndef ROBOTS_H
 #define ROBOTS_H
 
+#include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
-#include <utility> 
-
+#include <utility>
 using namespace std;
 
-class Battlefield;
+class Battlefield;  // Forward declaration
 
 class Robot {
 protected:
     string name;
-    int positionX, positionY;
-    int width, height;
     int lives = 3;
     bool isAlive = true;
     bool inRespawnQueue = false;
+    int positionX, positionY;  // Changed from private to protected
+    int width, height;
 
 public:
     Robot(string name, int x, int y, int w, int h)
         : name(name), positionX(x), positionY(y), width(w), height(h) {}
-
-    virtual ~Robot() {}
-
-
-    virtual string getType() const = 0;
-
+    virtual ~Robot() = default;
 
     int getX() const { return positionX; }
     int getY() const { return positionY; }
+
+    virtual string getType() const = 0;
+
+    void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
-    void destroy() {
-        if (!isAlive) return;
-
-        lives--;
-        isAlive = false;
-
-        if (lives > 0) {
-            inRespawnQueue = true;
-            cout << name << " destroyed! " << lives << " lives remain. Waiting to respawn.\n";
-        } else {
-            cout << name << " permanently destroyed!\n";
-        }
-    }
-
-    void respawn(int x, int y) {
-        positionX = x;
-        positionY = y;
-        isAlive = true;
-        inRespawnQueue = false;
-        cout << name << " respawned at (" << x << "," << y << ")\n";
-    }
-    bool shouldRespawn() const { return !isAlive && lives > 0 && inRespawnQueue; }
-
+    void destroy();
+    virtual void respawn(int x, int y);
+    bool shouldRespawn() const;
     string getName() const { return name; }
     int getLives() const { return lives; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
 };
 
 class MovingRobot : virtual public Robot {
@@ -66,7 +47,7 @@ public:
 };
 
 class ShootingRobot : virtual public Robot {
-protected:
+public:
     pair<int, int> lastShotTarget;
     using Robot::Robot;
     virtual void fire(int dx, int dy) = 0;
@@ -85,71 +66,46 @@ public:
     virtual void think() = 0;
 };
 
-class GenericRobot : public MovingRobot, public ShootingRobot,
+class GenericRobot : public MovingRobot, public ShootingRobot, 
                     public SeeingRobot, public ThinkingRobot {
+private:
+    Battlefield* battlefield;
     int shells;
-    bool hasSelfDestructed = false;
+    pair<int, int> lastShotTarget;
+    bool selfDestructed;
+    
+protected:
+    bool hasLooked = false;
+    bool hasFired = false;
+    bool hasMoved = false;
 
 public:
-    GenericRobot(string name, int x, int y, int w, int h)
-        : Robot(name, x, y, w, h), shells(10) {}
-
-    string getType() const override { return "GenericRobot"; }
-
-    void think() override {
-        cout << name << " is deciding its actions..." << endl;
+    GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
+    
+    // Action methods
+    void resetTurn() {
+        hasLooked = hasFired = hasMoved = false;
     }
+    void think() override;
+    vector<string> look(int dx, int dy) override;
+    void move(int dx, int dy) override;
+    void fire(int dx, int dy) override;
+    vector<string> scout(int dx, int dy);
+    
+    // State check methods
+    bool canLook() const { return !hasLooked; }
+    bool canFire() const { return !hasFired && shells > 0; }
+    bool canMove() const { return !hasMoved; }
+    
+    int getShells() const { return shells; }
+    bool hasSelfDestructed() const { return selfDestructed;}
+    void destroy();     
+    bool shouldRespawn() const;
+    virtual void respawn(int x, int y);
 
-    vector<string> look(int dx, int dy) override {
-        if (abs(dx) > 1 || abs(dy) > 1) {
-            return {"Cannot look that far!"};
-        }
-
-        return {"Scanning area at (" + to_string(getX()+dx) + "," + to_string(getY()+dy) + ")"};
-    }
-
-    void move(int dx, int dy) override {
-        if (abs(dx) > 1 || abs(dy) > 1) {
-            cout << name << " can only move to adjacent positions!" << endl;
-            return;
-        }
-
-        int nx = getX() + dx;
-        int ny = getY() + dy;
-
-        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-            positionX = nx;
-            positionY = ny;
-            cout << name << " moves to (" << positionX << "," << positionY << ")" << endl;
-        } else {
-            cout << name << " cannot move outside battlefield!" << endl;
-        }
-    }
-
-    void fire(int dx, int dy) override {
-        if (hasSelfDestructed) return;
-
-        if (abs(dx) > 1 || abs(dy) > 1) {
-            cout << name << " can only fire at adjacent positions!\n";
-            return;
-        }
-
-        if (shells <= 0) {
-            cout << name << " has no shells left! Self-destructing...\n";
-            destroy();
-            hasSelfDestructed = true;
-            return;
-        }
-
-        shells--;
-        lastShotTarget = {getX()+dx, getY()+dy};
-        cout << name << " fires at (" << lastShotTarget.first
-             << "," << lastShotTarget.second << ") (" << shells << " left)\n";
-    }
-
-    pair<int, int> getLastShotTarget() const override {
-        return lastShotTarget;
-    }
+    int getX() const;   
+    int getY() const; 
+    pair<int, int> getLastShotTarget() const override;
+    string getType() const override;
 };
-
 #endif
