@@ -9,6 +9,7 @@
 #include "battlefield.h"
 using namespace std;
 
+int check_point(const vector<int>& point, int &max_height );
 void One_Spaces_only(string& line);
 string extractWord(const string& line, const int& substr, int& i);
 void parse_or_random(const string& value, int max, vector<int>& result);
@@ -39,8 +40,9 @@ int main() {
             string x = extractWord(line, i, i);
             string y = line.substr(i);
 
-            parse_or_random(x, M, initial_x);
-            parse_or_random(y, N, initial_y);
+            parse_or_random(y, N, initial_x);
+            parse_or_random(x, M, initial_y);
+            
         }
     }
 
@@ -49,8 +51,22 @@ int main() {
 
     if (num_robots != names.size()) {
         cout << "Robot count mismatch! Check your set.txt.\n";
-        return 1;
+        return -1;
     }
+
+    int y_OutOfBound = check_point(initial_y,M);
+    if(y_OutOfBound != -1){
+        cout << "You have assigned robot " << names[y_OutOfBound] << " to an out-of-bounds point!";
+        return -1;
+    }
+
+    int x_OutOfBound = check_point(initial_x,N);
+    if(x_OutOfBound != -1){
+        cout << "You have assigned robot " << names[y_OutOfBound] << " to an out-of-bounds point!";
+        return -1;
+    }
+
+    
 
     for (int i = 0; i < num_robots; ++i) {
         auto r = std::make_shared<GenericRobot>(names[i], initial_x[i], initial_y[i], M, N, &field);
@@ -101,4 +117,13 @@ void parse_or_random(const string& value, int max, vector<int>& result) {
     } else {
         result.push_back(stoi(value));
     }
+}
+
+int check_point(const vector<int>& point, int &max_height ){
+    for(int i=0; i< point.size(); i++){
+        if(point[i]> max_height){
+            return i;
+        }
+    }
+    return -1;
 }
