@@ -11,7 +11,7 @@ using namespace std;
 
 void One_Spaces_only(string& line);
 string extractWord(const string& line, const int& substr, int& i);
-void random_num(const string& value, int max, vector<int>& result);
+void parse_or_random(const string& value, int max, vector<int>& result);
 
 int main() {
     ifstream file("set.txt");
@@ -39,8 +39,8 @@ int main() {
             string x = extractWord(line, i, i);
             string y = line.substr(i);
 
-            random_num(x, M - 1, initial_x);
-            random_num(y, N - 1, initial_y);
+            parse_or_random(x, M, initial_x);
+            parse_or_random(y, N, initial_y);
         }
     }
 
@@ -92,11 +92,11 @@ string extractWord(const string& line, const int& substr, int& i) {
     return word;
 }
 
-void random_num(const string& value, int max, vector<int>& result) {
+void parse_or_random(const string& value, int max, vector<int>& result) {
     if (value == "random") {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dist(0, max);
+        uniform_int_distribution<> dist(1, max);
         result.push_back(dist(gen));
     } else {
         result.push_back(stoi(value));
