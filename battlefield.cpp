@@ -49,8 +49,24 @@ bool Battlefield::isEmpty() const {
     return robots.empty() && respawnQueue.empty();
 }
 
+int Battlefield::countAliveRobots() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (robot->alive()) count++;
+    }
+    return count;
+}
+
+Robot* Battlefield::getAliveRobot() const {
+    for (const auto& robot : robots) {
+        if (robot->alive()) return robot.get();
+    }
+    return nullptr;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
+    bool simulation = true;
     
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
@@ -73,13 +89,6 @@ void Battlefield::simulateTurn() {
         robots.end()
     );
     
-    // Check if only one robot remains
-    int aliveCount = count_if(robots.begin(), robots.end(),
-        [](const shared_ptr<Robot>& r) { return r->alive(); });
-    
-    if (aliveCount <= 1) {
-        cout << "Simulation ending - only one robot remains!" << endl;
-    }
 }
 
 void Battlefield::processRespawn() {

@@ -32,14 +32,19 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    int centerX = getX() + dx;
-    int centerY = getY() + dy;
+    int centerX = getX() ;
+    int centerY = getY() ;
+
+    cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
 
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
             int lookX = centerX + xOffset;
             int lookY = centerY + yOffset;
-            string status;
+            string status;           
+
+            if (lookX == centerX && lookY == centerY)
+                continue;
 
             if (lookX < 0 || lookX >= battlefield->getWidth() || 
                 lookY < 0 || lookY >= battlefield->getHeight()) {
@@ -154,7 +159,7 @@ void GenericRobot::fire(int dx, int dy) {
     lastShotTarget = {targetX, targetY};
     
     cout << name << " fires at (" << targetX << "," << targetY << ")";
-    cout << " shells: " << shells;
+    cout << " shells: " << shells << endl;
     if (rand() % 100 < 70) {
         if (battlefield->isEnemyAt(targetX, targetY)) {
             cout << "Target hit!" << endl;

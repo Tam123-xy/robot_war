@@ -32,6 +32,8 @@ public:
     void simulateTurn();
     void display();
     bool isEnemyAt(int x, int y) const;
+    int countAliveRobots() const;
+    Robot* getAliveRobot() const;
     shared_ptr<Robot> findRobotAt(int x, int y);
 
 
