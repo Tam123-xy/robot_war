@@ -126,10 +126,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
             {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
-            {"move", "look", "fire"},
-            {"move", "fire", "look"}
+            // {"fire", "look", "move"},
+            // {"fire", "move", "look"},
+            // {"move", "look", "fire"},
+            // {"move", "fire", "look"}
         };
 
         // Select random order
@@ -139,20 +139,17 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             if (action == "look" && gr->canLook()) {
                 int dx = rand() % 3 - 1;  // -1, 0, or 1
                 int dy = rand() % 3 - 1;
-                auto surroundings = gr->look(dx, dy);
-                for (const auto& s : surroundings) {
-                    cout << s << endl;
-                }
+                gr->look(dx, dy);
+                //auto surroundings = gr->look(dx, dy);
+                // for (const auto& s : surroundings) {
+                //     cout << s << endl;
+                // }
             }
-          //else if (action == "fire" && gr->canFire()) {
             else if (action == "fire") {
                 int dx, dy;
-                do {
-                    dx = rand() % 3 - 1;
-                    dy = rand() % 3 - 1;
-                } while (dx == 0 && dy == 0);  // Can't fire at self
                 gr->fire(dx, dy);
             }
+            
             else if (action == "move" && gr->canMove()) {
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
             }

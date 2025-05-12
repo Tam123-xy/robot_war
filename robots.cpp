@@ -32,6 +32,8 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
+    hasFired =true;
+
     int centerX = getX() ;
     int centerY = getY() ;
 
@@ -46,18 +48,29 @@ vector<string> GenericRobot::look(int dx, int dy) {
             if (lookX == centerX && lookY == centerY)
                 continue;
 
-            if (lookX < 0 || lookX >= battlefield->getWidth() || 
-                lookY < 0 || lookY >= battlefield->getHeight()) {
-                status = "Out of bounds";
+            if (!(lookX < 0 || lookX >= battlefield->getWidth() || 
+                lookY < 0 || lookY >= battlefield->getHeight())) {
+                if (battlefield->isRobotAt(lookX, lookY)) {
+                    status = "Enemy robot";
+                }
+                else {
+                    status = "Empty space";
+                }
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                    to_string(lookY) + "): " + status);
+                for (const auto& s : surroundings) 
+                     cout << s << endl;
+                
+                if (battlefield->isRobotAt(lookX, lookY)) {
+                    hasFired = false;
+                    dy = lookY - centerY;
+                    dx = lookX - centerX;
+                    fire(dx,dy);
+                    hasFired = true;
+                }
+                
             }
-            else if (battlefield->isRobotAt(lookX, lookY)) {
-                status = "Enemy robot";
-            }
-            else {
-                status = "Empty space";
-            }
-            surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
+
         }
     }
     return surroundings;
@@ -131,8 +144,6 @@ void GenericRobot::move(int dx, int dy) {
 
 void GenericRobot::fire(int dx, int dy) {
     if (!canFire()) {
-        cout << name << " cannot fire now!" << endl;
-        cout << shells << endl;
         return;
     }
 
@@ -152,6 +163,7 @@ void GenericRobot::fire(int dx, int dy) {
         destroy();
         return;
     }
+    
     
     shells--;
     int targetX = getX() + dx;
