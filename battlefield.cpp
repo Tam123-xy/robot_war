@@ -4,7 +4,7 @@
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
-    : width(w), height(h), gen(rd()), xDist(0, w-1), yDist(0, h-1) {}
+    : width(w), height(h), gen(rd()), xDist(1, w), yDist(1, h) {}
 
 shared_ptr<Robot> Battlefield::findRobotAt(int x, int y) {
     for (auto& robot : robots) {
@@ -92,16 +92,19 @@ void Battlefield::simulateTurn() {
 }
 
 void Battlefield::processRespawn() {
+    
+    // Respon the first queue robot
     if (!respawnQueue.empty()) {
         auto robot = respawnQueue.front();
         respawnQueue.pop();
         
+        // check robot has live
         if (robot->getLives() > 0) {
             int x, y;
             int attempts = 0;
             do {
-                x = xDist(gen);
-                y = yDist(gen);
+                x = xDist(gen); // Generate random point x
+                y = yDist(gen); // Generate random point x
                 if (++attempts > 100) {
                     cout << "Couldn't find empty spot for " << robot->getName() << endl;
                     respawnQueue.push(robot);  // Retry next turn
@@ -134,6 +137,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Select random order
         auto& order = actionOrders[rand() % actionOrders.size()];
+        cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
         for (const auto& action : order) {
             if (action == "look" && gr->canLook()) {
@@ -143,6 +147,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
                 // for (const auto& s : surroundings) {
                 //     cout << s << endl;
                 // }
+
             }
             else if (action == "fire") {
                 int dx, dy;
