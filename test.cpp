@@ -9,9 +9,10 @@
 #include "battlefield.h"
 using namespace std;
 
-void One_Spaces_only(string& line);
+int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
+void One_Spaces_only(string& line); // Leave only one space between each word.
 string extractWord(const string& line, const int& substr, int& i);
-void random_num(const string& value, int max, vector<int>& result);
+void parse_or_random(const string& value, int max, vector<int>& result); // check if it is a number or what the system generate a random number
 
 int main() {
     ifstream file("set.txt");
@@ -23,34 +24,50 @@ int main() {
     srand(time(0));
 
     while (getline(file, line)) {
-        One_Spaces_only(line);
+        One_Spaces_only(line); // Leave only one space between each word.
 
         if (line.rfind("M by N :", 0) == 0) {
             int i;
-            M = stoi(extractWord(line, 9, i));
-            N = stoi(line.substr(i));
+            M = stoi(extractWord(line, 9, i)); 
+            N = stoi(line.substr(i));          
         } else if (line.rfind("steps:", 0) == 0) {
-            steps = stoi(line.substr(7));
+            steps = stoi(line.substr(7));      
         } else if (line.rfind("robots:", 0) == 0) {
             num_robots = stoi(line.substr(8));
         } else if (line.rfind("GenericRobot", 0) == 0) {
             int i;
-            names.push_back(extractWord(line, 13, i));
+            names.push_back(extractWord(line, 13, i)); 
             string x = extractWord(line, i, i);
             string y = line.substr(i);
 
-            random_num(x, M - 1, initial_x);
-            random_num(y, N - 1, initial_y);
+            
+            parse_or_random(x, M, initial_x); // Check if it is a number or what the system generate a random number
+            parse_or_random(y, N, initial_y);
+            
         }
     }
 
-    
-    Battlefield field(M, N);
-
+    // Check if the number of robot is not equal to the number of setting robot
     if (num_robots != names.size()) {
         cout << "Robot count mismatch! Check your set.txt.\n";
-        return 1;
+        return -1;
     }
+
+    // Check if the set point is not out of bounds
+    int x_OutOfBound = check_point(initial_x,M);
+    if(x_OutOfBound != -1){
+        cout << "You have assigned robot " << names[x_OutOfBound] << " to an out-of-bounds point!";
+        return -1;
+    }
+
+    // Check if the set point is not out of bounds
+    int y_OutOfBound = check_point(initial_y,N);
+    if(y_OutOfBound != -1){
+        cout << "You have assigned robot " << names[y_OutOfBound] << " to an out-of-bounds point!";
+        return -1;
+    }
+
+    Battlefield field(M, N);
 
     for (int i = 0; i < num_robots; ++i) {
         auto r = std::make_shared<GenericRobot>(names[i], initial_x[i], initial_y[i], M, N, &field);
@@ -104,13 +121,22 @@ string extractWord(const string& line, const int& substr, int& i) {
     return word;
 }
 
-void random_num(const string& value, int max, vector<int>& result) {
+void parse_or_random(const string& value, int max, vector<int>& result) {
     if (value == "random") {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dist(0, max);
+        uniform_int_distribution<> dist(1, max);
         result.push_back(dist(gen));
     } else {
         result.push_back(stoi(value));
     }
+}
+
+int check_point(const vector<int>& point, int &max_height ){
+    for(int i=0; i< point.size(); i++){
+        if(point[i]> max_height){
+            return i;
+        }
+    }
+    return -1;
 }

@@ -25,6 +25,7 @@ void GenericRobot::think() {
 }
 
 vector<string> GenericRobot::look(int dx, int dy) {
+// vector<string> GenericRobot::look() {
     vector<string> surroundings;
 
     if (hasLooked) {
@@ -39,10 +40,13 @@ vector<string> GenericRobot::look(int dx, int dy) {
 
     cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
 
+
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
+
             int lookX = centerX + xOffset;
             int lookY = centerY + yOffset;
+
             string status;           
 
             if (lookX == centerX && lookY == centerY)
@@ -94,7 +98,7 @@ void Robot::respawn(int x, int y) {
         positionY = y;
         isAlive = true;
         lives--;
-        cout << name << " respawned with " << lives << " lives remaining" << endl;
+        cout << "After robot " << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
 
