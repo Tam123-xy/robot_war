@@ -74,6 +74,7 @@ int main() {
         field.addRobot(r);
     }
 
+
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
         field.simulateTurn();
@@ -82,8 +83,19 @@ int main() {
             cout << "All robots are destroyed. Simulation ends.\n";
             break;
         }
-    
+
         field.display();
+
+        if (field.countAliveRobots() <= 1) {
+            cout << "Simulation ends! ";
+            auto winner = field.getAliveRobot();
+            if (winner) {
+                cout << "Winner: " << winner->getName() << endl;
+            } else {
+                cout << "No robot survived." << endl;
+            }
+            break;
+        }
     }
 
     return 0;

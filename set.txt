@@ -1,6 +1,6 @@
-M by N : 10 20
-steps: 2
+M by N : 3 3
+steps: 300
 robots: 2
-GenericRobot a 10 20
-GenericRobot b 10 9
+GenericRobot Kidd 2 2
+GenericRobot Jet 2 1
 

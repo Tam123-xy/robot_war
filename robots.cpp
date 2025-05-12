@@ -33,38 +33,48 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    // int centerX = getX() + dx;
-    // int centerY = getY() + dy;
+    hasFired =true;
 
-    int centerX = getX();
-    int centerY = getY();
+    int centerX = getX() ;
+    int centerY = getY() ;
+
+    cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
+
 
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
 
             int lookX = centerX + xOffset;
             int lookY = centerY + yOffset;
-            string status;
 
-            if (yOffset == 0 && xOffset == 0 ){
+            string status;           
+
+            if (lookX == centerX && lookY == centerY)
                 continue;
+
+            if (!(lookX < 0 || lookX >= battlefield->getWidth() || 
+                lookY < 0 || lookY >= battlefield->getHeight())) {
+                if (battlefield->isRobotAt(lookX, lookY)) {
+                    status = "Enemy robot";
+                }
+                else {
+                    status = "Empty space";
+                }
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                    to_string(lookY) + "): " + status);
+                for (const auto& s : surroundings) 
+                     cout << s << endl;
+                
+                if (battlefield->isRobotAt(lookX, lookY)) {
+                    hasFired = false;
+                    dy = lookY - centerY;
+                    dx = lookX - centerX;
+                    fire(dx,dy);
+                    hasFired = true;
+                }
+                
             }
 
-            else if (lookX > battlefield->getWidth() || 
-                lookY > battlefield->getHeight()) {
-                // status = "Out of bounds";
-                continue;
-            }
-            else if (battlefield->isRobotAt(lookX, lookY)) {
-                status = "Enemy robot";
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
-            }
-            else {
-                status = "Empty space";
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
-            }
         }
     }
     return surroundings;
@@ -138,8 +148,6 @@ void GenericRobot::move(int dx, int dy) {
 
 void GenericRobot::fire(int dx, int dy) {
     if (!canFire()) {
-        cout << name << " cannot fire now!" << endl;
-        cout << shells << endl;
         return;
     }
 
@@ -160,13 +168,14 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
+    
     shells--;
     int targetX = getX() + dx;
     int targetY = getY() + dy;
     lastShotTarget = {targetX, targetY};
     
     cout << name << " fires at (" << targetX << "," << targetY << ")";
-    cout << " shells: " << shells;
+    cout << " shells: " << shells << endl;
     if (rand() % 100 < 70) {
         if (battlefield->isEnemyAt(targetX, targetY)) {
             cout << "Target hit!" << endl;

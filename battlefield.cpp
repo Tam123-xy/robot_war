@@ -49,8 +49,24 @@ bool Battlefield::isEmpty() const {
     return robots.empty() && respawnQueue.empty();
 }
 
+int Battlefield::countAliveRobots() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (robot->alive()) count++;
+    }
+    return count;
+}
+
+Robot* Battlefield::getAliveRobot() const {
+    for (const auto& robot : robots) {
+        if (robot->alive()) return robot.get();
+    }
+    return nullptr;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
+    bool simulation = true;
     
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
@@ -73,13 +89,6 @@ void Battlefield::simulateTurn() {
         robots.end()
     );
     
-    // Check if only one robot remains
-    int aliveCount = count_if(robots.begin(), robots.end(),
-        [](const shared_ptr<Robot>& r) { return r->alive(); });
-    
-    if (aliveCount <= 1) {
-        cout << "Simulation ending - only one robot remains!" << endl;
-    }
 }
 
 void Battlefield::processRespawn() {
@@ -120,10 +129,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
             {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
-            {"move", "look", "fire"},
-            {"move", "fire", "look"}
+            // {"fire", "look", "move"},
+            // {"fire", "move", "look"},
+            // {"move", "look", "fire"},
+            // {"move", "fire", "look"}
         };
 
         // Select random order
@@ -134,21 +143,18 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             if (action == "look" && gr->canLook()) {
                 int dx = rand() % 3 - 1;  // -1, 0, or 1
                 int dy = rand() % 3 - 1;
-                auto surroundings = gr->look(dx, dy);
-                // auto surroundings = gr->look();
-                for (const auto& s : surroundings) {
-                    cout << s << endl;
-                }
+                gr->look(dx, dy);
+                //auto surroundings = gr->look(dx, dy);
+                // for (const auto& s : surroundings) {
+                //     cout << s << endl;
+                // }
+
             }
-          //else if (action == "fire" && gr->canFire()) {
             else if (action == "fire") {
                 int dx, dy;
-                do {
-                    dx = rand() % 3 - 1;
-                    dy = rand() % 3 - 1;
-                } while (dx == 0 && dy == 0);  // Can't fire at self
                 gr->fire(dx, dy);
             }
+            
             else if (action == "move" && gr->canMove()) {
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
             }
