@@ -14,14 +14,6 @@ GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield*
 void GenericRobot::think() {
     cout << name << " is thinking...\n";
 
-    // auto surroundings = look(0,0);
-    // hasLooked = false; 
-    
-    // // Analyze surroundings
-    // int enemyCount = 0;
-    // for (const auto& s : surroundings) {
-    //     if (s.find("Enemy") != string::npos) enemyCount++;
-    // }
 }
 
 vector<string> GenericRobot::look(int dx, int dy) {
@@ -32,12 +24,16 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    hasFired =true;
+    if (hasFired=true){
+        hasFired = false;
+    }
+    else{
+        hasFired =true;}
 
     int centerX = getX() ;
     int centerY = getY() ;
 
-    cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
+    cout << name << " now at (" << centerX << "," << centerY << ")" <<endl; 
 
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
@@ -62,11 +58,16 @@ vector<string> GenericRobot::look(int dx, int dy) {
                      cout << s << endl;
                 
                 if (battlefield->isRobotAt(lookX, lookY)) {
-                    hasFired = false;
-                    dy = lookY - centerY;
-                    dx = lookX - centerX;
-                    fire(dx,dy);
-                    hasFired = true;
+                    if (hasFired=false){
+                        hasFired=true;
+                    }
+                    else{
+                        hasFired = false;
+                        dy = lookY - centerY;
+                        dx = lookX - centerX;
+                        fire(dx,dy);
+                        hasFired = true;
+                    }
                 }
                 
             }
