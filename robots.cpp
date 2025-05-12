@@ -25,6 +25,7 @@ void GenericRobot::think() {
 }
 
 vector<string> GenericRobot::look(int dx, int dy) {
+// vector<string> GenericRobot::look() {
     vector<string> surroundings;
 
     if (hasLooked) {
@@ -32,27 +33,38 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    int centerX = getX() + dx;
-    int centerY = getY() + dy;
+    // int centerX = getX() + dx;
+    // int centerY = getY() + dy;
+
+    int centerX = getX();
+    int centerY = getY();
 
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
+
             int lookX = centerX + xOffset;
             int lookY = centerY + yOffset;
             string status;
 
-            if (lookX < 0 || lookX >= battlefield->getWidth() || 
-                lookY < 0 || lookY >= battlefield->getHeight()) {
-                status = "Out of bounds";
+            if (yOffset == 0 && xOffset == 0 ){
+                continue;
+            }
+
+            else if (lookX > battlefield->getWidth() || 
+                lookY > battlefield->getHeight()) {
+                // status = "Out of bounds";
+                continue;
             }
             else if (battlefield->isRobotAt(lookX, lookY)) {
                 status = "Enemy robot";
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
             }
             else {
                 status = "Empty space";
-            }
-            surroundings.push_back("(" + to_string(lookX) + "," + 
+                surroundings.push_back("(" + to_string(lookX) + "," + 
                                  to_string(lookY) + "): " + status);
+            }
         }
     }
     return surroundings;
@@ -76,7 +88,7 @@ void Robot::respawn(int x, int y) {
         positionY = y;
         isAlive = true;
         lives--;
-        cout << name << " respawned with " << lives << " lives remaining" << endl;
+        cout << "After robot " << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
 
