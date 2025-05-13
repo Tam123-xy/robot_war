@@ -8,8 +8,8 @@ a's action order is look--> fire--> move
 (10,20): Empty space （sendiri）
 (11,20): Out of bounds
 
-(9,21): Empty space
-(10,21): Empty space
+(9,21): Out of bounds
+(10,21): Out of bounds
 (11,21): Out of bounds
 
 b is thinking...
@@ -26,3 +26,106 @@ b's action order is look--> move--> fires
 (9,10): Empty space
 (10,10): Empty space
 (11,10): Out of bounds
+
+class Robot {
+    
+}
+
+帮我看下
+
+in battlefield.cpp
+vector<pair<int, int>> empty_point;
+gr->look(dx, dy,empty_point);
+没有要用到 vector empty_point 的elements
+
+in robots.cpp
+vector<string> GenericRobot::look(int dx, int dy,vector<pair<int, int>>& empty_point) {
+        vector<string> surroundings;
+
+    hasLooked = true;
+
+    if (hasFired=true){ // fire --> look
+        hasFired = false; 
+    }
+    else{
+        hasFired =true;}
+
+    int centerX = getX() ;
+    int centerY = getY() ;
+
+    cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
+
+    for (int yOffset = -1; yOffset <= 1; ++yOffset) {
+        for (int xOffset = -1; xOffset <= 1; ++xOffset) {
+
+            int lookX = centerX + xOffset;
+            int lookY = centerY + yOffset;
+
+            string status;           
+
+            // Robot itself point
+            if (yOffset == 0 && xOffset == 0 ){
+                // status = "Sendiri";
+                continue;
+            }
+            
+            // Out of bounds
+            else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                // status = "Out of bounds";
+                continue;
+            }
+
+            // Enemy robot
+            else if (battlefield->isRobotAt(lookX, lookY)) {
+                status = "Enemy robot";
+
+                if (hasFired=false){
+                    hasFired=true;
+                }
+                else{
+                    hasFired = false;
+                    dy = lookY - centerY;
+                    dx = lookX - centerX;
+                    fire(dx,dy);
+                    hasFired = true;
+                }
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
+            }
+            else {
+                status = "Empty space";
+                empty_point.push_back({lookX, lookY}); 
+
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
+            }
+
+                                 
+        }
+    }
+    for (const auto& s : surroundings){
+                    cout << s << endl;
+
+                }
+
+    return surroundings;
+}
+
+void GenericRobot::move(int dx, int dy) {
+    要用到 vector empty_point 的elements
+    for (int i = 0; i < empty_point.size(); i++) {
+            cout << "(" << empty_point[i].first << ", " << empty_point[i].second << ")" << endl;
+        }
+}
+
+robots.h
+class SeeingRobot : virtual public Robot {
+    public:
+    using Robot::Robot;
+    virtual vector<string> look(int dx, int dy, vector<pair<int, int>>& empty_point) =0;
+};
+
+class ThinkingRobot : virtual public Robot {
+public:
+     vector<string> look(int dx, int dy, vector<pair<int, int>>& empty_point) override;
+}
