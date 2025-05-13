@@ -33,7 +33,11 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    hasFired =true;
+    if (hasFired=true){
+        hasFired = false;
+    }
+    else{
+        hasFired =true;}
 
     int centerX = getX() ;
     int centerY = getY() ;
@@ -49,34 +53,62 @@ vector<string> GenericRobot::look(int dx, int dy) {
 
             string status;           
 
-            if (lookX == centerX && lookY == centerY)
-                continue;
-
-            if (!(lookX < 0 || lookX >= battlefield->getWidth() || 
-                lookY < 0 || lookY >= battlefield->getHeight())) {
-                if (battlefield->isRobotAt(lookX, lookY)) {
-                    status = "Enemy robot";
-                }
-                else {
-                    status = "Empty space";
-                }
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                    to_string(lookY) + "): " + status);
-                for (const auto& s : surroundings) 
-                     cout << s << endl;
+            // Robot itself point
+            if (yOffset == 0 && xOffset == 0 ){
+                status = "Sendiri";
+                // continue;
+            }
                 
-                if (battlefield->isRobotAt(lookX, lookY)) {
+            else if (lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                status = "Out of bounds";
+                // continue;
+            }
+
+            else if (battlefield->isRobotAt(lookX, lookY)) {
+                status = "Enemy robot";
+                if (hasFired=false){
+                    hasFired=true;
+                }
+                else{
                     hasFired = false;
                     dy = lookY - centerY;
                     dx = lookX - centerX;
                     fire(dx,dy);
                     hasFired = true;
                 }
-                
+                // surroundings.push_back("(" + to_string(lookX) + "," + 
+                //                  to_string(lookY) + "): " + status);
+            }
+            else {
+                status = "Empty space";
+                // surroundings.push_back("(" + to_string(lookX) + "," + 
+                //                  to_string(lookY) + "): " + status);
             }
 
+            surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
+
+                                 
         }
     }
+    for (const auto& s : surroundings){
+                    cout << s << endl;
+
+                }
+
+            // if (battlefield->isRobotAt(lookX, lookY)) {
+            //     if (hasFired=false){
+            //         hasFired=true;
+            //     }
+            //     else{
+            //         hasFired = false;
+            //         dy = lookY - centerY;
+            //         dx = lookX - centerX;
+            //         fire(dx,dy);
+            //         hasFired = true;
+            //     }
+            // }
+                
     return surroundings;
 }
 

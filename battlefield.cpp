@@ -141,8 +141,8 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         for (const auto& action : order) {
             if (action == "look" && gr->canLook()) {
-                int dx = rand() % 3 - 1;  // -1, 0, or 1
-                int dy = rand() % 3 - 1;
+                int dx;
+                int dy;
                 gr->look(dx, dy);
                 //auto surroundings = gr->look(dx, dy);
                 // for (const auto& s : surroundings) {
