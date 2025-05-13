@@ -1,4 +1,5 @@
-set.txt
+**/set.txt
+
 
 # Prerequisites
 *.d
