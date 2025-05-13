@@ -57,7 +57,7 @@ public:
 class SeeingRobot : virtual public Robot {
 public:
     using Robot::Robot;
-    virtual vector<string> look(int dx, int dy) = 0;
+    virtual vector<string> look(int dx, int dy) =0;
 };
 
 class ThinkingRobot : virtual public Robot {
@@ -73,11 +73,13 @@ private:
     int shells;
     pair<int, int> lastShotTarget;
     bool selfDestructed;
-    
+   
 protected:
     bool hasLooked = false;
     bool hasFired = false;
     bool hasMoved = false;
+    vector<pair<int, int>> empty_point;
+    vector<pair<int, int>> lookGot_robot_point;
 
 public:
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
@@ -88,6 +90,7 @@ public:
     }
     void think() override;
     vector<string> look(int dx, int dy) override;
+    vector<string> surroundings;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
     vector<string> scout(int dx, int dy);

@@ -7,7 +7,8 @@ using namespace std;
 
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
-      selfDestructed(false) {
+    //   selfDestructed(false),empty_point(empty_point) {
+    selfDestructed(false) {
     cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
@@ -25,16 +26,13 @@ void GenericRobot::think() {
 }
 
 vector<string> GenericRobot::look(int dx, int dy) {
-// vector<string> GenericRobot::look() {
+    empty_point.clear();
     vector<string> surroundings;
 
-    if (hasLooked) {
-        return surroundings;
-    }
     hasLooked = true;
 
-    if (hasFired=true){
-        hasFired = false;
+    if (hasFired=true){ // fire --> look
+        hasFired = false; 
     }
     else{
         hasFired =true;}
@@ -43,7 +41,6 @@ vector<string> GenericRobot::look(int dx, int dy) {
     int centerY = getY() ;
 
     cout << "Robot now at (" << centerX << "," << centerY << ")" <<endl; 
-
 
     for (int yOffset = -1; yOffset <= 1; ++yOffset) {
         for (int xOffset = -1; xOffset <= 1; ++xOffset) {
@@ -55,17 +52,21 @@ vector<string> GenericRobot::look(int dx, int dy) {
 
             // Robot itself point
             if (yOffset == 0 && xOffset == 0 ){
-                status = "Sendiri";
-                // continue;
+                // status = "Sendiri";
+                continue;
             }
-                
-            else if (lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
-                status = "Out of bounds";
-                // continue;
+            
+            // Out of bounds
+            else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                // status = "Out of bounds";
+                continue;
             }
 
+            // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
                 status = "Enemy robot";
+                lookGot_robot_point.push_back({lookX, lookY}); 
+
                 if (hasFired=false){
                     hasFired=true;
                 }
@@ -76,39 +77,26 @@ vector<string> GenericRobot::look(int dx, int dy) {
                     fire(dx,dy);
                     hasFired = true;
                 }
-                // surroundings.push_back("(" + to_string(lookX) + "," + 
-                //                  to_string(lookY) + "): " + status);
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
             }
             else {
                 status = "Empty space";
-                // surroundings.push_back("(" + to_string(lookX) + "," + 
-                //                  to_string(lookY) + "): " + status);
+                empty_point.push_back({lookX, lookY}); 
+
+                surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
             }
 
-            surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
-
-                                 
+            // surroundings.push_back("(" + to_string(lookX) + "," + 
+            //                      to_string(lookY) + "): " + status);   
         }
     }
+
     for (const auto& s : surroundings){
-                    cout << s << endl;
+        cout << s << endl;
+    }
 
-                }
-
-            // if (battlefield->isRobotAt(lookX, lookY)) {
-            //     if (hasFired=false){
-            //         hasFired=true;
-            //     }
-            //     else{
-            //         hasFired = false;
-            //         dy = lookY - centerY;
-            //         dx = lookX - centerX;
-            //         fire(dx,dy);
-            //         hasFired = true;
-            //     }
-            // }
-                
     return surroundings;
 }
 
@@ -149,6 +137,7 @@ pair<int, int> GenericRobot::getLastShotTarget() const {
 }
 
 void GenericRobot::move(int dx, int dy) {
+    // cout << "hi" << endl;
     if (hasMoved) {
         cout << name << " can only move once per turn!" << endl;
         return;
@@ -159,22 +148,36 @@ void GenericRobot::move(int dx, int dy) {
         cout << name << ": Invalid move direction (" << dx << "," << dy << ")!" << endl;
         return;
     }
-    
-    int newX = getX() + dx;
-    int newY = getY() + dy;
-    
-    if (newX >= 0 && newX < getWidth() && newY >= 0 && newY < getHeight()) {
-        if (!battlefield->isRobotAt(newX, newY)) {
-            setPosition(newX, newY);
-            hasMoved = true;
-            cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+
+    if(hasLooked=false) // move --> look
+    {
+        int newX = getX() + dx;
+        int newY = getY() + dy;
+        
+        if (newX >= 0 && newX < getWidth() && newY >= 0 && newY < getHeight()) {
+            if (!battlefield->isRobotAt(newX, newY)) {
+                setPosition(newX, newY);
+                hasMoved = true;
+                cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+            }
+            else {
+                cout << name << ": Cannot move - space occupied!" << endl;
+            }
         }
         else {
-            cout << name << ": Cannot move - space occupied!" << endl;
+            cout << name << ": Cannot move out of bounds!" << endl;
         }
     }
-    else {
-        cout << name << ": Cannot move out of bounds!" << endl;
+
+    if(hasLooked=true){ // look --> move
+
+        cout << "look --> move"<<endl;
+        cout << "size" << empty_point.size()<<endl;
+
+        for (int i = 0; i < empty_point.size(); i++) {
+            cout << "(" << empty_point[i].first << ", " << empty_point[i].second << ")" << endl;
+        }
+
     }
 }
 

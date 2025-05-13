@@ -134,7 +134,7 @@ void parse_or_random(const string& value, int max, vector<int>& result) {
 
 int check_point(const vector<int>& point, int &max_height ){
     for(int i=0; i< point.size(); i++){
-        if(point[i]> max_height){
+        if(point[i]> max_height|| point[i] <= 0){
             return i;
         }
     }
