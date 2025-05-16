@@ -3,4 +3,5 @@ steps: 2
 robots: 2
 GenericRobot a 1 20
 GenericRobot b 10 9
-    
+
+
