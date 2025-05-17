@@ -5,6 +5,10 @@
 #include <ctime>
 using namespace std;
 
+Upgrade::Upgrade(string name, int x, int y, int w, int h)
+    : Robot(name, x, y, w, h) {
+}
+
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
     //   selfDestructed(false),empty_point(empty_point) {
@@ -50,13 +54,6 @@ void GenericRobot::look(int dx, int dy) {
                 status = "Enemy robot";
                 lookGot_enemy_point.push_back({lookX, lookY}); 
                 cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
-
-                // fire --> look
-                if (hasFired == false){
-                    fire(dx,dy);
-                    hasFired = true;
-                }
-
                 
             }
             else {
@@ -70,10 +67,8 @@ void GenericRobot::look(int dx, int dy) {
 
 void Robot::destroy() {
     if (isAlive) {
-        isAlive = false;
 
-        cout << "Target hit!" << endl;
-        cout << name << " has been destroyed! ";
+        isAlive = false;
         setPosition(0, 0); // Move to outside battle field
 
         if (lives > 0) {
@@ -155,12 +150,8 @@ void GenericRobot::move(int dx, int dy) {
 }
 
 void GenericRobot::fire(int dx, int dy) {
-
-    if (!canFire()) {
-        return;
-    }
     
-    if (shells <= 0) {
+    if (shells == 0) {
         cout << name << " has no shells left! Self-destructing..." << endl;
         selfDestructed = true;
         destroy();
@@ -168,34 +159,78 @@ void GenericRobot::fire(int dx, int dy) {
     }
     
     shells--;
-    int targetX = getX() + dx;
-    int targetY = getY() + dy;
-   
-    lastShotTarget = {targetX, targetY};
-    
-    cout << name << " fires at (" << targetX << "," << targetY << ")";
+    int targetX ;
+    int targetY ;
+
+    // fire --> look
+    if(hasLooked == false){
+        vector<pair<int, int>> surrounding_point;
+        int centerX = getX() ;
+        int centerY = getY() ;
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+
+                int lookX = centerX + dx;
+                int lookY = centerY + dy;       
+
+                // Robot itself point
+                if (dx == 0 && dy == 0 ){
+                    continue;
+                }
+                
+                // Out of bounds
+                else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                    continue;
+                }
+
+                else{
+                    surrounding_point.push_back({lookX, lookY});
+                }
+            }
+        }
+
+        int size = surrounding_point.size();
+        srand(time(0));            
+        int num = rand() % size ;
+        targetX = surrounding_point[num].first;
+        targetY = surrounding_point[num].second;
+    }
+        
+    // look --> fire
+    else{
+        hasFired = true;
+        int cout_enemy = lookGot_enemy_point.size();
+
+        if(cout_enemy==0){
+          cout << "Preserving shell for next turn since " << name << " didn't find any robots around." << endl;
+          return;
+        }
+
+        else if(cout_enemy==1){
+            targetX = lookGot_enemy_point[0].first;
+            targetY = lookGot_enemy_point[0].second;
+        }
+
+        else{
+           return;
+            // more enemy, need to check which is the higher enemy
+        }
+
+        
+    }
+
+    auto enemy = battlefield->findRobotAt(targetX, targetY);
+    cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
     cout << " left shells: " << shells << endl;
 
     if (rand() % 100 < 70) {
-        // Find enemy
-        auto enemy = battlefield->findRobotAt(targetX, targetY);
-        
-        // Got enemy and it is alive
-        if (enemy && enemy->alive()) {
-            enemy->destroy();
-        }
-        
+        cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+        enemy->destroy();
     }
-        // if (battlefield->isEnemyAt(targetX, targetY)) {
-        //     cout << "Target hit!" << endl;
-        //     auto enemy = battlefield->findRobotAt(targetX, targetY);
-        //     if (enemy && enemy->alive()) {
-        //         enemy->destroy();
-        //     }
-        // }
-
-    else { cout << " - MISS!" << endl; }
-  
+    else{
+        cout << " - MISS!" << endl;
+    }
 }
 
 
@@ -235,36 +270,96 @@ int GenericRobot::getY() const {
     return positionY;
 }
 
-// Upgrade
-void UpGrade_move::HideBot(){
 
-}
+void Upgrade::performUpgrade(){
 
-void UpGrade_move::Jumbot(){
-    
-}
+    if(upgrade_time == 3){
+        cout << name << " has upgrade 3 times! Cannot upgrade anymore."<< endl;
+        return;
+    }
 
-void Robot::upgrade(){
+    // Alr upgrade move area
+    if (upgrade_move == true){
+        // remove element "move" from vector upgrade_type
+        upgrade_type.erase(
+            remove(upgrade_type.begin(), upgrade_type.end(), "move"),
+            upgrade_type.end()
+        );
+    }
+
+    if (upgrade_shoot == true){
+        upgrade_type.erase(
+            remove(upgrade_type.begin(), upgrade_type.end(), "shoot"),
+            upgrade_type.end()
+        );
+    }
+
+    if (upgrade_see == true){
+        upgrade_type.erase(
+            remove(upgrade_type.begin(), upgrade_type.end(), "see"),
+            upgrade_type.end()
+        );
+    }
+
+    int size = upgrade_type.size();
     srand(time(0));            
-    int num = rand() % 3 + 1;
-    
-    if (num ==1 && upgrade_move == false){
+    int num = rand() % size ;
+    string type = upgrade_type[num];
+
+    if(type == "move"){
+        upgrade_time++;
         upgrade_move = true;
+
+        srand(time(0));
+        int index = rand() % move_type.size();
+        string chosen = move_type[index];
+
+        if(chosen=="HideBot"){
+            HideBot = true;
+        }
+
+        else{
+            Jumpbot = true;
+        }
     }
 
-    else if (num==2 && upgrade_shoot == false){
+    else if(type == "shoot"){
+        upgrade_time++;
         upgrade_shoot = true;
+
+        srand(time(0));
+        int index = rand() % shoot_type.size();
+        string chosen = shoot_type[index];
+
+        if(chosen=="LongShotBot"){
+            LongShotBot = true;
+        }
+
+        else if(chosen=="SemiAutoBot"){
+            SemiAutoBot = true;
+        }
+
+        else{
+            ThirtyShotBot = true;
+        }
+        
     }
 
-    
-    else if (num==3 && upgrade_see == false){
-        upgrade_shoot = true;
+    else if(type == "see"){
+        upgrade_time++;
+        upgrade_see = true;
+
+        srand(time(0));
+        int index = rand() % see_type.size();
+        string chosen = see_type[index];
+
+        if(chosen=="ScoutBot"){
+            ScoutBot = true;
+        }
+
+        else{ 
+            TrackBot = true;
+        }
     }
-
-    else{
-
-    }
-
-
-    
+ 
 }

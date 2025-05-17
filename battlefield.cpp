@@ -160,10 +160,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
                 // }
 
             }
-            // else if (action == "fire") {
-            //     int dx, dy;
-            //     gr->fire(dx, dy);
-            // }
+            else if (action == "fire") {
+                int dx, dy;
+                gr->fire(dx, dy);
+            }
             
             // move --> look
             // else if (action == "move" && gr->canMove()) { 
