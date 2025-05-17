@@ -64,6 +64,16 @@ Robot* Battlefield::getAliveRobot() const {
     return nullptr;
 }
 
+int Battlefield::countLiveRobot() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (!robot->alive()){
+            count+= robot->getLives();
+        }
+    }
+    return count;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
@@ -127,12 +137,12 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            // {"look", "fire", "move"},
-            {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
-            {"move", "look", "fire"},
-            {"move", "fire", "look"}
+            {"look", "fire", "move"},
+            // {"look", "move", "fire"},
+            // {"fire", "look", "move"},
+            // {"fire", "move", "look"},
+            // {"move", "look", "fire"},
+            // {"move", "fire", "look"}
         };
 
         // Select random order
@@ -142,7 +152,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         for (const auto& action : order) {
             if (action == "look" && gr->canLook()) {
                 int dx,dy ;
-                
+
                 gr->look(dx, dy);
                 //auto surroundings = gr->look(dx, dy);
                 // for (const auto& s : surroundings) {
@@ -156,10 +166,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             }
             
             // move --> look
-            else if (action == "move" && gr->canMove()) { 
-                // if (gr->hasLooked()=false)
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
-            }
+            // else if (action == "move" && gr->canMove()) { 
+            //     // if (gr->hasLooked()=false)
+            //     gr->move(rand() % 3 - 1, rand() % 3 - 1);
+            // }
         }
 
         // Handle destruction if out of shells
@@ -177,13 +187,13 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getY()][robot->getX()] = 'R'; 
+            grid[robot->getX()][robot->getY()] = 'R';
         }
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int i = 1; i < height; i++) {
+        for (int j = 1; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
