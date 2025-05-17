@@ -20,7 +20,7 @@ b's action order is look--> move--> fires
 (11,8): Out of bounds
 
 (9,9): Empty space
-(10,9): Empty space
+(10,9): Empty space (sendiri)
 (11,9): Out of bounds
 
 (9,10): Empty space

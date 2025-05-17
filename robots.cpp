@@ -25,11 +25,12 @@ vector<string> GenericRobot::look(int dx, int dy) {
     }
     hasLooked = true;
 
-    if (hasFired=true){
+    if (hasFired==true){
         hasFired = false;
     }
-    else{
-        hasFired =true;}
+    else if(hasFired==false){
+        hasFired =true;
+    }
 
     int centerX = getX() ;
     int centerY = getY() ;
@@ -45,24 +46,51 @@ vector<string> GenericRobot::look(int dx, int dy) {
 
             string status;           
 
-            if (lookX == centerX && lookY == centerY)
-                continue;
-
-            if (!(lookX < 0 || lookX >= battlefield->getWidth() || 
-                lookY < 0 || lookY >= battlefield->getHeight())) {
+            // Robot itself point
+            if (yOffset == 0 && xOffset == 0 ){
+                status = "Sendiri";
+                // continue;
+            }
+                
+            else if (!(lookX <0 || lookY <0 ||lookX > battlefield->getWidth() || lookY > battlefield->getHeight())){
+                //status = "Out of bounds";
+                // continue;
                 if (battlefield->isRobotAt(lookX, lookY)) {
                     status = "Enemy robot";
+                    cout << name << "(" << lookX << "," << lookY << ") " << status <<endl;
                 }
+
                 else {
                     status = "Empty space";
+                    cout << name << "(" << lookX << "," << lookY << ") " << status <<endl;
+                    // surroundings.push_back("(" + to_string(lookX) + "," + 
+                    //                  to_string(lookY) + "): " + status);
                 }
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                    to_string(lookY) + "): " + status);
-                for (const auto& s : surroundings) 
-                     cout << s << endl;
-                
-                if (battlefield->isRobotAt(lookX, lookY)) {
-                    if (hasFired=false){
+
+
+            }
+            // else if (battlefield->isRobotAt(lookX, lookY)) {
+            //     status = "Enemy robot";
+            //     if (hasFired=false){
+            //         hasFired=true;
+            //     }
+            //     else{
+            //         hasFired = false;
+            //         dy = lookY - centerY;
+            //         dx = lookX - centerX;
+            //         fire(dx,dy);
+            //         hasFired = true;
+            //     }
+            //     // surroundings.push_back("(" + to_string(lookX) + "," + 
+            //     //                  to_string(lookY) + "): " + status);
+            // }
+
+
+            surroundings.push_back("(" + to_string(lookX) + "," + 
+                                 to_string(lookY) + "): " + status);
+
+            if (&&battlefield->isRobotAt(lookX, lookY)) {
+                    if (hasFired==false){
                         hasFired=true;
                     }
                     else{
@@ -72,12 +100,24 @@ vector<string> GenericRobot::look(int dx, int dy) {
                         fire(dx,dy);
                         hasFired = true;
                     }
-                }
-                
             }
-
+                                 
         }
     }
+
+            // if (battlefield->isRobotAt(lookX, lookY)) {
+            //     if (hasFired=false){
+            //         hasFired=true;
+            //     }
+            //     else{
+            //         hasFired = false;
+            //         dy = lookY - centerY;
+            //         dx = lookX - centerX;
+            //         fire(dx,dy);
+            //         hasFired = true;
+            //     }
+            // }
+                
     return surroundings;
 }
 
@@ -132,7 +172,7 @@ void GenericRobot::move(int dx, int dy) {
     int newX = getX() + dx;
     int newY = getY() + dy;
     
-    if (newX >= 0 && newX < getWidth() && newY >= 0 && newY < getHeight()) {
+    if (newX > 0 && newX < getWidth() && newY > 0 && newY < getHeight()) {
         if (!battlefield->isRobotAt(newX, newY)) {
             setPosition(newX, newY);
             hasMoved = true;

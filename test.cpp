@@ -77,6 +77,7 @@ int main() {
 
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
+        field.display();
         field.simulateTurn();
         
         if (field.isEmpty()) {

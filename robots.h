@@ -103,9 +103,72 @@ public:
     bool shouldRespawn() const;
     virtual void respawn(int x, int y);
 
+    int upgradeCount = 0;
+    set<string> upgradedAreas;
+    vector<string> upgradeNames;
+    int jumpCount = 0;
+    int hideCount = 0;
+    int fireRange = 1;
+    int visionRange = 1;
+    bool semiAutoFire = false;
+
+    void chooseUpgrade(Upgrade* upgrade);
+    void showUpgrades() const;
+
     int getX() const;   
     int getY() const; 
     pair<int, int> getLastShotTarget() const override;
     string getType() const override;
 };
+
+class Upgrade {
+public:
+    virtual void apply(GenericRobot* robot) = 0;
+    virtual std::string getName() const = 0;
+    virtual std::string getType() const = 0; // "Move", "Fire", "Look"
+    virtual ~Upgrade() = default;
+};
+
+class JumpBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "JumpBot"; }
+    std::string getType() const override { return "Move"; }
+};
+
+class HideBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "HideBot"; }
+    std::string getType() const override { return "Move"; }
+};
+
+class LongShotBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "LongShotBot"; }
+    std::string getType() const override { return "Fire"; }
+};
+
+class SemiAutoBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "SemiAutoBot"; }
+    std::string getType() const override { return "Fire"; }
+};
+
+class ScoutBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "ScoutBot"; }
+    std::string getType() const override { return "Look"; }
+};
+
+class TrackBot : public Upgrade {
+public:
+    void apply(GenericRobot* robot) override;
+    std::string getName() const override { return "TrackBot"; }
+    std::string getType() const override { return "Look"; }
+};
+
 #endif

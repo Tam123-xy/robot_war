@@ -147,7 +147,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
                 // for (const auto& s : surroundings) {
                 //     cout << s << endl;
                 // }
-
+                display();
             }
             else if (action == "fire") {
                 int dx, dy;
@@ -156,6 +156,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             
             else if (action == "move" && gr->canMove()) {
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                //display();
             }
         }
 
@@ -174,7 +175,13 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getY()][robot->getX()] = 'R'; 
+            cout << robot->getName() << " now at (" << robot->getX() << "," << robot->getY() << ")" << endl;
+        }
+    }
+
+    for (const auto& robot : robots) {
+        if (robot->alive()) {
+            grid[robot->getY()-1][robot->getX()-1] = 'R'; 
         }
     }
 
