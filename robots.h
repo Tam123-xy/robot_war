@@ -13,11 +13,18 @@ class Battlefield;  // Forward declaration
 class Robot {
 protected:
     string name;
-    int lives = 3;
+    int lives = 2;
     bool isAlive = true;
     bool inRespawnQueue = false;
     int positionX, positionY;  // Changed from private to protected
     int width, height;
+
+    int upgrade_times = 0;
+    vector<string> upgrade_bot;
+    bool upgrade_move=false;
+    bool upgrade_shoot=false;
+    bool upgrade_see=false;
+
 
 public:
     Robot(string name, int x, int y, int w, int h)
@@ -32,6 +39,7 @@ public:
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
     void destroy();
+    void upgrade();
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
@@ -57,7 +65,7 @@ public:
 class SeeingRobot : virtual public Robot {
 public:
     using Robot::Robot;
-    virtual vector<string> look(int dx, int dy) =0;
+    virtual void look(int dx, int dy) =0;
 };
 
 class ThinkingRobot : virtual public Robot {
@@ -79,7 +87,7 @@ protected:
     bool hasFired = false;
     bool hasMoved = false;
     vector<pair<int, int>> empty_point;
-    vector<pair<int, int>> lookGot_robot_point;
+    vector<pair<int, int>> lookGot_enemy_point;
 
 public:
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
@@ -89,11 +97,10 @@ public:
         hasLooked = hasFired = hasMoved = false;
     }
     void think() override;
-    vector<string> look(int dx, int dy) override;
-    vector<string> surroundings;
+    virtual void look(int dx, int dy) override;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
-    vector<string> scout(int dx, int dy);
+    // vector<string> scout(int dx, int dy);
     
     // State check methods
     bool canLook() const { return !hasLooked; }
@@ -110,5 +117,16 @@ public:
     int getY() const; 
     pair<int, int> getLastShotTarget() const override;
     string getType() const override;
+};
+
+class UpGrade_move : public GenericRobot{
+protected:
+    vector<string>move_type={"HideBot","Jumbot"};
+    bool hide = false;
+    int hide_times = 3;
+
+public:
+    void HideBot();
+    void Jumbot();
 };
 #endif

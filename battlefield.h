@@ -35,6 +35,7 @@ public:
     int countAliveRobots() const;
     Robot* getAliveRobot() const;
     shared_ptr<Robot> findRobotAt(int x, int y);
+    int countLiveRobot() const;
 
 
     // Action sequence methods

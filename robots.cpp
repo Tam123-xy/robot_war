@@ -17,33 +17,24 @@ void GenericRobot::think() {
 
 }
 
-vector<string> GenericRobot::look(int dx, int dy) {
-    empty_point.clear();
-    vector<string> surroundings;
-
+void GenericRobot::look(int dx, int dy) {
     hasLooked = true;
-
-    if (hasFired=true){ // fire --> look
-        hasFired = false; 
-    }
-    else{
-        hasFired =true;}
 
     int centerX = getX() ;
     int centerY = getY() ;
 
     cout << name << " now at (" << centerX << "," << centerY << ")" <<endl; 
 
-    for (int yOffset = -1; yOffset <= 1; ++yOffset) {
-        for (int xOffset = -1; xOffset <= 1; ++xOffset) {
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
 
-            int lookX = centerX + xOffset;
-            int lookY = centerY + yOffset;
+            int lookX = centerX + dx;
+            int lookY = centerY + dy;
 
             string status;           
 
             // Robot itself point
-            if (yOffset == 0 && xOffset == 0 ){
+            if (dx == 0 && dy == 0 ){
                 // status = "Sendiri";
                 continue;
             }
@@ -57,45 +48,34 @@ vector<string> GenericRobot::look(int dx, int dy) {
             // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
                 status = "Enemy robot";
-                lookGot_robot_point.push_back({lookX, lookY}); 
+                lookGot_enemy_point.push_back({lookX, lookY}); 
+                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
 
-                if (hasFired=false){
-                    hasFired=true;
-                }
-                else{
-                    hasFired = false;
-                    dy = lookY - centerY;
-                    dx = lookX - centerX;
+                // fire --> look
+                if (hasFired == false){
                     fire(dx,dy);
                     hasFired = true;
                 }
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
+
+                
             }
             else {
                 status = "Empty space";
                 empty_point.push_back({lookX, lookY}); 
-
-                surroundings.push_back("(" + to_string(lookX) + "," + 
-                                 to_string(lookY) + "): " + status);
+                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
             }
-
-            // surroundings.push_back("(" + to_string(lookX) + "," + 
-            //                      to_string(lookY) + "): " + status);   
         }
     }
-
-    for (const auto& s : surroundings){
-        cout << s << endl;
-    }
-
-    return surroundings;
 }
 
 void Robot::destroy() {
     if (isAlive) {
         isAlive = false;
+
+        cout << "Target hit!" << endl;
         cout << name << " has been destroyed! ";
+        setPosition(0, 0); // Move to outside battle field
+
         if (lives > 0) {
             cout << "Waiting to respawn (" << lives << " lives remaining)" << endl;
         } else {
@@ -147,6 +127,7 @@ void GenericRobot::move(int dx, int dy) {
         int newY = getY() + dy;
         
         if (newX >= 0 && newX < getWidth() && newY >= 0 && newY < getHeight()) {
+            
             if (!battlefield->isRobotAt(newX, newY)) {
                 setPosition(newX, newY);
                 hasMoved = true;
@@ -174,17 +155,8 @@ void GenericRobot::move(int dx, int dy) {
 }
 
 void GenericRobot::fire(int dx, int dy) {
-    if (!canFire()) {
-        return;
-    }
 
-    if (dx == 0 && dy == 0) {
-        cout << name << ": Cannot fire at own position!" << endl;
-        return;
-    }
-    
-    if (abs(dx) > 1 || abs(dy) > 1) {
-        cout << name << ": Can only fire at adjacent positions!" << endl;
+    if (!canFire()) {
         return;
     }
     
@@ -195,26 +167,34 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
-    
     shells--;
     int targetX = getX() + dx;
     int targetY = getY() + dy;
+   
     lastShotTarget = {targetX, targetY};
     
     cout << name << " fires at (" << targetX << "," << targetY << ")";
-    cout << " shells: " << shells << endl;
+    cout << " left shells: " << shells << endl;
+
     if (rand() % 100 < 70) {
-        if (battlefield->isEnemyAt(targetX, targetY)) {
-            cout << "Target hit!" << endl;
-            auto enemy = battlefield->findRobotAt(targetX, targetY);
-            if (enemy && enemy->alive()) {
-                enemy->destroy();
-            }
+        // Find enemy
+        auto enemy = battlefield->findRobotAt(targetX, targetY);
+        
+        // Got enemy and it is alive
+        if (enemy && enemy->alive()) {
+            enemy->destroy();
         }
-    } 
-    else {
-        cout << " - MISS!" << endl;
+        
     }
+        // if (battlefield->isEnemyAt(targetX, targetY)) {
+        //     cout << "Target hit!" << endl;
+        //     auto enemy = battlefield->findRobotAt(targetX, targetY);
+        //     if (enemy && enemy->alive()) {
+        //         enemy->destroy();
+        //     }
+        // }
+
+    else { cout << " - MISS!" << endl; }
   
 }
 
@@ -253,4 +233,38 @@ int GenericRobot::getX() const {
 
 int GenericRobot::getY() const {
     return positionY;
+}
+
+// Upgrade
+void UpGrade_move::HideBot(){
+
+}
+
+void UpGrade_move::Jumbot(){
+    
+}
+
+void Robot::upgrade(){
+    srand(time(0));            
+    int num = rand() % 3 + 1;
+    
+    if (num ==1 && upgrade_move == false){
+        upgrade_move = true;
+    }
+
+    else if (num==2 && upgrade_shoot == false){
+        upgrade_shoot = true;
+    }
+
+    
+    else if (num==3 && upgrade_see == false){
+        upgrade_shoot = true;
+    }
+
+    else{
+
+    }
+
+
+    
 }
