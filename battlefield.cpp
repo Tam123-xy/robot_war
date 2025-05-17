@@ -187,13 +187,13 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getY()][robot->getX()] = 'R'; 
+            grid[robot->getX()][robot->getY()] = 'R';
         }
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int i = 1; i < height; i++) {
+        for (int j = 1; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
