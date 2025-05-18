@@ -72,7 +72,7 @@ void Robot::destroy() {
         setPosition(0, 0); // Move to outside battle field
 
         if (lives > 0) {
-            cout << "Waiting to respawn (" << lives << " lives remaining)" << endl;
+            cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
         } else {
             cout << "No lives remaining!" << endl;
         }
@@ -85,7 +85,7 @@ void Robot::respawn(int x, int y) {
         positionY = y;
         isAlive = true;
         lives--;
-        cout << "After robot " << name << " respawned, " << lives << " lives remaining." << endl;
+        cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
 
@@ -109,7 +109,7 @@ void GenericRobot::move(int dx, int dy) {
     int centerY = getY();
     int newX;
     int newY;
-    vector<pair<int, int>> empty_point;
+    vector<pair<int, int>> empty_points;
     vector<pair<int, int>> surrounding_point;
 
     for (int dy = -1; dy <= 1; ++dy) {
@@ -125,7 +125,7 @@ void GenericRobot::move(int dx, int dy) {
             
             // Empty point
             else if (!(dx == 0 && dy == 0) && !(pointX <=0 ||pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())){
-                empty_point.push_back({lookX, lookY}); 
+                empty_points.push_back({pointX, pointY}); 
                 surrounding_point.push_back({pointX, pointY}); 
             }
         }
@@ -153,11 +153,11 @@ void GenericRobot::move(int dx, int dy) {
     // look --> move (move to an empty point)
     if(hasLooked=true){
 
-        int size = empty_point.size();
+        int size = empty_points.size();
         srand(time(0));            
         int num = rand() % size ;
-        newX = empty_point[num].first;
-        newY = empty_point[num].second;
+        newX = empty_points[num].first;
+        newY = empty_points[num].second;
 
         if(size == 0){
             cout << name << " doesn't found any empty point to move! Maybe "<< name << " is surounding by enemies! "<< endl;
@@ -247,18 +247,22 @@ void GenericRobot::fire(int dx, int dy) {
     }
 
     auto enemy = battlefield->findRobotAt(targetX, targetY);
-    cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
+    cout << name << " fires hi"<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
     cout << " left shells: " << shells << endl;
 
     if (rand() % 100 < 70) {
+        // Upgrade* upgradedEnemy = dynamic_cast<Upgrade*>(enemy);
+
         cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
         enemy->destroy();
+        // performUpgrade();
     }
     else{
         cout << " - MISS!" << endl;
     }
+    
+    lookGot_enemy_point.clear();
 }
-
 
 void GenericRobot::respawn(int x, int y) {
     Robot::respawn(x, y);  
@@ -269,21 +273,12 @@ void GenericRobot::respawn(int x, int y) {
     }
 }
 
-
-
 void GenericRobot::destroy() {
     if (!selfDestructed) {
         selfDestructed = true;
         Robot::destroy();  
     }
-    // cout << name << " has been destroyed! ";
-    // if (lives > 0) {
-    //     cout << "Waiting to respawn (" << lives << " lives remaining)" << endl;
-    // } else {
-    //     cout << "No lives remaining!" << endl;
-    // }
 }
-
 
 bool GenericRobot::shouldRespawn() const {
     return !isAlive && lives > 0;
@@ -296,8 +291,7 @@ int GenericRobot::getY() const {
     return positionY;
 }
 
-
-void Upgrade::performUpgrade(){
+void Upgrade::performUpgrade() {
 
     if(upgrade_time == 3){
         cout << name << " has upgrade 3 times! Cannot upgrade anymore."<< endl;
