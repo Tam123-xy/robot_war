@@ -149,28 +149,22 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         auto& order = actionOrders[rand() % actionOrders.size()];
         cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-        for (const auto& action : order) {
-            if (action == "look" && gr->canLook()) {
-                int dx,dy ;
-
+        for (const auto& action : order){
+            int dx,dy;
+            if (action == "look") {
                 gr->look(dx, dy);
-                //auto surroundings = gr->look(dx, dy);
-                // for (const auto& s : surroundings) {
-                //     cout << s << endl;
-                // }
-
             }
-            else if (action == "fire") {
-                int dx, dy;
+
+            else if (action == "fire"){
                 gr->fire(dx, dy);
             }
             
-            // move --> look
-            // else if (action == "move" && gr->canMove()) { 
-            //     // if (gr->hasLooked()=false)
-            //     gr->move(rand() % 3 - 1, rand() % 3 - 1);
-            // }
+            else{
+                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+            }
         }
+
+        cout<<endl;
 
         // Handle destruction if out of shells
         if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {
