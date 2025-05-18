@@ -104,48 +104,74 @@ pair<int, int> GenericRobot::getLastShotTarget() const {
 }
 
 void GenericRobot::move(int dx, int dy) {
-    // cout << "hi" << endl;
-    if (hasMoved) {
-        cout << name << " can only move once per turn!" << endl;
-        return;
-    }
-    
-    // Validate movement direction
-    if (abs(dx) > 1 || abs(dy) > 1) {
-        cout << name << ": Invalid move direction (" << dx << "," << dy << ")!" << endl;
-        return;
-    }
+    hasMoved = true;
+    int centerX = getX();
+    int centerY = getY();
+    int newX;
+    int newY;
+    vector<pair<int, int>> empty_point;
+    vector<pair<int, int>> surrounding_point;
 
-    if(hasLooked=false) // move --> look
-    {
-        int newX = getX() + dx;
-        int newY = getY() + dy;
-        
-        if (newX >= 0 && newX < getWidth() && newY >= 0 && newY < getHeight()) {
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+
+            int pointX = centerX + dx;
+            int pointY = centerY + dy;       
+
+            // Enemy point
+            if (battlefield->isRobotAt(pointX, pointY)){
+                surrounding_point.push_back({pointX, pointY}); 
+            }
             
-            if (!battlefield->isRobotAt(newX, newY)) {
-                setPosition(newX, newY);
-                hasMoved = true;
-                cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+            // Empty point
+            else if (!(dx == 0 && dy == 0) && !(pointX <=0 ||pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())){
+                empty_point.push_back({lookX, lookY}); 
+                surrounding_point.push_back({pointX, pointY}); 
             }
-            else {
-                cout << name << ": Cannot move - space occupied!" << endl;
-            }
-        }
-        else {
-            cout << name << ": Cannot move out of bounds!" << endl;
         }
     }
 
-    if(hasLooked=true){ // look --> move
+    // move --> look (move to an enemy point or empty point)
+    if(hasLooked=false){
+        int size = surrounding_point.size();
+        srand(time(0));            
+        int num = rand() % size ;
+        newX = surrounding_point[num].first;
+        newY = surrounding_point[num].second;
 
-        cout << "look --> move"<<endl;
-        cout << "size" << empty_point.size()<<endl;
-
-        for (int i = 0; i < empty_point.size(); i++) {
-            cout << "(" << empty_point[i].first << ", " << empty_point[i].second << ")" << endl;
+        if(battlefield->isRobotAt(newX, newY)){
+            auto enemy = battlefield->findRobotAt(newX, newY);
+            cout << name << " cannot move to ("<< newX << ","<< newY << "). This point has occuppied by" << enemy->getName() << endl;
         }
 
+        else{
+            setPosition(newX, newY);
+            cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+        }
+    }
+
+    // look --> move (move to an empty point)
+    if(hasLooked=true){
+
+        int size = empty_point.size();
+        srand(time(0));            
+        int num = rand() % size ;
+        newX = empty_point[num].first;
+        newY = empty_point[num].second;
+
+        if(size == 0){
+            cout << name << " doesn't found any empty point to move! Maybe "<< name << " is surounding by enemies! "<< endl;
+        }
+
+        else if(battlefield->isRobotAt(newX, newY)){
+            auto enemy = battlefield->findRobotAt(newX, newY);
+            cout << name << " cannot move to ("<< newX << ","<< newY << "). This point has occuppied by" << enemy->getName() << endl;
+        }
+
+        else{
+            setPosition(newX, newY);
+            cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+        }
     }
 }
 
