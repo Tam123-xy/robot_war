@@ -137,9 +137,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            {"look", "fire", "move"},
+            // {"look", "fire", "move"},
             // {"look", "move", "fire"},
-            // {"fire", "look", "move"},
+            {"fire", "look", "move"},
             // {"fire", "move", "look"},
             // {"move", "look", "fire"},
             // {"move", "fire", "look"}
@@ -160,7 +160,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             }
             
             else{
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                // gr->move(rand() % 3 - 1, rand() % 3 - 1);
             }
         }
 
