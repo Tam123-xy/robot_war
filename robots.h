@@ -13,12 +13,19 @@ class Battlefield;  // Forward declaration
 class Robot {
 protected:
     string name;
-    int lives = 3;
+    int lives = 2;
     bool isAlive = true;
     bool inRespawnQueue = false;
     int positionX, positionY;  // Changed from private to protected
     int width, height;
-
+    bool HideBot = false;
+    bool Jumpbot = false;
+    bool LongShotBot = false;
+    bool SemiAutoBot = false;
+    bool ThirtyShotBot = false;
+    bool ScoutBot = false;
+    bool TrackBot = false;
+   
 public:
     Robot(string name, int x, int y, int w, int h)
         : name(name), positionX(x), positionY(y), width(w), height(h) {}
@@ -32,6 +39,7 @@ public:
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
     void destroy();
+    // void upgrade();
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
@@ -57,7 +65,7 @@ public:
 class SeeingRobot : virtual public Robot {
 public:
     using Robot::Robot;
-    virtual vector<string> look(int dx, int dy) = 0;
+    virtual void look(int dx, int dy) =0;
 };
 
 class ThinkingRobot : virtual public Robot {
@@ -73,11 +81,13 @@ private:
     int shells;
     pair<int, int> lastShotTarget;
     bool selfDestructed;
-    
+   
 protected:
     bool hasLooked = false;
     bool hasFired = false;
     bool hasMoved = false;
+    vector<pair<int, int>> empty_point;
+    vector<pair<int, int>> lookGot_enemy_point;
 
 public:
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
@@ -87,10 +97,10 @@ public:
         hasLooked = hasFired = hasMoved = false;
     }
     void think() override;
-    vector<string> look(int dx, int dy) override;
+    virtual void look(int dx, int dy) override;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
-    vector<string> scout(int dx, int dy);
+    // vector<string> scout(int dx, int dy);
     
     // State check methods
     bool canLook() const { return !hasLooked; }
@@ -121,54 +131,21 @@ public:
     string getType() const override;
 };
 
-class Upgrade {
-public:
-    virtual void apply(GenericRobot* robot) = 0;
-    virtual std::string getName() const = 0;
-    virtual std::string getType() const = 0; // "Move", "Fire", "Look"
-    virtual ~Upgrade() = default;
-};
+class Upgrade : public Robot{
+protected:
+    int upgrade_time =0;
+    vector<string> upgrade_type={"move","shoot","see"};
+    vector<string> upgrade_bot;
+    bool upgrade_move=false;
+    bool upgrade_shoot=false;
+    bool upgrade_see=false;
+    vector<string>move_type={"HideBot","Jumbot"};
+    vector<string>shoot_type={"LongShotBot","SemiAutoBot","ThirtyShotBot"};
+    vector<string>see_type={"ScoutBot","TrackBot"};
 
-class JumpBot : public Upgrade {
 public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "JumpBot"; }
-    std::string getType() const override { return "Move"; }
-};
-
-class HideBot : public Upgrade {
-public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "HideBot"; }
-    std::string getType() const override { return "Move"; }
-};
-
-class LongShotBot : public Upgrade {
-public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "LongShotBot"; }
-    std::string getType() const override { return "Fire"; }
-};
-
-class SemiAutoBot : public Upgrade {
-public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "SemiAutoBot"; }
-    std::string getType() const override { return "Fire"; }
-};
-
-class ScoutBot : public Upgrade {
-public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "ScoutBot"; }
-    std::string getType() const override { return "Look"; }
-};
-
-class TrackBot : public Upgrade {
-public:
-    void apply(GenericRobot* robot) override;
-    std::string getName() const override { return "TrackBot"; }
-    std::string getType() const override { return "Look"; }
+    Upgrade(string name, int x, int y, int w, int h);
+    void performUpgrade();
 };
 
 #endif

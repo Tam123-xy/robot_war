@@ -64,6 +64,16 @@ Robot* Battlefield::getAliveRobot() const {
     return nullptr;
 }
 
+int Battlefield::countLiveRobot() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (!robot->alive()){
+            count+= robot->getLives();
+        }
+    }
+    return count;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
@@ -186,8 +196,8 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int i = 1; i < height; i++) {
+        for (int j = 1; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
