@@ -5,9 +5,9 @@
 #include <ctime>
 using namespace std;
 
-Upgrade::Upgrade(string name, int x, int y, int w, int h)
-    : Robot(name, x, y, w, h) {
-}
+// Upgrade::Upgrade(string name, int x, int y, int w, int h)
+//     : Robot(name, x, y, w, h) {
+// }
 
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
@@ -99,74 +99,74 @@ string GenericRobot::getType() const {
 }
 
 
-pair<int, int> GenericRobot::getLastShotTarget() const {
-    return lastShotTarget;
-}
 
 void GenericRobot::move(int dx, int dy) {
     hasMoved = true;
     int centerX = getX();
     int centerY = getY();
-    int newX;
-    int newY;
+  
+    int newX, newY;
+
     vector<pair<int, int>> empty_points;
-    vector<pair<int, int>> surrounding_point;
+    vector<pair<int, int>> surrounding_points;
 
-    for (int dy = -1; dy <= 1; ++dy) {
-        for (int dx = -1; dx <= 1; ++dx) {
+    for (int dy_ = -1; dy_ <= 1; ++dy_) {
+        for (int dx_ = -1; dx_ <= 1; ++dx_) {
+            int pointX = centerX + dx_;
+            int pointY = centerY + dy_;
 
-            int pointX = centerX + dx;
-            int pointY = centerY + dy;       
+            if (dx_ == 0 && dy_ == 0)
+                continue;
 
-            // Enemy point
-            if (battlefield->isRobotAt(pointX, pointY)){
-                surrounding_point.push_back({pointX, pointY}); 
-            }
-            
-            // Empty point
-            else if (!(dx == 0 && dy == 0) && !(pointX <=0 ||pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())){
-                empty_points.push_back({pointX, pointY}); 
-                surrounding_point.push_back({pointX, pointY}); 
+            // Out of bounds
+            if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())
+                continue;
+
+            // Enemy or empty
+            surrounding_points.push_back({pointX, pointY});
+            if (!battlefield->isRobotAt(pointX, pointY)) {
+                empty_points.push_back({pointX, pointY});
             }
         }
     }
 
-    // move --> look (move to an enemy point or empty point)
-    if(hasLooked=false){
-        int size = surrounding_point.size();
-        srand(time(0));            
-        int num = rand() % size ;
-        newX = surrounding_point[num].first;
-        newY = surrounding_point[num].second;
+    srand(time(0));
 
-        if(battlefield->isRobotAt(newX, newY)){
+    // move -> look
+    if (!hasLooked) {
+        if (surrounding_points.empty()) {
+            cout << name << " has no space to move!" << endl;
+            return;
+        }
+
+        int num = rand() % surrounding_points.size();
+        newX = surrounding_points[num].first;
+        newY = surrounding_points[num].second;
+
+        if (battlefield->isRobotAt(newX, newY)) {
             auto enemy = battlefield->findRobotAt(newX, newY);
-            cout << name << " cannot move to ("<< newX << ","<< newY << "). This point has occuppied by" << enemy->getName() << endl;
-        }
-
-        else{
+            cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+        } else {
             setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")" << endl;
+            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            battlefield->triggerMineIfAny(this, newX, newY); 
         }
     }
 
-    // look --> move (move to an empty point)
-    if(hasLooked=true){
+    // look -> move
+    else {
+        if (empty_points.empty()) {
+            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
+            return;
+        }
 
-        int size = empty_points.size();
-        srand(time(0));            
-        int num = rand() % size ;
+        int num = rand() % empty_points.size();
         newX = empty_points[num].first;
         newY = empty_points[num].second;
 
-        if(size == 0){
-            cout << name << " doesn't found any empty point to move! "<< name << " is surounding by enemies! "<< endl;
-        }
-
-        else{
-            setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")" << endl;
-        }
+        setPosition(newX, newY);
+        cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+        battlefield->triggerMineIfAny(this, newX, newY); 
     }
 }
 
@@ -239,32 +239,57 @@ void GenericRobot::fire(int dx, int dy) {
         } 
     }
 
-    
     if(battlefield->findRobotAt(targetX, targetY)){
-        auto enemy = battlefield->findRobotAt(targetX, targetY);
-        cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
-        cout << " left shells: " << shells << endl;
+        if(isSemiAuto){
+            int consecutive = 0;
+            do{
+                auto enemy = battlefield->findRobotAt(targetX, targetY);
+                cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
+                cout << " left shells: " << shells << endl;
 
-        if (rand() % 100 < 70){
-            cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
-            enemy->destroy();
-            // performUpgrade();
+                if (rand() % 100 < 70){
+                    cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+                    enemy->destroy();
+                    chooseUpgrade();
+                    consecutive = 3;
+                    // performUpgrade();
+                }
+                else{
+                    cout << " - MISS!" << endl;
+                    consecutive++;
+                }
+            }while (consecutive < 3);
         }
+
         else{
-            cout << " - MISS!" << endl;
-        }
+            if(battlefield->findRobotAt(targetX, targetY)){
+                auto enemy = battlefield->findRobotAt(targetX, targetY);
+                cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
+                cout << " left shells: " << shells << endl;
 
-    }
+                if (rand() % 100 < 70){
+                    cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+                    enemy->destroy();
+                    chooseUpgrade();
+                    return;
+                    // performUpgrade();
+                }
+                else{
+                    cout << " - MISS!" << endl;
+                    if (isLandmine) {
+                        minePositions.emplace_back(targetX, targetY);
+                        battlefield->placeMineAt(targetX, targetY);
+                        cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
+                    }
+                }
+            }
+        }
+    } 
 
     else{
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
-
     }
-    
-
-    
-
     lookGot_enemy_point.clear();
 }
 
@@ -281,6 +306,8 @@ void GenericRobot::destroy() {
     if (!selfDestructed) {
         selfDestructed = true;
         Robot::destroy();  
+        upgradedAreas.clear();
+        upgradeNames.clear();
     }
 }
 
@@ -295,95 +322,201 @@ int GenericRobot::getY() const {
     return positionY;
 }
 
-void Upgrade::performUpgrade() {
-
-    if(upgrade_time == 3){
-        cout << name << " has upgrade 3 times! Cannot upgrade anymore."<< endl;
+void GenericRobot::chooseUpgrade() {
+    if (upgradeCount >= 3) {
+        cout << name << " now is " ;
+        for(auto s: upgradeNames){
+            cout << s << ' ' ;
+        }
+        cout << endl;
+        cout << "Cannot Upgrade Anymore" << endl;
         return;
     }
 
-    // Alr upgrade move area
-    if (upgrade_move == true){
-        // remove element "move" from vector upgrade_type
-        upgrade_type.erase(
-            remove(upgrade_type.begin(), upgrade_type.end(), "move"),
-            upgrade_type.end()
-        );
-    }
+    vector<int> availableOptions;
+    if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+    if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+    if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
 
-    if (upgrade_shoot == true){
-        upgrade_type.erase(
-            remove(upgrade_type.begin(), upgrade_type.end(), "shoot"),
-            upgrade_type.end()
-        );
-    }
+    if (availableOptions.empty()) return;
 
-    if (upgrade_see == true){
-        upgrade_type.erase(
-            remove(upgrade_type.begin(), upgrade_type.end(), "see"),
-            upgrade_type.end()
-        );
-    }
-
-    int size = upgrade_type.size();
-    srand(time(0));            
-    int num = rand() % size ;
-    string type = upgrade_type[num];
-
-    if(type == "move"){
-        upgrade_time++;
-        upgrade_move = true;
-
-        srand(time(0));
-        int index = rand() % move_type.size();
-        string chosen = move_type[index];
-
-        if(chosen=="HideBot"){
-            HideBot = true;
-        }
-
-        else{
-            Jumpbot = true;
-        }
-    }
-
-    else if(type == "shoot"){
-        upgrade_time++;
-        upgrade_shoot = true;
-
-        srand(time(0));
-        int index = rand() % shoot_type.size();
-        string chosen = shoot_type[index];
-
-        if(chosen=="LongShotBot"){
-            LongShotBot = true;
-        }
-
-        else if(chosen=="SemiAutoBot"){
-            SemiAutoBot = true;
-        }
-
-        else{
-            ThirtyShotBot = true;
-        }
-        
-    }
-
-    else if(type == "see"){
-        upgrade_time++;
-        upgrade_see = true;
-
-        srand(time(0));
-        int index = rand() % see_type.size();
-        string chosen = see_type[index];
-
-        if(chosen=="ScoutBot"){
-            ScoutBot = true;
-        }
-
-        else{ 
-            TrackBot = true;
-        }
-    }
- 
+    int randomIndex = rand() % availableOptions.size();
+    int chosenOption = availableOptions[randomIndex];
+    chooseUpgrade(chosenOption);
 }
+
+
+void GenericRobot::chooseUpgrade(int upgradeOption) {
+    if (upgradeCount >= 3) return;
+
+    switch (upgradeOption) {
+        case 0: // Moving upgrade
+            if (upgradedAreas.find("move") == upgradedAreas.end()) {
+                int choice = rand() % 3;
+                if (choice == 0) {
+                    grantHide();
+                    upgradeNames.push_back("HideBot");
+                } else if (choice == 1){
+                    grantJump();
+                    upgradeNames.push_back("JumpBot");
+                } else if (choice == 2){
+                    upgradeNames.push_back("??Bot");
+                }
+                upgradedAreas.insert("move");
+                upgradeCount++;
+                cout << name << " upgraded movement: " << upgradeNames.back() << endl;
+                cout << name << " now is " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
+
+        case 1: // Shooting upgrade
+            if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
+                //int choice = rand() % 4;
+                int choice = 1;
+                if (choice == 0) {
+                    extendRange();
+                    upgradeNames.push_back("LongShotBot");
+                } else if (choice == 1) {
+                    isSemiAuto = true;
+                    upgradeNames.push_back("SemiAutoBot");
+                } else if (choice == 2){
+                    reloadThirtyShots();
+                    upgradeNames.push_back("ThirtyShotBot");
+                } else if (choice == 3){
+                    isLandmine = true;
+                    upgradeNames.push_back("LandmineBot");
+                }
+
+                upgradedAreas.insert("shoot");
+                upgradeCount++;
+                cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
+                cout << name << " now is " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
+
+        case 2: // Seeing upgrade
+            if (upgradedAreas.find("see") == upgradedAreas.end()) {
+                if (rand() % 2 == 0) {
+                    grantScout();
+                    upgradeNames.push_back("ScoutBot");
+                } else {
+                    grantTrack();
+                    upgradeNames.push_back("TrackBot");
+                }
+                upgradedAreas.insert("see");
+                upgradeCount++;
+                cout << name << " upgraded vision: " << upgradeNames.back() << endl;
+                cout << name << " now is " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
+
+        default:
+            break;
+    }
+}
+
+
+// void Upgrade::performUpgrade() {
+
+//     if(upgrade_time == 3){
+//         cout << name << " has upgrade 3 times! Cannot upgrade anymore."<< endl;
+//         return;
+//     }
+
+//     // Alr upgrade move area
+//     if (upgrade_move == true){
+//         // remove element "move" from vector upgrade_type
+//         upgrade_type.erase(
+//             remove(upgrade_type.begin(), upgrade_type.end(), "move"),
+//             upgrade_type.end()
+//         );
+//     }
+
+//     if (upgrade_shoot == true){
+//         upgrade_type.erase(
+//             remove(upgrade_type.begin(), upgrade_type.end(), "shoot"),
+//             upgrade_type.end()
+//         );
+//     }
+
+//     if (upgrade_see == true){
+//         upgrade_type.erase(
+//             remove(upgrade_type.begin(), upgrade_type.end(), "see"),
+//             upgrade_type.end()
+//         );
+//     }
+
+//     int size = upgrade_type.size();
+//     srand(time(0));            
+//     int num = rand() % size ;
+//     string type = upgrade_type[num];
+
+//     if(type == "move"){
+//         upgrade_time++;
+//         upgrade_move = true;
+
+//         srand(time(0));
+//         int index = rand() % move_type.size();
+//         string chosen = move_type[index];
+
+//         if(chosen=="HideBot"){
+//             HideBot = true;
+//         }
+
+//         else{
+//             Jumpbot = true;
+//         }
+//     }
+
+//     else if(type == "shoot"){
+//         upgrade_time++;
+//         upgrade_shoot = true;
+
+//         srand(time(0));
+//         int index = rand() % shoot_type.size();
+//         string chosen = shoot_type[index];
+
+//         if(chosen=="LongShotBot"){
+//             LongShotBot = true;
+//         }
+
+//         else if(chosen=="SemiAutoBot"){
+//             SemiAutoBot = true;
+//         }
+
+//         else{
+//             ThirtyShotBot = true;
+//         }
+        
+//     }
+
+//     else if(type == "see"){
+//         upgrade_time++;
+//         upgrade_see = true;
+
+//         srand(time(0));
+//         int index = rand() % see_type.size();
+//         string chosen = see_type[index];
+
+//         if(chosen=="ScoutBot"){
+//             ScoutBot = true;
+//         }
+
+//         else{ 
+//             TrackBot = true;
+//         }
+//     }
+ 
+// }

@@ -77,6 +77,7 @@ int main() {
 
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
+        field.display();
         field.simulateTurn();
         
         // Field got 0 alive robot && the total live of dead robots is 0
@@ -86,6 +87,7 @@ int main() {
         }
 
         field.display();
+        cout << "\n--- Turn " << i + 1 << " END---\n";
 
         // Field got 1 alive robot && the total live of dead robots is 0
         if (field.countAliveRobots() == 1 && field.countLiveRobot() ==0) {

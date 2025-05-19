@@ -124,6 +124,8 @@ void Battlefield::processRespawn() {
             
             robot->respawn(x, y);
             cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
+            
+            display();
         }
     }
 }
@@ -137,12 +139,12 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            // {"look", "fire", "move"},
-            // {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            // {"fire", "move", "look"},
-            // {"move", "look", "fire"},
-            // {"move", "fire", "look"}
+            {"look", "fire", "move"},
+            {"look", "move", "fire"},
+            //{"fire", "look", "move"},
+            //{"fire", "move", "look"},
+            {"move", "look", "fire"},
+            //{"move", "fire", "look"}
         };
 
         // Select random order
@@ -160,7 +162,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             }
             
             else{
-                // gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                display();
+
             }
         }
 
@@ -176,18 +180,39 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     }
 }
 
+void Battlefield::placeMineAt(int x, int y) {
+    const_cast<set<pair<int, int>>&>(mines).insert({x, y});
+    mines.insert({x, y});
+}
+
+bool Battlefield::checkMineAt(int x, int y) const{
+    return mines.find({x, y}) != mines.end();
+}
+
+void Battlefield::triggerMineIfAny(Robot* robot, int x, int y) {
+    if (checkMineAt(x, y)) {
+        if (rand() % 100 < 50) {
+            cout << robot->getName() << " stepped on a mine at (" << x << "," << y << ") and was damaged!" << endl;
+            robot->destroy();
+        } else {
+            cout << robot->getName() << " stepped on a mine but avoided damage." << endl;
+        }
+        mines.erase({x, y});
+    }
+}
+
 void Battlefield::display() {
     vector<vector<char>> grid(height, vector<char>(width, '.')); 
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getX()][robot->getY()] = 'R';
+            grid[robot->getX()-1][robot->getY()-1] = 'R';
         }
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 1; i < height; i++) {
-        for (int j = 1; j < width; j++) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;

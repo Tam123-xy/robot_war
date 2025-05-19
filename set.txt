@@ -1,0 +1,7 @@
+M by N : 3 3
+steps: 20
+robots: 2
+GenericRobot Kidd 2 2
+GenericRobot Jet 2 1
+
+
