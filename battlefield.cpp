@@ -124,6 +124,7 @@ void Battlefield::processRespawn() {
             
             robot->respawn(x, y);
             cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
+            display();
         }
     }
 }
@@ -149,26 +150,22 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         auto& order = actionOrders[rand() % actionOrders.size()];
         cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-        for (const auto& action : order) {
-            if (action == "look" && gr->canLook()) {
-                int dx,dy ;
+        for (const auto& action : order){
+            int dx,dy;
+            if (action == "look") {
                 gr->look(dx, dy);
-                //auto surroundings = gr->look(dx, dy);
-                // for (const auto& s : surroundings) {
-                //     cout << s << endl;
-                // }
-                display();
             }
-            else if (action == "fire") {
-                int dx, dy;
+
+            else if (action == "fire"){
                 gr->fire(dx, dy);
             }
             
-            else if (action == "move" && gr->canMove()) {
+            else{
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
-                //display();
             }
         }
+
+        cout<<endl;
 
         // Handle destruction if out of shells
         if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {
@@ -185,19 +182,13 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            cout << robot->getName() << " now at (" << robot->getX() << "," << robot->getY() << ")" << endl;
-        }
-    }
-
-    for (const auto& robot : robots) {
-        if (robot->alive()) {
-            grid[robot->getY()-1][robot->getX()-1] = 'R'; 
+            grid[robot->getX()-1][robot->getY()-1] = 'R';
         }
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 1; i < height; i++) {
-        for (int j = 1; j < width; j++) {
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
