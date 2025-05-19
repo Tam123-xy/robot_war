@@ -84,6 +84,9 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
+        isLandmine = false;
+        isSemiAuto = false;
+        fireRange = 1;
         lives--;
         cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
@@ -375,8 +378,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 1: // Shooting upgrade
             if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
-                //int choice = rand() % 4;
-                int choice = 1;
+                int choice = rand() % 4;
                 if (choice == 0) {
                     extendRange();
                     upgradeNames.push_back("LongShotBot");
