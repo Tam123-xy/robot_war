@@ -19,6 +19,7 @@ protected:
     bool inRespawnQueue = false;
     int positionX, positionY;  // Changed from private to protected
     int width, height;
+
     // bool HideBot = false;
     // bool Jumpbot = false;
     // bool LongShotBot = false;
@@ -26,6 +27,7 @@ protected:
     // bool ThirtyShotBot = false;
     // bool ScoutBot = false;
     // bool TrackBot = false;
+
    
 public:
     Robot(string name, int x, int y, int w, int h)
@@ -47,6 +49,7 @@ public:
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+    // virtual void performUpgrade() =0;
 };
 
 class MovingRobot : virtual public Robot {
@@ -198,6 +201,9 @@ public:
     int getX() const;   
     int getY() const; 
     string getType() const override;
+
+    // virtual void performUpgrade() override;
+
 };
 
 // class Upgrade : public Robot{
@@ -216,5 +222,6 @@ public:
 //     Upgrade(string name, int x, int y, int w, int h);
 //     void performUpgrade();
 // };
+
 
 #endif

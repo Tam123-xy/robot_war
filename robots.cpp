@@ -104,6 +104,7 @@ void GenericRobot::move(int dx, int dy) {
     hasMoved = true;
     int centerX = getX();
     int centerY = getY();
+  
     int newX, newY;
 
     vector<pair<int, int>> empty_points;
@@ -289,7 +290,6 @@ void GenericRobot::fire(int dx, int dy) {
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
     }
-
     lookGot_enemy_point.clear();
 }
 
