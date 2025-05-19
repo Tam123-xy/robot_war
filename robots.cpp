@@ -241,26 +241,35 @@ void GenericRobot::fire(int dx, int dy) {
         else{
            return;
             // more enemy, need to check which is the higher enemy
+        } 
+    }
+
+    
+    if(battlefield->findRobotAt(targetX, targetY)){
+        auto enemy = battlefield->findRobotAt(targetX, targetY);
+        cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
+        cout << " left shells: " << shells << endl;
+
+        if (rand() % 100 < 70){
+            cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+            enemy->destroy();
+            // performUpgrade();
+        }
+        else{
+            cout << " - MISS!" << endl;
         }
 
-        
     }
 
-    auto enemy = battlefield->findRobotAt(targetX, targetY);
-    cout << name << " fires hi"<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
-    cout << " left shells: " << shells << endl;
-
-    if (rand() % 100 < 70) {
-        // Upgrade* upgradedEnemy = dynamic_cast<Upgrade*>(enemy);
-
-        cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
-        enemy->destroy();
-        // performUpgrade();
-    }
     else{
-        cout << " - MISS!" << endl;
+        cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
+        cout << " left shells: " << shells << endl;
+
     }
     
+
+    
+
     lookGot_enemy_point.clear();
 }
 
