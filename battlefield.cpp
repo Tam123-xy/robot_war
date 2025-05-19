@@ -124,6 +124,7 @@ void Battlefield::processRespawn() {
             
             robot->respawn(x, y);
             cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
+            
             display();
         }
     }
@@ -140,10 +141,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
             {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
+            //{"fire", "look", "move"},
+            //{"fire", "move", "look"},
             {"move", "look", "fire"},
-            {"move", "fire", "look"}
+            //{"move", "fire", "look"}
         };
 
         // Select random order
@@ -162,6 +163,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             
             else{
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                display();
             }
         }
 
@@ -174,6 +176,27 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
                 respawnQueue.push(shared_ptr<Robot>(robot));
             }
         }
+    }
+}
+
+void Battlefield::placeMineAt(int x, int y) {
+    const_cast<set<pair<int, int>>&>(mines).insert({x, y});
+    mines.insert({x, y});
+}
+
+bool Battlefield::checkMineAt(int x, int y) const{
+    return mines.find({x, y}) != mines.end();
+}
+
+void Battlefield::triggerMineIfAny(Robot* robot, int x, int y) {
+    if (checkMineAt(x, y)) {
+        if (rand() % 100 < 50) {
+            cout << robot->getName() << " stepped on a mine at (" << x << "," << y << ") and was damaged!" << endl;
+            robot->destroy();
+        } else {
+            cout << robot->getName() << " stepped on a mine but avoided damage." << endl;
+        }
+        mines.erase({x, y});
     }
 }
 

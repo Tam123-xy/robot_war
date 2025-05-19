@@ -80,8 +80,8 @@ class ShootingRobot : virtual public Robot {
 protected:
     int shells = 10;
     int fireRange = 1; // default = 1
-    bool semiAutoFire = false;
     bool hasThirtyShots = false;
+
 
 public:
     using Robot::Robot;
@@ -90,10 +90,14 @@ public:
     int getShells() const { return shells; }
     void reloadThirtyShots() { shells = 30; hasThirtyShots = true; }
     void extendRange() { fireRange = 3; }
-    void enableSemiAuto() { semiAutoFire = true; }
+
+    bool isLandmine = false;
+    bool isSemiAuto = false;
+
+    vector<pair<int, int>> minePositions;
 
     int getRange() const { return fireRange; }
-    bool isSemiAuto() const { return semiAutoFire; }
+    
     void useShell() {
         if (--shells <= 0) selfDestruct();
     }
