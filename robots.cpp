@@ -160,12 +160,7 @@ void GenericRobot::move(int dx, int dy) {
         newY = empty_points[num].second;
 
         if(size == 0){
-            cout << name << " doesn't found any empty point to move! Maybe "<< name << " is surounding by enemies! "<< endl;
-        }
-
-        else if(battlefield->isRobotAt(newX, newY)){
-            auto enemy = battlefield->findRobotAt(newX, newY);
-            cout << name << " cannot move to ("<< newX << ","<< newY << "). This point has occuppied by" << enemy->getName() << endl;
+            cout << name << " doesn't found any empty point to move! "<< name << " is surounding by enemies! "<< endl;
         }
 
         else{
