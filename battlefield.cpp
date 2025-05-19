@@ -64,6 +64,16 @@ Robot* Battlefield::getAliveRobot() const {
     return nullptr;
 }
 
+int Battlefield::countLiveRobot() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (!robot->alive()){
+            count+= robot->getLives();
+        }
+    }
+    return count;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
@@ -114,6 +124,8 @@ void Battlefield::processRespawn() {
             
             robot->respawn(x, y);
             cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
+            
+            display();
         }
     }
 }
@@ -129,36 +141,34 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
             {"look", "move", "fire"},
-            // {"fire", "look", "move"},
-            // {"fire", "move", "look"},
-            // {"move", "look", "fire"},
-            // {"move", "fire", "look"}
+            //{"fire", "look", "move"},
+            //{"fire", "move", "look"},
+            {"move", "look", "fire"},
+            //{"move", "fire", "look"}
         };
 
         // Select random order
         auto& order = actionOrders[rand() % actionOrders.size()];
         cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-        for (const auto& action : order) {
-            if (action == "look" && gr->canLook()) {
-                int dx = rand() % 3 - 1;  // -1, 0, or 1
-                int dy = rand() % 3 - 1;
+        for (const auto& action : order){
+            int dx,dy;
+            if (action == "look") {
                 gr->look(dx, dy);
-                //auto surroundings = gr->look(dx, dy);
-                // for (const auto& s : surroundings) {
-                //     cout << s << endl;
-                // }
-
             }
-            else if (action == "fire") {
-                int dx, dy;
+
+            else if (action == "fire"){
                 gr->fire(dx, dy);
             }
             
-            else if (action == "move" && gr->canMove()) {
+            else{
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                display();
+
             }
         }
+
+        cout<<endl;
 
         // Handle destruction if out of shells
         if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {
@@ -170,12 +180,33 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     }
 }
 
+void Battlefield::placeMineAt(int x, int y) {
+    const_cast<set<pair<int, int>>&>(mines).insert({x, y});
+    mines.insert({x, y});
+}
+
+bool Battlefield::checkMineAt(int x, int y) const{
+    return mines.find({x, y}) != mines.end();
+}
+
+void Battlefield::triggerMineIfAny(Robot* robot, int x, int y) {
+    if (checkMineAt(x, y)) {
+        if (rand() % 100 < 50) {
+            cout << robot->getName() << " stepped on a mine at (" << x << "," << y << ") and was damaged!" << endl;
+            robot->destroy();
+        } else {
+            cout << robot->getName() << " stepped on a mine but avoided damage." << endl;
+        }
+        mines.erase({x, y});
+    }
+}
+
 void Battlefield::display() {
     vector<vector<char>> grid(height, vector<char>(width, '.')); 
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getY()][robot->getX()] = 'R'; 
+            grid[robot->getX()-1][robot->getY()-1] = 'R';
         }
     }
 

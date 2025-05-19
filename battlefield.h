@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <set>
 #include <iostream>
 #include "robots.h"
 
@@ -35,6 +36,7 @@ public:
     int countAliveRobots() const;
     Robot* getAliveRobot() const;
     shared_ptr<Robot> findRobotAt(int x, int y);
+    int countLiveRobot() const;
 
 
     // Action sequence methods
@@ -42,6 +44,11 @@ public:
     void executeAttack(GenericRobot* gr);
     void executeConserve(GenericRobot* gr);
     void executeExplore(GenericRobot* gr);
+
+    set<pair<int, int>> mines;
+    void placeMineAt(int x, int y);
+    bool checkMineAt(int x, int y) const;
+    void triggerMineIfAny(Robot* robot, int x, int y);
 };
 
 #endif

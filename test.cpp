@@ -77,23 +77,28 @@ int main() {
 
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
+        field.display();
         field.simulateTurn();
         
-        if (field.isEmpty()) {
+        // Field got 0 alive robot && the total live of dead robots is 0
+        if (field.isEmpty() && field.countLiveRobot() == 0) {
             cout << "All robots are destroyed. Simulation ends.\n";
             break;
         }
 
         field.display();
+        cout << "\n--- Turn " << i + 1 << " END---\n";
 
-        if (field.countAliveRobots() <= 1) {
+        // Field got 1 alive robot && the total live of dead robots is 0
+        if (field.countAliveRobots() == 1 && field.countLiveRobot() ==0) {
             cout << "Simulation ends! ";
             auto winner = field.getAliveRobot();
-            if (winner) {
-                cout << "Winner: " << winner->getName() << endl;
-            } else {
-                cout << "No robot survived." << endl;
-            }
+            cout << "Winner: " << winner->getName() << endl;
+            // if (winner) {
+            //     cout << "Winner: " << winner->getName() << endl;
+            // } else {
+            //     cout << "No robot survived." << endl;
+            // }
             break;
         }
     }
@@ -134,7 +139,7 @@ void parse_or_random(const string& value, int max, vector<int>& result) {
 
 int check_point(const vector<int>& point, int &max_height ){
     for(int i=0; i< point.size(); i++){
-        if(point[i]> max_height){
+        if(point[i]> max_height|| point[i] <= 0){
             return i;
         }
     }
