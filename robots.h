@@ -19,15 +19,6 @@ protected:
     bool inRespawnQueue = false;
     int positionX, positionY;  // Changed from private to protected
     int width, height;
-
-    // bool HideBot = false;
-    // bool Jumpbot = false;
-    // bool LongShotBot = false;
-    // bool SemiAutoBot = false;
-    // bool ThirtyShotBot = false;
-    // bool ScoutBot = false;
-    // bool TrackBot = false;
-
    
 public:
     Robot(string name, int x, int y, int w, int h)
@@ -42,14 +33,12 @@ public:
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
     void destroy();
-    // void upgrade();
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
-    // virtual void performUpgrade() =0;
 };
 
 class MovingRobot : virtual public Robot {
@@ -202,26 +191,6 @@ public:
     int getY() const; 
     string getType() const override;
 
-    // virtual void performUpgrade() override;
-
 };
-
-// class Upgrade : public Robot{
-// protected:
-//     int upgrade_time =0;
-//     vector<string> upgrade_type={"move","shoot","see"};
-//     vector<string> upgrade_bot;
-//     bool upgrade_move=false;
-//     bool upgrade_shoot=false;
-//     bool upgrade_see=false;
-//     vector<string>move_type={"HideBot","Jumbot"};
-//     vector<string>shoot_type={"LongShotBot","SemiAutoBot","ThirtyShotBot"};
-//     vector<string>see_type={"ScoutBot","TrackBot"};
-
-// public:
-//     Upgrade(string name, int x, int y, int w, int h);
-//     void performUpgrade();
-// };
-
 
 #endif
