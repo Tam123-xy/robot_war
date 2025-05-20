@@ -5,10 +5,6 @@
 #include <ctime>
 using namespace std;
 
-// Upgrade::Upgrade(string name, int x, int y, int w, int h)
-//     : Robot(name, x, y, w, h) {
-// }
-
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
     //   selfDestructed(false),empty_point(empty_point) {
@@ -71,6 +67,7 @@ void Robot::destroy() {
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
+        lives--;
 
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
@@ -270,12 +267,16 @@ void GenericRobot::fire(int dx, int dy) {
                 cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
-                if (rand() % 100 < 70){
+                std::random_device rd;
+                std::mt19937 gen(rd()); // Mersenne Twister
+                std::uniform_int_distribution<> dis(0, 99);
+
+                // if (rand() % 100 < 70){
+                if (dis(gen) < 70){
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
-                    chooseUpgrade();
-                    return;
-                    // performUpgrade();
+                    chooseUpgrade(); // Upgrade
+                    // return;
                 }
                 else{
                     cout << " - MISS!" << endl;
@@ -294,6 +295,7 @@ void GenericRobot::fire(int dx, int dy) {
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
     }
+    
     lookGot_enemy_point.clear();
 }
 
@@ -345,8 +347,9 @@ void GenericRobot::chooseUpgrade() {
     if (availableOptions.empty()) return;
 
     int randomIndex = rand() % availableOptions.size();
-    int chosenOption = availableOptions[randomIndex];
-    chooseUpgrade(chosenOption);
+    // int chosenOption = availableOptions[randomIndex];
+    // chooseUpgrade(chosenOption);
+    chooseUpgrade(randomIndex);
 }
 
 
@@ -379,8 +382,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 1: // Shooting upgrade
             if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
-                //int choice = rand() % 4;
-                int choice = 1;
+                int choice = rand() % 4;
                 if (choice == 0) {
                     extendRange();
                     upgradeNames.push_back("LongShotBot");
@@ -408,13 +410,19 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 2: // Seeing upgrade
             if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                if (rand() % 2 == 0) {
+                int choice = rand() % 4;
+                if (choice == 0) {
                     // grantScout();
                     upgradeNames.push_back("ScoutBot");
-                } else {
+                } else if (choice == 1) {
                     // grantTrack();
                     upgradeNames.push_back("TrackBot");
                 }
+                
+                else if (choice == 2){
+                    // grantJump();
+                    upgradeNames.push_back("PredictionBot");}
+
                 upgradedAreas.insert("see");
                 upgradeCount++;
                 cout << name << " upgraded vision: " << upgradeNames.back() << endl;
@@ -431,96 +439,3 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     }
 }
 
-
-// void Upgrade::performUpgrade() {
-
-//     if(upgrade_time == 3){
-//         cout << name << " has upgrade 3 times! Cannot upgrade anymore."<< endl;
-//         return;
-//     }
-
-//     // Alr upgrade move area
-//     if (upgrade_move == true){
-//         // remove element "move" from vector upgrade_type
-//         upgrade_type.erase(
-//             remove(upgrade_type.begin(), upgrade_type.end(), "move"),
-//             upgrade_type.end()
-//         );
-//     }
-
-//     if (upgrade_shoot == true){
-//         upgrade_type.erase(
-//             remove(upgrade_type.begin(), upgrade_type.end(), "shoot"),
-//             upgrade_type.end()
-//         );
-//     }
-
-//     if (upgrade_see == true){
-//         upgrade_type.erase(
-//             remove(upgrade_type.begin(), upgrade_type.end(), "see"),
-//             upgrade_type.end()
-//         );
-//     }
-
-//     int size = upgrade_type.size();
-//     srand(time(0));            
-//     int num = rand() % size ;
-//     string type = upgrade_type[num];
-
-//     if(type == "move"){
-//         upgrade_time++;
-//         upgrade_move = true;
-
-//         srand(time(0));
-//         int index = rand() % move_type.size();
-//         string chosen = move_type[index];
-
-//         if(chosen=="HideBot"){
-//             HideBot = true;
-//         }
-
-//         else{
-//             Jumpbot = true;
-//         }
-//     }
-
-//     else if(type == "shoot"){
-//         upgrade_time++;
-//         upgrade_shoot = true;
-
-//         srand(time(0));
-//         int index = rand() % shoot_type.size();
-//         string chosen = shoot_type[index];
-
-//         if(chosen=="LongShotBot"){
-//             LongShotBot = true;
-//         }
-
-//         else if(chosen=="SemiAutoBot"){
-//             SemiAutoBot = true;
-//         }
-
-//         else{
-//             ThirtyShotBot = true;
-//         }
-        
-//     }
-
-//     else if(type == "see"){
-//         upgrade_time++;
-//         upgrade_see = true;
-
-//         srand(time(0));
-//         int index = rand() % see_type.size();
-//         string chosen = see_type[index];
-
-//         if(chosen=="ScoutBot"){
-//             ScoutBot = true;
-//         }
-
-//         else{ 
-//             TrackBot = true;
-//         }
-//     }
- 
-// }
