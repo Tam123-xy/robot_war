@@ -1,21 +1,21 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <random>
-#include <cstdlib>
-#include <ctime> 
-#include "robots.h"
-#include "battlefield.h"
+#include <iostream>     //For input/output
+#include <fstream>      //For file input
+#include <sstream>      //For string stream processing
+#include <vector>       //To use std::vector containers
+#include <random>       //For random number generation
+#include <cstdlib>      //For random number generation
+#include <ctime>        //For random number generation
+#include "robots.h"     //custom headers for the GenericRobot classes
+#include "battlefield.h"    //custom headers for the Battlefield classes
 using namespace std;
 
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
-void One_Spaces_only(string& line); // Leave only one space between each word.
-string extractWord(const string& line, const int& substr, int& i);
+void One_Spaces_only(string& line); // Leave only one space between each word
+string extractWord(const string& line, const int& substr, int& i);  //Extracts a word from a given position in a line
 void parse_or_random(const string& value, int max, vector<int>& result); // check if it is a number or what the system generate a random number
 
 int main() {
-    ifstream file("set.txt");
+    ifstream file("set.txt");   //Opens the file set.txt to read robot settings
     string line;
     vector<string> names;
     vector<int> initial_x;
