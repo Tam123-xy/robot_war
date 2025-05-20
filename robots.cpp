@@ -67,6 +67,7 @@ void GenericRobot::look(int dx, int dy) {
 
 void Robot::destroy() {
     if (isAlive) {
+        lives--;
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
@@ -85,7 +86,6 @@ void Robot::respawn(int x, int y) {
         positionY = y;
         isAlive = true;
         //isLandmine = false;   close function
-        lives--;
         cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
@@ -180,7 +180,7 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
-    shells--;
+    
     int targetX ;
     int targetY ;
 
@@ -245,10 +245,11 @@ void GenericRobot::fire(int dx, int dy) {
             int consecutive = 3;    //SemiAutoBot
             do{
                 auto enemy = battlefield->findRobotAt(targetX, targetY);
+                shells--;
                 cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
-                if (rand() % 100 < 70){
+                if (rand() % 100 > 70){
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
                     chooseUpgrade();
@@ -265,6 +266,7 @@ void GenericRobot::fire(int dx, int dy) {
         else{
             if(battlefield->findRobotAt(targetX, targetY)){
                 auto enemy = battlefield->findRobotAt(targetX, targetY);
+                shells--;
                 cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
@@ -288,6 +290,7 @@ void GenericRobot::fire(int dx, int dy) {
     } 
 
     else{
+        shells--;
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
     }

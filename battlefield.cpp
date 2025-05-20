@@ -141,10 +141,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
             {"look", "move", "fire"},
-            //{"fire", "look", "move"},
-            //{"fire", "move", "look"},
+            {"fire", "look", "move"},
+            {"fire", "move", "look"},
             {"move", "look", "fire"},
-            //{"move", "fire", "look"}
+            {"move", "fire", "look"}
         };
 
         // Select random order
