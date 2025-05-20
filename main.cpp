@@ -13,7 +13,7 @@ void loop_vector(const vector<T>& v );
 void One_Spaces_only(string& line); // make sure only ONE space in between word to word
 void set(const string& line, int& M, int& N, int& steps, int& num_robots, vector<string>& name, vector<int>& initial_x, vector<int>& initial_y);
 string extractWord(const string& line, const int&substr, int& i);
-void ramdom_num(const string& xy, const int& MN, vector<int>& v );
+void random_num(const string& xy, const int& MN, vector<int>& v );
 
 
 int main(){
@@ -32,7 +32,7 @@ int main(){
     }
 
     if(num_robots < name.size()){
-        cout << "You've set out of number of robots, please check you set.txt file again."<<endl;
+        cout << "You've set out of number of robots, please check your set.txt file again."<<endl;
         exit(-1);
     }
 
@@ -78,8 +78,8 @@ void set(const string& line, int& M, int& N, int& steps, int& num_robots, vector
         string x = extractWord(line,i,i);
         string y = line.substr(i);
 
-        ramdom_num(x,M,initial_x);
-        ramdom_num(y,N,initial_y);
+        random_num(x,M,initial_x);
+        random_num(y,N,initial_y);
 
     }
 
@@ -116,7 +116,7 @@ string extractWord(const string& line,const int&substr, int& i){
         return word;
 }
 
-void ramdom_num(const string& xy, const int& MN, vector<int>& v ){
+void random_num(const string& xy, const int& MN, vector<int>& v ){
     if(xy=="random"){
         random_device rd;
         mt19937 gen(rd());
