@@ -246,9 +246,8 @@ void GenericRobot::fire(int dx, int dy) {
                 if (rand() % 100 < 70){
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
-                    chooseUpgrade();
+                    chooseUpgrade(); // Upgrade
                     consecutive = 3;
-                    // performUpgrade();
                 }
                 else{
                     cout << " - MISS!" << endl;
@@ -266,9 +265,8 @@ void GenericRobot::fire(int dx, int dy) {
                 if (rand() % 100 < 70){
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
-                    chooseUpgrade();
+                    chooseUpgrade(); // Upgrade
                     return;
-                    // performUpgrade();
                 }
                 else{
                     cout << " - MISS!" << endl;
