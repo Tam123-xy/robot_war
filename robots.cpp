@@ -5,10 +5,6 @@
 #include <ctime>
 using namespace std;
 
-// Upgrade::Upgrade(string name, int x, int y, int w, int h)
-//     : Robot(name, x, y, w, h) {
-// }
-
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
     //   selfDestructed(false),empty_point(empty_point) {
