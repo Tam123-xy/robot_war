@@ -271,7 +271,7 @@ void GenericRobot::fire(int dx, int dy) {
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
                     chooseUpgrade(); // Upgrade
-                    return;
+                    // return;
                 }
                 else{
                     cout << " - MISS!" << endl;
@@ -289,6 +289,7 @@ void GenericRobot::fire(int dx, int dy) {
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
     }
+    
     lookGot_enemy_point.clear();
 }
 
