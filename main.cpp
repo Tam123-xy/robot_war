@@ -1,12 +1,24 @@
-#include <iostream>     //For input/output
-#include <fstream>      //For file input
-#include <sstream>      //For string stream processing
-#include <vector>       //To use std::vector containers
-#include <random>       //For random number generation
-#include <cstdlib>      //For random number generation
-#include <ctime>        //For random number generation
-#include "robots.h"     //custom headers for the GenericRobot classes
-#include "battlefield.h"    //custom headers for the Battlefield classes
+/**********|**********|**********|
+Program: main.cpp / robots.h / battlefield.h
+Course: OOPDS
+Trimester: 2520
+Name: TAM XIN YI | YIAP WEI SHANZ |TAY SHI XIANG
+ID: 243UC247G6 | 243UC247CV | 243UC247GE
+Lecture Section: TC1L
+Tutorial Section: TT2L
+Email: TAM.XIN.YI@student.mmu.edu.my | YIAP.WEI.SHANZ@student.mmu.edu.my | TAY.SHI.XIANG@student.mmu.edu.my
+Phone: 011-11026051 | 011-59964357 | 019-3285968
+**********|**********|**********/
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <random>
+#include <cstdlib>
+#include <ctime>
+#include "robots.h"
+#include "battlefield.h"
 using namespace std;
 
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
@@ -15,7 +27,7 @@ string extractWord(const string& line, const int& substr, int& i);  //Extracts a
 void parse_or_random(const string& value, int max, vector<int>& result); // check if it is a number or what the system generate a random number
 
 int main() {
-    ifstream file("set.txt");   //Opens the file set.txt to read robot settings
+    ifstream file("set.txt");
     string line;
     vector<string> names;
     vector<int> initial_x;
@@ -24,7 +36,7 @@ int main() {
     srand(time(0));
 
     while (getline(file, line)) {
-        One_Spaces_only(line); // Leave only one space between each word.
+        One_Spaces_only(line);
 
         if (line.rfind("M by N :", 0) == 0) {
             int i;
