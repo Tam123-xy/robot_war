@@ -67,6 +67,7 @@ void Robot::destroy() {
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
+        lives--;
 
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
@@ -81,7 +82,7 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
-        //isLandmine = false;   close function
+        lives--;
         cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
@@ -249,7 +250,7 @@ void GenericRobot::fire(int dx, int dy) {
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
                     chooseUpgrade();
-                    consecutive = 0;
+                    consecutive = 3;
                     // performUpgrade();
                 }
                 else{
@@ -409,19 +410,11 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 2: // Seeing upgrade
             if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                int choice = rand() % 3;
-                if (choice == 0) {
-                    // grantScout();
+                if (rand() % 2 == 0) {
                     upgradeNames.push_back("ScoutBot");
-                } else if (choice == 1) {
-                    // grantTrack();
+                } else {
                     upgradeNames.push_back("TrackBot");
                 }
-                
-                else if (choice == 2){
-                    // grantJump();
-                    upgradeNames.push_back("PredictionBot");}
-
                 upgradedAreas.insert("see");
                 upgradeCount++;
                 cout << name << " upgraded vision: " << upgradeNames.back() << endl;

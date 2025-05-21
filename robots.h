@@ -1,5 +1,5 @@
 /**********|**********|**********|
-Program: main.cpp / robots.h / battle.field
+Program: main.cpp / robots.h / battlefield.h
 Course: OOPDS
 Trimester: 2520
 Name: TAM XIN YI | YIAP WEI SHANZ |TAY SHI XIANG
@@ -204,5 +204,6 @@ public:
     string getType() const override;
 
 };
+
 
 #endif
