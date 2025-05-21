@@ -67,7 +67,6 @@ void Robot::destroy() {
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
-        lives--;
 
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
@@ -82,7 +81,6 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
-        lives--;
         cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
