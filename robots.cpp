@@ -67,12 +67,11 @@ void Robot::destroy() {
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
-        lives--;
 
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
         } else {
-            cout << "No lives remaining!" << endl;
+            cout << name << " has no lives remaining!" << endl << endl;
         }
     }
 }
@@ -410,7 +409,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 2: // Seeing upgrade
             if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                int choice = rand() % 4;
+                int choice = rand() % 3;
                 if (choice == 0) {
                     // grantScout();
                     upgradeNames.push_back("ScoutBot");
