@@ -74,6 +74,7 @@ int Battlefield::countLiveRobot() const {
     return count;
 }
 
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
