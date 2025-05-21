@@ -1,3 +1,15 @@
+/**********|**********|**********|
+Program: main.cpp / robots.h / battlefield.h
+Course: OOPDS
+Trimester: 2520
+Name: TAM XIN YI | YIAP WEI SHANZ |TAY SHI XIANG
+ID: 243UC247G6 | 243UC247CV | 243UC247GE
+Lecture Section: TC1L
+Tutorial Section: TT2L
+Email: TAM.XIN.YI@student.mmu.edu.my | YIAP.WEI.SHANZ@student.mmu.edu.my | TAY.SHI.XIANG@student.mmu.edu.my
+Phone: 011-11026051 | 011-59964357 | 019-3285968
+**********|**********|**********/
+
 #ifndef ROBOTS_H
 #define ROBOTS_H
 
@@ -52,20 +64,20 @@ public:
     virtual void move(int dx, int dy) = 0;
 
     // Upgraded move capability
-    void activateHide() {
-        if (hideCount > 0) {
-            isHidden = true;
-            hideCount--;
-        }
-    }
-    void deactivateHide() { isHidden = false; }
-    bool hidden() const { return isHidden; }
+//     void activateHide() {
+//         if (hideCount > 0) {
+//             isHidden = true;
+//             hideCount--;
+//         }
+//     }
+//     void deactivateHide() { isHidden = false; }
+//     bool hidden() const { return isHidden; }
 
-    bool canJump() const { return jumpCount > 0; }
-    void useJump() { if (jumpCount > 0) jumpCount--; }
-    void grantJump() { jumpCount = 3; }
-    void grantHide() { hideCount = 3; }
-};
+//     bool canJump() const { return jumpCount > 0; }
+//     void useJump() { if (jumpCount > 0) jumpCount--; }
+//     void grantJump() { jumpCount = 3; }
+//     void grantHide() { hideCount = 3; }
+ };
 
 
 class ShootingRobot : virtual public Robot {
@@ -80,8 +92,8 @@ public:
     virtual void fire(int dx, int dy) = 0;
 
     int getShells() const { return shells; }
-    void reloadThirtyShots() { shells = 30; hasThirtyShots = true; }
-    void extendRange() { fireRange = 3; }
+    void reloadThirtyShots() { shells = 30; hasThirtyShots = true; }    //ThirtyShots
+    void extendRange() { fireRange = 3; }   //longshot
 
     bool isLandmine = false;
     bool isSemiAuto = false;
@@ -111,17 +123,17 @@ public:
     using Robot::Robot;
     virtual void look(int dx, int dy) = 0;
 
-    void grantScout() { scoutCount = 3; }
-    void grantTrack() { trackCount = 3; }
+    // void grantScout() { scoutCount = 3; }
+    // void grantTrack() { trackCount = 3; }
 
-    bool canScout() const { return scoutCount > 0; }
-    void useScout() { if (scoutCount > 0) scoutCount--; }
+    // bool canScout() const { return scoutCount > 0; }
+    // void useScout() { if (scoutCount > 0) scoutCount--; }
 
-    bool canTrack() const { return trackCount > 0; }
-    void useTrack() { if (trackCount > 0) trackCount--; }
+    // bool canTrack() const { return trackCount > 0; }
+    // void useTrack() { if (trackCount > 0) trackCount--; }
 
-    void extendVision() { visionRange = 9999; } // entire battlefield
-    int getVisionRange() const { return visionRange; }
+    // void extendVision() { visionRange = 9999; } // entire battlefield
+    // int getVisionRange() const { return visionRange; }
 };
 
 
@@ -192,5 +204,6 @@ public:
     string getType() const override;
 
 };
+
 
 #endif

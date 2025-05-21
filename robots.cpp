@@ -63,6 +63,7 @@ void GenericRobot::look(int dx, int dy) {
 
 void Robot::destroy() {
     if (isAlive) {
+        lives--;
 
         isAlive = false;
         setPosition(0, 0); // Move to outside battle field
@@ -71,7 +72,7 @@ void Robot::destroy() {
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
         } else {
-            cout << "No lives remaining!" << endl;
+            cout << name << " has no lives remaining!" << endl << endl;
         }
     }
 }
@@ -81,6 +82,7 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
+        lives--;
         cout << name << " respawned, " << lives << " lives remaining." << endl;
     }
 }
@@ -175,7 +177,7 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
-    shells--;
+    
     int targetX ;
     int targetY ;
 
@@ -237,28 +239,31 @@ void GenericRobot::fire(int dx, int dy) {
 
     if(battlefield->findRobotAt(targetX, targetY)){
         if(isSemiAuto){
-            int consecutive = 0;
+            int consecutive = 3;    //SemiAutoBot
             do{
                 auto enemy = battlefield->findRobotAt(targetX, targetY);
+                shells--;
                 cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
-                if (rand() % 100 < 70){
+                if (rand() % 100 > 70){
                     cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                     enemy->destroy();
-                    chooseUpgrade(); // Upgrade
+                    chooseUpgrade();
                     consecutive = 3;
+                    // performUpgrade();
                 }
                 else{
                     cout << " - MISS!" << endl;
-                    consecutive++;
+                    consecutive--;
                 }
-            }while (consecutive < 3);
+            }while (consecutive >= 0);
         }
 
         else{
             if(battlefield->findRobotAt(targetX, targetY)){
                 auto enemy = battlefield->findRobotAt(targetX, targetY);
+                shells--;
                 cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
@@ -276,7 +281,7 @@ void GenericRobot::fire(int dx, int dy) {
                 else{
                     cout << " - MISS!" << endl;
                     if (isLandmine) {
-                        minePositions.emplace_back(targetX, targetY);
+                        minePositions.emplace_back(targetX, targetY);   //landmine
                         battlefield->placeMineAt(targetX, targetY);
                         cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
                     }
@@ -286,6 +291,7 @@ void GenericRobot::fire(int dx, int dy) {
     } 
 
     else{
+        shells--;
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " left shells: " << shells << endl;
     }
@@ -355,10 +361,10 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
             if (upgradedAreas.find("move") == upgradedAreas.end()) {
                 int choice = rand() % 3;
                 if (choice == 0) {
-                    grantHide();
+                    // grantHide();
                     upgradeNames.push_back("HideBot");
                 } else if (choice == 1){
-                    grantJump();
+                    // grantJump();
                     upgradeNames.push_back("JumpBot");
                 } else if (choice == 2){
                     upgradeNames.push_back("??Bot");
@@ -404,22 +410,11 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 
         case 2: // Seeing upgrade
             if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                int choice = rand() % 3;
-
-                if (choice == 0){
-                    grantScout();
+                if (rand() % 2 == 0) {
                     upgradeNames.push_back("ScoutBot");
-                } 
-                
-                else if (choice == 1){
-                    grantTrack();
+                } else {
                     upgradeNames.push_back("TrackBot");
                 }
-                
-                else{
-                    // grantJump();
-                    upgradeNames.push_back("PredictionBot");}
-
                 upgradedAreas.insert("see");
                 upgradeCount++;
                 cout << name << " upgraded vision: " << upgradeNames.back() << endl;
