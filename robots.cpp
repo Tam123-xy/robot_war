@@ -256,7 +256,7 @@ void GenericRobot::fire(int dx, int dy) {
                     cout << " - MISS!" << endl;
                     consecutive--;
                 }
-            }while (consecutive <= 0);
+            }while (consecutive >= 0);
         }
 
         else{
