@@ -81,6 +81,7 @@ void Battlefield::simulateTurn() {
 
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
+
     string r_order = "Robots order: " + robots[0] ->getName();
     int size = robots.size();
 
@@ -89,6 +90,7 @@ void Battlefield::simulateTurn() {
     }
 
     cout << r_order<< endl;
+    cout << endl;
 
     for (auto& robot : robots) {
         if (robot->alive()) {
@@ -132,8 +134,6 @@ void Battlefield::processRespawn() {
             } while (findRobotAt(x, y));
             
             robot->respawn(x, y);
-            cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
-            
             // display();
         }
     }

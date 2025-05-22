@@ -83,7 +83,7 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
-        cout << name << " respawned, " << lives << " lives remaining." << endl;
+        cout << name << " respawned at (" << x << "," << y << "), " << lives << " lives remaining." << endl;
     }
 }
 
@@ -138,6 +138,7 @@ void GenericRobot::move(int dx, int dy) {
         }
 
         int num = rand() % surrounding_points.size();
+        uniform_int_distribution<> dis(0, 99);
         newX = surrounding_points[num].first;
         newY = surrounding_points[num].second;
 
@@ -270,8 +271,8 @@ void GenericRobot::fire(int dx, int dy) {
             cout << " left shells: " << shells << endl;
 
             uniform_int_distribution<> dis(1, 100); // 1-100
-            if (false) {
-            // if (rand() % 100 > 70) {
+            // if (false) {
+            if (rand() % 100 > 70) {
             // if (dis(gen) <= 70){ // 70% will success destroy enemy
                 cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                 enemy->destroy();
