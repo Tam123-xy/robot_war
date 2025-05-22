@@ -86,7 +86,7 @@ void Battlefield::simulateTurn() {
     int size = robots.size();
 
     for(int i=1; i<size; i++){
-        r_order+= "-->" +robots[i] ->getName();
+        r_order+= "--> " +robots[i] ->getName();
     }
 
     cout << r_order<< endl;

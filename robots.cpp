@@ -270,10 +270,7 @@ void GenericRobot::fire(int dx, int dy) {
             cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
             cout << " left shells: " << shells << endl;
 
-            uniform_int_distribution<> dis(1, 100); // 1-100
-            // if (false) {
-            if (rand() % 100 > 70) {
-            // if (dis(gen) <= 70){ // 70% will success destroy enemy
+            if (rand() % 100 > 70) { // 70% will success destroy enemy
                 cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                 enemy->destroy();
                 chooseUpgrade(); // Upgrade

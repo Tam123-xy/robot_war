@@ -1,5 +1,5 @@
 M by N : 10 20
-steps: 2
+steps: 1
 robots: 6
 GenericRobot a 1 1
 GenericRobot b 1 2
