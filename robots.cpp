@@ -14,7 +14,6 @@ GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield*
 
 void GenericRobot::think() {
     cout << name << " is thinking...\n";
-
 }
 
 void GenericRobot::look(int dx, int dy) {
@@ -164,6 +163,22 @@ void GenericRobot::move(int dx, int dy) {
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
         battlefield->triggerMineIfAny(this, newX, newY); 
     }
+
+    // // If we have jump ability and choose to use it
+    // if (canJump() && rand() % 4 == 0) { // 25% chance to use jump if available
+    //     int newX = rand() % width;
+    //     int newY = rand() % height;
+    //     if (jump(newX, newY)) {
+    //         return;
+    //     }
+    // }
+
+    // // If we have hide ability and choose to use it
+    // if (canHide() && rand() % 4 == 0) { // 25% chance to use hide if available
+    //     if (hide()) {
+    //         return;
+    //     }
+    // }
 }
 
 void GenericRobot::fire(int dx, int dy) {
@@ -235,7 +250,48 @@ void GenericRobot::fire(int dx, int dy) {
         } 
     }
 
-    if(battlefield->findRobotAt(targetX, targetY)){
+
+
+    if (battlefield->findRobotAt(targetX, targetY)) {
+        auto enemy = battlefield->findRobotAt(targetX, targetY);
+
+        // Check if target is HideBot and handle defense
+        // if (enemy->getType() == "HideBot") {
+        //     if (enemy->hide()) {
+        //         shells--;  // Still consume a shell
+        //         cout << name << " attacked " << enemy->getName() << ", but target is hidden!" << endl;
+        //         return;
+        //     }
+        // }
+
+        //Proceed with normal attack if not defended
+        if (!enemy->canBeHit()) {
+            shells--;
+            cout << name << " fires " << enemy->getName() 
+                << " at (" << targetX << "," << targetY << ")" << " but " 
+                << enemy->getName() << " is hidden! Attack wasted." << endl;
+            return;
+        }
+
+        std::random_device rd;
+        std::mt19937 gen(rd()); // Mersenne Twister
+        std::uniform_int_distribution<> dis(0, 99);
+
+        shells--;
+        cout << name << " fires at " << enemy->getName() 
+             << " at (" << targetX << "," << targetY << ")\n";
+            
+        if (dis(gen) < 70) {  // 70% hit chance
+            cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
+            enemy->destroy();
+            chooseUpgrade();
+        } else {
+            cout << " - MISS!" << endl;
+        }
+    
+
+
+
         if(isSemiAuto){
             int consecutive = 3;    //SemiAutoBot
             do{
@@ -284,9 +340,9 @@ void GenericRobot::fire(int dx, int dy) {
                         cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
                     }
                 }
-            }
+            } 
         }
-    } 
+    }
 
     else{
         shells--;
@@ -296,6 +352,7 @@ void GenericRobot::fire(int dx, int dy) {
     
     lookGot_enemy_point.clear();
 }
+
 
 void GenericRobot::respawn(int x, int y) {
     Robot::respawn(x, y);  
@@ -357,20 +414,23 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = rand() % 3;
+                int choice = rand() % 2;
                 if (choice == 0) {
-                    // grantHide();
+                    activateHideAbility();
                     upgradeNames.push_back("HideBot");
-                } else if (choice == 1){
-                    // grantJump();
+                    cout << name << " can now hide 3 times per match!\n";
+                } else if (choice == 1)
+                {
+                    activateJumpAbility();
                     upgradeNames.push_back("JumpBot");
+                    cout << name << " can now jump 3 times per match!\n";
                 } else if (choice == 2){
                     upgradeNames.push_back("??Bot");
                 }
                 upgradedAreas.insert("move");
                 upgradeCount++;
                 cout << name << " upgraded movement: " << upgradeNames.back() << endl;
-                cout << name << " now is " ;
+                cout << name << " now has upgrades: " ;
                 for(auto s: upgradeNames){
                     cout << s << ' ' ;
                 }
@@ -398,7 +458,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
                 upgradedAreas.insert("shoot");
                 upgradeCount++;
                 cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
-                cout << name << " now is " ;
+                cout << name << " now has upgrades: " ;
                 for(auto s: upgradeNames){
                     cout << s << ' ' ;
                 }
@@ -416,7 +476,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
                 upgradedAreas.insert("see");
                 upgradeCount++;
                 cout << name << " upgraded vision: " << upgradeNames.back() << endl;
-                cout << name << " now is " ;
+                cout << name << " now has upgrades: " ;
                 for(auto s: upgradeNames){
                     cout << s << ' ' ;
                 }
@@ -428,4 +488,3 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
             break;
     }
 }
-
