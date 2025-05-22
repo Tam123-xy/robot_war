@@ -233,10 +233,29 @@ void GenericRobot::fire(int dx, int dy) {
             targetY = lookGot_enemy_point[0].second;
         }
 
+        // many enemies, need to check which is the higher level enemy
         else{
+            // int i = 0;
+            // int max_i = 0;
+            // int max = 0;
+            // int count;
+            // for (const auto& point : lookGot_enemy_point){
+            //     auto enemy = battlefield->findRobotAt(point.first, point.second);
+            //     count = enemy -> getCoutUpgrade();
+            //     if(count> max){
+            //         max = count;
+            //         max_i = i;
+            //     }
+            //     i++;
+            // }
+
+            // targetX = lookGot_enemy_point[max_i].first;
+            // targetY = lookGot_enemy_point[max_i].second;
+            // cout<< "Higher level enemy, point (" << targetX<< " ,"<< targetY << " )"<< endl;
             targetX = lookGot_enemy_point[0].first;
             targetY = lookGot_enemy_point[0].second;
-            // more enemy, need to check which is the higher enemy
+       
+            
         } 
     }
     
@@ -252,9 +271,14 @@ void GenericRobot::fire(int dx, int dy) {
                 cout << name << " fires " << enemy->getName() << " at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
 
-                if (rand() % 100 > 70) {
+                if (true) {
+                // if (rand() % 100 > 70) {
                     cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
-                    enemy->destroy();
+
+                    // if(!(enemy->getName()=="a")){
+                        enemy->destroy();
+                    // }
+                    
                     chooseUpgrade();
                     consecutive = 3; // reset if hit
                 } else {
@@ -270,9 +294,14 @@ void GenericRobot::fire(int dx, int dy) {
             cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
             cout << " left shells: " << shells << endl;
 
-            if (rand() % 100 > 70) { // 70% will success destroy enemy
+            if (true) {
+            // if (rand() % 100 > 70) { // 70% will success destroy enemy
                 cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
-                enemy->destroy();
+
+                // if(!(enemy->getName()=="a")){
+                        enemy->destroy();
+                // }
+
                 chooseUpgrade(); // Upgrade
             }
 
@@ -314,6 +343,7 @@ void GenericRobot::destroy() {
         Robot::destroy();  
         upgradedAreas.clear();
         upgradeNames.clear();
+        upgradeCount =0 ;
     }
 }
 
@@ -330,26 +360,41 @@ int GenericRobot::getY() const {
 
 void GenericRobot::chooseUpgrade() {
     if (upgradeCount == 3) {
-        cout << name << " now is " ;
-        for(auto s: upgradeNames){
-            cout << s << ' ' ;
-        }
-        cout << endl;
+        // cout << name << " now is " ;
+        // for(auto s: upgradeNames){
+        //     cout << s << ' ' ;
+        // }
+        // cout << endl;
         cout << "Cannot Upgrade Anymore" << endl;
         return;
     }
 
-    if(upgradeCount == 1){
-        isSemiAuto = true;
-    }
-    else if (upgradeCount == 2){
-        isLandmine = true;
-    }
-    else{
-        reloadThirtyShots();
-        // extendRange();
-    }
+    isLandmine = true;
+    upgradeNames.push_back("LandmineBot");
+    // if(upgradeCount == 1){
+    //     isLandmine = true;
+    //     upgradeNames.push_back("LandmineBot");
+    // }
+    // else if (upgradeCount == 2){
+    //     reloadThirtyShots();
+    //     upgradeNames.push_back("ThirtyShotBot"); 
+    // }
+    // else{
+    //     // isSemiAuto = true;
+    //     // upgradeNames.push_back("SemiAutoBot"); 
+    //     isLandmine = true;
+    //     upgradeNames.push_back("LandmineBot");
+     
+    //     // extendRange();
+    // }
     upgradeCount++;
+
+    cout << name << " now is " ;
+    for(auto s: upgradeNames){
+        cout << s << ' ' ;
+    }
+    cout<< upgradeCount << " upgradeCount"<< endl;
+    cout << endl;
 
     // vector<int> availableOptions;
     // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0); // Move not found

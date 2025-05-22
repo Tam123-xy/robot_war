@@ -93,10 +93,21 @@ void Battlefield::simulateTurn() {
     cout << endl;
 
     for (auto& robot : robots) {
+
         if (robot->alive()) {
-            executeRobotTurn(robot);
+
+            // if(robot->getName()=="a"){
+            //     cout<< "skip robot a"<<endl;
+            //     // return;
+            // }
+
+            // else{
+                executeRobotTurn(robot);
+            // }
         }
+
         else if (robot->shouldRespawn()) {
+            cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
             respawnQueue.push(robot);
         }
     }

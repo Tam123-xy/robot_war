@@ -25,6 +25,7 @@ class Battlefield;  // Forward declaration
 
 class Robot {
 protected:
+    // int upgradeCount = 0;   
     string name;
     int lives = 3;
     bool isAlive = true;
@@ -48,6 +49,7 @@ public:
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
+    // int getCoutUpgrade() const { return upgradeCount; }
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
@@ -149,12 +151,13 @@ private:
     Battlefield* battlefield;
     int shells;
     bool selfDestructed;
-    int upgradeCount = 0;
+    // int upgradeCount = 0;
     set<string> upgradedAreas;
     vector<string> upgradeNames;
 
    
 protected:
+    int upgradeCount = 0;
     bool hasLooked = false;
     bool hasFired = false;
     bool hasMoved = false;
@@ -202,6 +205,8 @@ public:
     int getX() const;   
     int getY() const; 
     string getType() const override;
+
+    // int getCoutUpgrade() const { return upgradeCount; }
 
 };
 
