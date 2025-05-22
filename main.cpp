@@ -21,6 +21,7 @@ Phone: 011-11026051 | 011-59964357 | 019-3285968
 #include "battlefield.h"
 using namespace std;
 
+
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
 void One_Spaces_only(string& line); // Leave only one space between each word.
 string extractWord(const string& line, const int& substr, int& i);
@@ -89,7 +90,7 @@ int main() {
 
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
-        field.display();
+        // field.display();
         field.simulateTurn();
         
         // Field got 0 alive robot && the total live of dead robots is 0
@@ -98,7 +99,7 @@ int main() {
             break;
         }
 
-        field.display();
+        // field.display();
         cout << "\n--- Turn " << i + 1 << " END---\n";
 
         // Field got 1 alive robot && the total live of dead robots is 0

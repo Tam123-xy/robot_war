@@ -1,5 +1,7 @@
 M by N : 3 3
-steps: 20
-robots: 2
-GenericRobot Kidd 2 2
-GenericRobot Jet 2 1
+steps: 1
+robots: 4
+GenericRobot a 1 1
+GenericRobot b 2 1
+GenericRobot c 3 1
+GenericRobot d 2 2

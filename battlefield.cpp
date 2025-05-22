@@ -78,10 +78,18 @@ int Battlefield::countLiveRobot() const {
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
-    
+
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
-    
+    string r_order = "Robots order: " + robots[0] ->getName();
+    int size = robots.size();
+
+    for(int i=1; i<size; i++){
+        r_order+= "-->" +robots[i] ->getName();
+    }
+
+    cout << r_order<< endl;
+
     for (auto& robot : robots) {
         if (robot->alive()) {
             executeRobotTurn(robot);
@@ -126,7 +134,7 @@ void Battlefield::processRespawn() {
             robot->respawn(x, y);
             cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
             
-            display();
+            // display();
         }
     }
 }
@@ -141,11 +149,11 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
             {"look", "fire", "move"},
-            {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
-            {"move", "look", "fire"},
-            {"move", "fire", "look"}
+            // {"look", "move", "fire"},
+            // {"fire", "look", "move"},
+            // {"fire", "move", "look"},
+            // {"move", "look", "fire"},
+            // {"move", "fire", "look"}
         };
 
         // Select random order
@@ -163,7 +171,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             }
             
             else{
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                // gr->move(rand() % 3 - 1, rand() % 3 - 1);
                 display();
 
             }
