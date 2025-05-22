@@ -15,7 +15,7 @@ GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield*
 }
 
 void GenericRobot::think() {
-    cout << name << " is thinking...\n";
+    cout << name << " is thinking... ";
 
 }
 
@@ -274,12 +274,8 @@ void GenericRobot::fire(int dx, int dy) {
                 if (true) {
                 // if (rand() % 100 > 70) {
                     cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
-
-                    // if(!(enemy->getName()=="a")){
-                        enemy->destroy();
-                    // }
-                    
-                    chooseUpgrade();
+                    enemy->destroy();                    
+                    // chooseUpgrade();
                     consecutive = 3; // reset if hit
                 } else {
                     cout << " - MISS!" << endl;
@@ -297,12 +293,10 @@ void GenericRobot::fire(int dx, int dy) {
             if (true) {
             // if (rand() % 100 > 70) { // 70% will success destroy enemy
                 cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+                enemy->destroy();
 
-                // if(!(enemy->getName()=="a")){
-                        enemy->destroy();
-                // }
 
-                chooseUpgrade(); // Upgrade
+                // chooseUpgrade(); // Upgrade
             }
 
             else{

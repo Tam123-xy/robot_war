@@ -99,7 +99,7 @@ int main() {
             break;
         }
 
-        // field.display();
+        field.display();
         cout << "\n--- Turn " << i + 1 << " END---\n";
 
         // Field got 1 alive robot && the total live of dead robots is 0

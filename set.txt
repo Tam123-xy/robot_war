@@ -1,4 +1,4 @@
-M by N : 5 3
+M by N : 5 5
 steps: 2
 robots: 3
 GenericRobot a 3 2

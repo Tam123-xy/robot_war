@@ -82,36 +82,46 @@ void Battlefield::simulateTurn() {
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
 
-    string r_order = "Robots order: " + robots[0] ->getName();
-    int size = robots.size();
+    vector<shared_ptr<Robot>> copy = robots;  
+
+    // Store the robot which are alive in this turn
+    copy.erase(
+        remove_if(copy.begin(), copy.end(),
+            [](const shared_ptr<Robot>& r) { 
+                return !r->alive();
+            }),
+        copy.end()
+    );
+
+    // Order robot
+    string r_order = "Robots order: " + copy[0] -> getName();
+    int size = copy.size();
 
     for(int i=1; i<size; i++){
-        r_order+= "--> " +robots[i] ->getName();
+        r_order+= "--> " + copy[i]-> getName();
     }
 
-    cout << r_order<< endl;
+    // Print robot order
+    cout << r_order<< endl; 
     cout << endl;
 
     for (auto& robot : robots) {
 
         if (robot->alive()) {
-
-            // if(robot->getName()=="a"){
-            //     cout<< "skip robot a"<<endl;
-            //     // return;
-            // }
-
-            // else{
-                executeRobotTurn(robot);
-            // }
+            executeRobotTurn(robot);
         }
 
         else if (robot->shouldRespawn()) {
-            cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
+            auto it = find(copy.begin(), copy.end(), robot);
+            if (it != copy.end()) {
+                cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
+            }
+
             respawnQueue.push(robot);
         }
     }
-    
+
+
     // Remove dead robots with no lives left
     robots.erase(
         remove_if(robots.begin(), robots.end(),
@@ -169,7 +179,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Select random order
         auto& order = actionOrders[rand() % actionOrders.size()];
-        cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+        cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
         for (const auto& action : order){
             int dx,dy;
@@ -183,7 +193,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             
             else{
                 // gr->move(rand() % 3 - 1, rand() % 3 - 1);
-                display();
+                // display();
 
             }
         }
