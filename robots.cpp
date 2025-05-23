@@ -301,7 +301,7 @@ void GenericRobot::fire(int dx, int dy) {
                 // if (rand() % 100 > 70) {
                     cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
                     enemy->destroy();                    
-                    // chooseUpgrade();
+                    chooseUpgrade();
                     consecutive = 3; // reset if hit
                 } else {
                     cout << " - MISS!" << endl;
@@ -322,13 +322,13 @@ void GenericRobot::fire(int dx, int dy) {
                 enemy->destroy();
 
 
-                // chooseUpgrade(); // Upgrade
+                chooseUpgrade(); // Upgrade
             }
 
             else{
                 cout << " - MISS!" << endl;
-                if (isLandmine) {
-                    minePositions.emplace_back(targetX, targetY);   // Landmine
+                if (isLandmine) { // LandmineBot
+                    minePositions.emplace_back(targetX, targetY);   // Random point
                     battlefield->placeMineAt(targetX, targetY);
                     cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
                 }
@@ -392,104 +392,108 @@ void GenericRobot::chooseUpgrade() {
     // upgradeNames.push_back("LandmineBot");
     // upgradeCount++;
 
-    // cout << name << " now is " ;
-    // for(auto s: upgradeNames){
-    //     cout << s << ' ' ;
-    // }
-    // cout<< upgradeCount << " upgradeCount"<< endl;
-    // cout << endl;
+    isScoutBot = true;
+    upgradeNames.push_back("ScoutBot");
+    upgradeCount++;
 
-    vector<int> availableOptions;
-    if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
-    if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
-    if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
-
-    if (availableOptions.empty()) return;
-
-    int randomIndex = rand() % availableOptions.size();
-    // int chosenOption = availableOptions[randomIndex];
-    // chooseUpgrade(chosenOption);
-    chooseUpgrade(randomIndex);
-}
-
-
-void GenericRobot::chooseUpgrade(int upgradeOption) {
-    if (upgradeCount >= 3) return;
-
-    switch (upgradeOption) {
-        case 0: // Moving upgrade
-            if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = rand() % 2;
-                if (choice == 0) {
-                    activateHideAbility();
-                    upgradeNames.push_back("HideBot");
-                    cout << name << " can now hide 3 times per match!\n";
-                } else if (choice == 1){
-                    activateJumpAbility();
-                    upgradeNames.push_back("JumpBot");
-                    cout << name << " can now jump 3 times per match!\n";
-                } else if (choice == 2){
-                    upgradeNames.push_back("??Bot");
-                }
-                upgradedAreas.insert("move");
-                upgradeCount++;
-                cout << name << " upgraded movement: " << upgradeNames.back() << endl;
-                cout << name << " now has upgrades: " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
-            }
-        break;
-
-        case 1: // Shooting upgrade
-            if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
-                int choice = rand() % 4;
-                if (choice == 0) {
-                    extendRange();
-                    upgradeNames.push_back("LongShotBot");
-                } else if (choice == 1) {
-                    isSemiAuto = true;
-                    upgradeNames.push_back("SemiAutoBot");
-                } else if (choice == 2){
-                    reloadThirtyShots();
-                    upgradeNames.push_back("ThirtyShotBot");
-                } else if (choice == 3){
-                    isLandmine = true;
-                    upgradeNames.push_back("LandmineBot");
-                }
-
-                upgradedAreas.insert("shoot");
-                upgradeCount++;
-                cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
-                cout << name << " now is " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
-            }
-        break;
-
-        case 2: // Seeing upgrade
-            if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                if (rand() % 2 == 0) {
-                    upgradeNames.push_back("ScoutBot");
-                } else {
-                    upgradeNames.push_back("TrackBot");
-                }
-                upgradedAreas.insert("see");
-                upgradeCount++;
-                cout << name << " upgraded vision: " << upgradeNames.back() << endl;
-                cout << name << " now is " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
-            }
-        break;
-
-        default:
-            break;
+    cout << name << " now is " ;
+    for(auto s: upgradeNames){
+        cout << s << ' ' ;
     }
+    cout<< upgradeCount << " upgradeCount"<< endl;
+    cout << endl;
+
+    // vector<int> availableOptions;
+    // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+    // if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+    // if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
+
+    // if (availableOptions.empty()) return;
+
+    // int randomIndex = rand() % availableOptions.size();
+    // // int chosenOption = availableOptions[randomIndex];
+    // // chooseUpgrade(chosenOption);
+    // chooseUpgrade(randomIndex);
 }
+
+
+// void GenericRobot::chooseUpgrade(int upgradeOption) {
+//     if (upgradeCount >= 3) return;
+
+//     switch (upgradeOption) {
+//         case 0: // Moving upgrade
+//             if (upgradedAreas.find("move") == upgradedAreas.end()) {
+//                 int choice = rand() % 2;
+//                 if (choice == 0) {
+//                     activateHideAbility();
+//                     upgradeNames.push_back("HideBot");
+//                     cout << name << " can now hide 3 times per match!\n";
+//                 } else if (choice == 1){
+//                     activateJumpAbility();
+//                     upgradeNames.push_back("JumpBot");
+//                     cout << name << " can now jump 3 times per match!\n";
+//                 } else if (choice == 2){
+//                     upgradeNames.push_back("??Bot");
+//                 }
+//                 upgradedAreas.insert("move");
+//                 upgradeCount++;
+//                 cout << name << " upgraded movement: " << upgradeNames.back() << endl;
+//                 cout << name << " now has upgrades: " ;
+//                 for(auto s: upgradeNames){
+//                     cout << s << ' ' ;
+//                 }
+//                 cout << endl;
+//             }
+//         break;
+
+//         case 1: // Shooting upgrade
+//             if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
+//                 int choice = rand() % 4;
+//                 if (choice == 0) {
+//                     extendRange();
+//                     upgradeNames.push_back("LongShotBot");
+//                 } else if (choice == 1) {
+//                     isSemiAuto = true;
+//                     upgradeNames.push_back("SemiAutoBot");
+//                 } else if (choice == 2){
+//                     reloadThirtyShots();
+//                     upgradeNames.push_back("ThirtyShotBot");
+//                 } else if (choice == 3){
+//                     isLandmine = true;
+//                     upgradeNames.push_back("LandmineBot");
+//                 }
+
+//                 upgradedAreas.insert("shoot");
+//                 upgradeCount++;
+//                 cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
+//                 cout << name << " now is " ;
+//                 for(auto s: upgradeNames){
+//                     cout << s << ' ' ;
+//                 }
+//                 cout << endl;
+//             }
+//         break;
+
+//         case 2: // Seeing upgrade
+//             if (upgradedAreas.find("see") == upgradedAreas.end()) {
+//                 if (rand() % 2 == 0) {
+//                     upgradeNames.push_back("ScoutBot");
+//                 } else {
+//                     upgradeNames.push_back("TrackBot");
+//                 }
+//                 upgradedAreas.insert("see");
+//                 upgradeCount++;
+//                 cout << name << " upgraded vision: " << upgradeNames.back() << endl;
+//                 cout << name << " now is " ;
+//                 for(auto s: upgradeNames){
+//                     cout << s << ' ' ;
+//                 }
+//                 cout << endl;
+//             }
+//         break;
+
+//         default:
+//             break;
+//     }
+// }
 

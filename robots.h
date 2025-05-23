@@ -55,6 +55,16 @@ public:
     int getHeight() const { return height; }
     virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
     virtual bool hide() { return false; } // Base implementation - no defense
+
+    virtual const vector<pair<int, int>>& getScoutPoints() const = 0;
+    virtual int getsize_ScoutPoints() const { return 0; }
+    virtual bool isScout() const { return false; } // 默认不是 Scout
+    virtual int getScoutCount() const { return 0; }
+    virtual void setScoutCount(int) {}
+    virtual void addScoutPoint(pair<int, int> pos) = 0;
+
+
+    
 };
 
 class MovingRobot : virtual public Robot {
@@ -250,6 +260,7 @@ public:
 
     bool isLandmine = false;
     bool isSemiAuto = false;
+    
 
     vector<pair<int, int>> minePositions;
 
@@ -271,10 +282,44 @@ protected:
     int visionRange = 1;
     int scoutCount = 0;
     int trackCount = 0;
+    vector<pair<int, int>> ScoutPoint;
 
 public:
     using Robot::Robot;
     virtual void look(int dx, int dy) = 0;
+
+    bool isScoutBot = false;
+    bool isTrackBot = false;
+    bool isPredictBot = false;
+
+    // bool getScoutBot() const { return isScoutBot; }
+    bool getTrackBot() const { return isTrackBot; }
+    bool getPredictBot() const { return isPredictBot; }
+
+    // 使用构造函数设定 scout 类型
+    SeeingRobot(bool isScout = false) : isScoutBot(isScout) {}
+
+    // ✅ 重写虚函数
+    bool isScout() const override { return isScoutBot; }
+    int getScoutCount() const override { return scoutCount; }
+    void setScoutCount(int c) override { scoutCount = c; }
+
+   void addScoutPoint(pair<int, int> pos) override {
+        ScoutPoint.push_back(pos);
+    }
+
+
+    const vector<pair<int, int>>& getScoutPoints() const override {
+        return ScoutPoint;
+    }
+
+    // void addScoutPoint(int x, int y) {
+    //     ScoutPoint.emplace_back(x, y);
+    // }
+
+    int getsize_ScoutPoints() const override{ return ScoutPoint.size(); }
+
+
 
     // void grantScout() { scoutCount = 3; }
     // void grantTrack() { trackCount = 3; }
