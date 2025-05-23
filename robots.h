@@ -53,34 +53,185 @@ public:
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+    virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
+    virtual bool hide() { return false; } // Base implementation - no defense
 };
 
 class MovingRobot : virtual public Robot {
 protected:
+    bool hasJumpAbility = false;
+    bool hasHideAbility = false;
     int jumpCount = 0;
     int hideCount = 0;
     bool isHidden = false;
 
 public:
     using Robot::Robot;
+    virtual ~MovingRobot() = default;
+
+    //Basic Movement
     virtual void move(int dx, int dy) = 0;
+    
+    //Special movement abilities
+    virtual bool jump(int newX, int newY) {
+        if (canJump() && newX > 0 && newX < width && newY > 0 && newY < height) {
+            positionX = newX;
+            positionY = newY;
+            jumpCount++;
+            cout << name << "jumped to (" << newX << "," << newY << ") (" << 3 - jumpCount << " jumps left)" << endl;
+            return true;
+        }
+        return false;
+    }
 
-    // Upgraded move capability
-//     void activateHide() {
-//         if (hideCount > 0) {
-//             isHidden = true;
-//             hideCount--;
-//         }
-//     }
-//     void deactivateHide() { isHidden = false; }
-//     bool hidden() const { return isHidden; }
+    virtual bool hide() {
+        if (canHide()) {
+            isHidden = true;
+            hideCount++;
+            cout << name << " is now hidden (" << 3 - hideCount << " hides left)" << endl;
+            return true;
+        }
+        return false;
+    }
 
-//     bool canJump() const { return jumpCount > 0; }
-//     void useJump() { if (jumpCount > 0) jumpCount--; }
-//     void grantJump() { jumpCount = 3; }
-//     void grantHide() { hideCount = 3; }
- };
+    virtual void reveal() {
+        if (isHidden) {
+            isHidden = false;
+            cout << name << " is now visible again" << endl;
+        }
+    }
 
+    //Ability activation
+    void activateJumpAbility() {
+        hasJumpAbility = true;
+        cout << name << " gained JumpBot abilities!" << endl;
+    }
+
+    void activateHideAbility() {
+        hasHideAbility = true;
+        cout << name << " gained HideBot abilities!" << endl;
+    }
+
+    virtual bool defendAgainstAttack() {
+        return false;   // Base robots don't defend by default
+    }
+
+    //Status checks
+    bool canJump() const { return hasJumpAbility && jumpCount < 3; }
+    bool canHide() const { return hasHideAbility && hideCount < 3; }
+    bool isCurrentlyHidden() const { return isHidden; }
+    int getRemainingJumps() const { return 3 - jumpCount; }
+    int getRemainingHides() const { return 3 - hideCount; }
+
+    //Movement validation
+    bool isValidMove(int dx, int dy) const {
+        int newX = positionX + dx;
+        int newY = positionY + dy;
+        return (newX > 0 && newX < width && newY > 0 && newY < height);
+    }
+};
+
+class HideBot : virtual public MovingRobot {
+private:
+    int hideUses = 3;   //Track remaining hides
+    bool isHidden = false;  //Current hidden state
+    bool hideWhenAttacked = true;
+
+public:
+    HideBot(string name, int x, int y, int w, int h)
+        : Robot(name, x, y, w, h), MovingRobot(name, x, y, w, h) {
+        activateHideAbility();
+    }
+    
+    string getType() const override { return "HideBot" ; }
+
+    //Override hide to provide invulnerability
+    bool hide() override {
+        if (hideUses > 0 && !isHidden) {
+            isHidden = true;
+            hideUses--;
+            return true;
+        }
+        return false;
+    }
+
+    bool defendAgainstAttack() {
+        if (canHide() && hideWhenAttacked && !isHidden) {
+            return hide();  //Automatically hide when attacked
+        }
+        return false;
+    }
+
+    void reveal() override {
+        if (isHidden) {
+            isHidden = false;
+        }
+    }
+
+    // If we have hide ability and choose to use it
+    void move(int dx, int dy) override {
+        if (canHide() && rand() % 2 == 0) { // 50% chance to use hide if available
+            if (hide()) {
+                return;
+            }
+        }
+    }
+
+    //Method to check if robot can be hit (for attack logic)
+    bool canBeHit() const override {
+        return !isHidden;   // Can only be hit when not hidden
+    }
+
+    int getRemainingHides() const { return hideUses; }
+    bool canHide() const { return hideUses > 0; }
+    bool isCurrentlyHidden() const { return isHidden; }
+};
+
+class JumpBot : virtual public MovingRobot {
+private:
+    int jumpUses = 3;   //Track remaining jumps
+
+public:
+    JumpBot(string name, int x, int y, int w, int h)
+        : Robot(name, x, y, w, h), MovingRobot(name, x, y, w, h) {
+        activateJumpAbility();
+    }
+    
+    string getType() const override { return "JumpBot" ; }
+
+    // Override jump to allow jumping anywhere on the map
+    bool jump(int newX, int newY) override {
+        if (jumpUses > 0 && newX > 0 && newX < width && newY > 0 && newY < height) {
+            positionX = newX;
+            positionY = newY;
+            jumpUses--;
+            cout << name << " jumped to (" << newX << "," << newY << ")! (" << jumpUses << " jumps remaining)" << endl;
+            return true;
+        }
+        return false;
+    }
+
+    void move(int dx, int dy) override {
+        //JumpBot can choose to use normal move or jump
+        if (canJump() && rand() % 2 == 0) { // 50% chance to use jump if available
+            int newX = rand() % width;
+            int newY = rand() % height;
+            if (jump(newX, newY)) {
+                return;
+            }
+        }
+
+        // Normal movement if jump not used or not available
+        if (isValidMove(dx, dy)) {
+            positionX += dx;
+            positionY += dy;
+            cout << name << " moved to (" << positionX << "," << positionY << ")" << endl;
+        }
+    }
+
+    int getRemainingJumps() const { return jumpUses; }
+    bool canJump() const { return jumpUses > 0; }
+};
 
 class ShootingRobot : virtual public Robot {
 protected:
@@ -209,6 +360,5 @@ public:
     // int getCoutUpgrade() const { return upgradeCount; }
 
 };
-
 
 #endif

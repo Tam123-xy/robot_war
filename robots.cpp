@@ -167,6 +167,22 @@ void GenericRobot::move(int dx, int dy) {
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
         battlefield->triggerMineIfAny(this, newX, newY); 
     }
+
+    // // If we have jump ability and choose to use it
+    // if (canJump() && rand() % 4 == 0) { // 25% chance to use jump if available
+    //     int newX = rand() % width;
+    //     int newY = rand() % height;
+    //     if (jump(newX, newY)) {
+    //         return;
+    //     }
+    // }
+
+    // // If we have hide ability and choose to use it
+    // if (canHide() && rand() % 4 == 0) { // 25% chance to use hide if available
+    //     if (hide()) {
+    //         return;
+    //     }
+    // }
 }
 
 void GenericRobot::fire(int dx, int dy) {
@@ -258,15 +274,25 @@ void GenericRobot::fire(int dx, int dy) {
             
         } 
     }
-    
-    // Shot enemy
+
     if(battlefield->findRobotAt(targetX, targetY)){
         auto enemy = battlefield->findRobotAt(targetX, targetY);
 
-        // SemiAutoBot，shoot same point of enemy 3 times
-        if (isSemiAuto) {
-            int consecutive = 3; 
-            do {
+        // Check if target is HideBot and handle defense
+        // if (enemy->getType() == "HideBot") {
+        //     if (enemy->hide()) {
+        //         shells--;  // Still consume a shell
+        //         cout << name << " attacked " << enemy->getName() << ", but target is hidden!" << endl;
+        //         return;
+        //     }
+        // }
+
+        //Proceed with normal attack if not defended
+        // Robot is Semi Autobot
+        if(isSemiAuto){
+            int consecutive = 3;    //SemiAutoBot
+            do{
+                
                 shells--;
                 cout << name << " fires " << enemy->getName() << " at (" << targetX << "," << targetY << ")";
                 cout << " left shells: " << shells << endl;
@@ -306,12 +332,10 @@ void GenericRobot::fire(int dx, int dy) {
                     battlefield->placeMineAt(targetX, targetY);
                     cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
                 }
-            }
+            } 
         }
+    } 
 
-     
-    }
-    
     // Shot no enemy
     else{
         shells--;
@@ -321,6 +345,7 @@ void GenericRobot::fire(int dx, int dy) {
     
     lookGot_enemy_point.clear();
 }
+
 
 void GenericRobot::respawn(int x, int y) {
     Robot::respawn(x, y);  
@@ -363,122 +388,108 @@ void GenericRobot::chooseUpgrade() {
         return;
     }
 
-    isLandmine = true;
-    upgradeNames.push_back("LandmineBot");
-    // if(upgradeCount == 1){
-    //     isLandmine = true;
-    //     upgradeNames.push_back("LandmineBot");
+    // isLandmine = true;
+    // upgradeNames.push_back("LandmineBot");
+    // upgradeCount++;
+
+    // cout << name << " now is " ;
+    // for(auto s: upgradeNames){
+    //     cout << s << ' ' ;
     // }
-    // else if (upgradeCount == 2){
-    //     reloadThirtyShots();
-    //     upgradeNames.push_back("ThirtyShotBot"); 
-    // }
-    // else{
-    //     // isSemiAuto = true;
-    //     // upgradeNames.push_back("SemiAutoBot"); 
-    //     isLandmine = true;
-    //     upgradeNames.push_back("LandmineBot");
-     
-    //     // extendRange();
-    // }
-    upgradeCount++;
+    // cout<< upgradeCount << " upgradeCount"<< endl;
+    // cout << endl;
 
-    cout << name << " now is " ;
-    for(auto s: upgradeNames){
-        cout << s << ' ' ;
-    }
-    cout<< upgradeCount << " upgradeCount"<< endl;
-    cout << endl;
+    vector<int> availableOptions;
+    if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+    if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+    if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
 
-    // vector<int> availableOptions;
-    // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0); // Move not found
-    // if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1); // Shoot not found
-    // if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2); // See not found
+    if (availableOptions.empty()) return;
 
-    // if (availableOptions.empty()) return;
-
-    // int randomIndex = rand() % availableOptions.size();
-    // chooseUpgrade(randomIndex);
+    int randomIndex = rand() % availableOptions.size();
+    // int chosenOption = availableOptions[randomIndex];
+    // chooseUpgrade(chosenOption);
+    chooseUpgrade(randomIndex);
 }
 
 
-// void GenericRobot::chooseUpgrade(int upgradeOption) {
-//     if (upgradeCount >= 3) return;
-//     isSemiAuto = true;
+void GenericRobot::chooseUpgrade(int upgradeOption) {
+    if (upgradeCount >= 3) return;
 
-    // switch (upgradeOption) {
-    //     case 0: // Moving upgrade
-    //         if (upgradedAreas.find("move") == upgradedAreas.end()) {
-    //             int choice = rand() % 3;
-    //             if (choice == 0) {
-    //                 // grantHide();
-    //                 upgradeNames.push_back("HideBot");
-    //             } else if (choice == 1){
-    //                 // grantJump();
-    //                 upgradeNames.push_back("JumpBot");
-    //             } else if (choice == 2){
-    //                 upgradeNames.push_back("??Bot");
-    //             }
-    //             upgradedAreas.insert("move");
-    //             upgradeCount++;
-    //             cout << name << " upgraded movement: " << upgradeNames.back() << endl;
-    //             cout << name << " now is " ;
-    //             for(auto s: upgradeNames){
-    //                 cout << s << ' ' ;
-    //             }
-    //             cout << endl;
-    //         }
-    //     break;
+    switch (upgradeOption) {
+        case 0: // Moving upgrade
+            if (upgradedAreas.find("move") == upgradedAreas.end()) {
+                int choice = rand() % 2;
+                if (choice == 0) {
+                    activateHideAbility();
+                    upgradeNames.push_back("HideBot");
+                    cout << name << " can now hide 3 times per match!\n";
+                } else if (choice == 1){
+                    activateJumpAbility();
+                    upgradeNames.push_back("JumpBot");
+                    cout << name << " can now jump 3 times per match!\n";
+                } else if (choice == 2){
+                    upgradeNames.push_back("??Bot");
+                }
+                upgradedAreas.insert("move");
+                upgradeCount++;
+                cout << name << " upgraded movement: " << upgradeNames.back() << endl;
+                cout << name << " now has upgrades: " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
 
-    //     case 1: // Shooting upgrade
-    //         if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
-    //             int choice = rand() % 4;
-                
-    //             if (choice == 0) {
-    //                 extendRange();
-    //                 upgradeNames.push_back("LongShotBot");} 
-    //             else if (choice == 1) {
-    //                 isSemiAuto = true;
-    //                 upgradeNames.push_back("SemiAutoBot"); }
-    //             else if (choice == 2){
-    //                 reloadThirtyShots();
-    //                 upgradeNames.push_back("ThirtyShotBot"); }
-    //             else if (choice == 3){
-    //                 isLandmine = true;
-    //                 upgradeNames.push_back("LandmineBot");
-    //             }
+        case 1: // Shooting upgrade
+            if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
+                int choice = rand() % 4;
+                if (choice == 0) {
+                    extendRange();
+                    upgradeNames.push_back("LongShotBot");
+                } else if (choice == 1) {
+                    isSemiAuto = true;
+                    upgradeNames.push_back("SemiAutoBot");
+                } else if (choice == 2){
+                    reloadThirtyShots();
+                    upgradeNames.push_back("ThirtyShotBot");
+                } else if (choice == 3){
+                    isLandmine = true;
+                    upgradeNames.push_back("LandmineBot");
+                }
 
-    //             upgradedAreas.insert("shoot");
-    //             upgradeCount++;
-    //             cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
-    //             cout << name << " now is " ;
-    //             for(auto s: upgradeNames){
-    //                 cout << s << ' ' ;
-    //             }
-    //             cout << endl;
-    //         }
-    //     break;
+                upgradedAreas.insert("shoot");
+                upgradeCount++;
+                cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
+                cout << name << " now is " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
 
-    //     case 2: // Seeing upgrade
-    //         if (upgradedAreas.find("see") == upgradedAreas.end()) {
-    //             if (rand() % 2 == 0) {
-    //                 upgradeNames.push_back("ScoutBot");
-    //             } else {
-    //                 upgradeNames.push_back("TrackBot");
-    //             }
-    //             upgradedAreas.insert("see");
-    //             upgradeCount++;
-    //             cout << name << " upgraded vision: " << upgradeNames.back() << endl;
-    //             cout << name << " now is " ;
-    //             for(auto s: upgradeNames){
-    //                 cout << s << ' ' ;
-    //             }
-    //             cout << endl;
-    //         }
-    //     break;
+        case 2: // Seeing upgrade
+            if (upgradedAreas.find("see") == upgradedAreas.end()) {
+                if (rand() % 2 == 0) {
+                    upgradeNames.push_back("ScoutBot");
+                } else {
+                    upgradeNames.push_back("TrackBot");
+                }
+                upgradedAreas.insert("see");
+                upgradeCount++;
+                cout << name << " upgraded vision: " << upgradeNames.back() << endl;
+                cout << name << " now is " ;
+                for(auto s: upgradeNames){
+                    cout << s << ' ' ;
+                }
+                cout << endl;
+            }
+        break;
 
-    //     default:
-    //         break;
-    // }
-// }
+        default:
+            break;
+    }
+}
 
