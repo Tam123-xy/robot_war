@@ -127,6 +127,43 @@ void GenericRobot::move(int dx, int dy) {
 
     srand(time(0));
 
+    // After upgraded to JumpBot
+    if (hasJumpAbility) {
+        bool tryJump = (rand() % 2 == 0); // 50% chance to jump
+
+        if (tryJump && canJump()) {
+            int randX = rand() % battlefield->getWidth();
+            int randY = rand() % battlefield->getHeight();
+
+            if (battlefield->isRobotAt(newX, newY)) {
+            auto enemy = battlefield->findRobotAt(newX, newY);
+            cout << name << " cannot jump to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+            } else {
+                // Ensure the jump is more than 1 step and the target is not occupied
+                if (abs(randX - centerX) > 1 || abs(randY - centerY > 1)) {
+                    if (jump(randX, randY)) {
+                        return; // Successful jump, end move
+                    }
+                }
+            }
+        }
+
+        // If not jumping or jump failed, try normal move
+        if (!empty_points.empty()) {
+            int num = rand() % empty_points.size();
+            newX = empty_points[num].first;
+            newY = empty_points[num].second;
+
+            setPosition(newX, newY);
+            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            battlefield->triggerMineIfAny(this, newX, newY);
+        } else {
+            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
+        }
+
+        return; // Done with move turn
+    }
+
     // move -> look
     if (!hasLooked) {
         if (surrounding_points.empty()) {
@@ -163,22 +200,6 @@ void GenericRobot::move(int dx, int dy) {
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
         battlefield->triggerMineIfAny(this, newX, newY); 
     }
-
-    // // If we have jump ability and choose to use it
-    // if (canJump() && rand() % 4 == 0) { // 25% chance to use jump if available
-    //     int newX = rand() % width;
-    //     int newY = rand() % height;
-    //     if (jump(newX, newY)) {
-    //         return;
-    //     }
-    // }
-
-    // // If we have hide ability and choose to use it
-    // if (canHide() && rand() % 4 == 0) { // 25% chance to use hide if available
-    //     if (hide()) {
-    //         return;
-    //     }
-    // }
 }
 
 void GenericRobot::fire(int dx, int dy) {
@@ -251,45 +272,9 @@ void GenericRobot::fire(int dx, int dy) {
     }
 
 
-
+    //HideBot
     if (battlefield->findRobotAt(targetX, targetY)) {
         auto enemy = battlefield->findRobotAt(targetX, targetY);
-
-        // Check if target is HideBot and handle defense
-        // if (enemy->getType() == "HideBot") {
-        //     if (enemy->hide()) {
-        //         shells--;  // Still consume a shell
-        //         cout << name << " attacked " << enemy->getName() << ", but target is hidden!" << endl;
-        //         return;
-        //     }
-        // }
-
-        //Proceed with normal attack if not defended
-        if (!enemy->canBeHit()) {
-            shells--;
-            cout << name << " fires " << enemy->getName() 
-                << " at (" << targetX << "," << targetY << ")" << " but " 
-                << enemy->getName() << " is hidden! Attack wasted." << endl;
-            return;
-        }
-
-        std::random_device rd;
-        std::mt19937 gen(rd()); // Mersenne Twister
-        std::uniform_int_distribution<> dis(0, 99);
-
-        shells--;
-        cout << name << " fires at " << enemy->getName() 
-             << " at (" << targetX << "," << targetY << ")\n";
-            
-        if (dis(gen) < 70) {  // 70% hit chance
-            cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
-            enemy->destroy();
-            chooseUpgrade();
-        } else {
-            cout << " - MISS!" << endl;
-        }
-    
-
 
 
         if(isSemiAuto){
@@ -414,19 +399,18 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = rand() % 2;
+                int choice = 1;
                 if (choice == 0) {
-                    activateHideAbility();
                     upgradeNames.push_back("HideBot");
-                    cout << name << " can now hide 3 times per match!\n";
-                } else if (choice == 1)
-                {
+                } else 
+                if (choice == 1){
                     activateJumpAbility();
                     upgradeNames.push_back("JumpBot");
                     cout << name << " can now jump 3 times per match!\n";
                 } else if (choice == 2){
                     upgradeNames.push_back("??Bot");
                 }
+                
                 upgradedAreas.insert("move");
                 upgradeCount++;
                 cout << name << " upgraded movement: " << upgradeNames.back() << endl;
