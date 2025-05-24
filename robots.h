@@ -51,21 +51,63 @@ public:
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+    virtual bool getIsHidden() const { return false; }
+    virtual void unhide() {};
 };
 
 class MovingRobot : virtual public Robot {
+public:
+    using Robot::Robot;
+    virtual ~MovingRobot() = default;
+
+    virtual void move(int dx, int dy) = 0;
+};
+
+class HideBot : virtual public MovingRobot {
+protected:
+    bool hasHideAbility = false;
+    int hideCount = 0;
+    bool isHidden = false;
+    int hiddenTurnsRemaining = 0;
+
+public:
+    bool hide() {
+        if (canHide()) {
+            isHidden = true;
+            hideCount++;
+            hiddenTurnsRemaining = 1; // stays hidden for one opponent turn
+            cout << name << " is now hidden! (" << 3 - hideCount
+                << " hides left)" << endl;
+            return true;
+        }
+        return false;
+    }
+
+    void unhide() override {
+        if (isHidden && hiddenTurnsRemaining > 0) {
+            hiddenTurnsRemaining--;
+            if (hiddenTurnsRemaining == 0) {
+                isHidden = false;
+                cout << name << " is now visible again!" << endl;
+            }
+        }
+    }
+
+    void activateHideAbility() {
+        hasHideAbility = true;
+        cout << name << " gained HideBot abilities!" << endl;
+    }
+
+    bool getIsHidden() const override { return isHidden; }
+    bool canHide() const { return hasHideAbility && hideCount < 3 && !isHidden; }
+};
+
+class JumpBot : virtual public MovingRobot {
 protected:
     bool hasJumpAbility = false;
     int jumpCount = 0;
 
 public:
-    using Robot::Robot;
-    virtual ~MovingRobot() = default;
-
-    //Basic Movement
-    virtual void move(int dx, int dy) = 0;
-    
-    //Special movement abilities
     virtual bool jump(int newX, int newY) {
         if (canJump() && 
             newX > 0 && newX < width && 
@@ -75,20 +117,18 @@ public:
             positionX = newX;
             positionY = newY;
             jumpCount++;
-            cout << name << "jumped to (" << newX << "," << newY << ") (" 
+            cout << name << " jumped to (" << newX << "," << newY << ") (" 
                 << 3 - jumpCount << " jumps left)" << endl;
             return true;
         }
         return false;
     }
 
-    // Ability activation
     void activateJumpAbility() {
         hasJumpAbility = true;
         cout << name << " gained JumpBot abilities!" << endl;
     }
 
-    //Status checks
     bool canJump() const { return hasJumpAbility && jumpCount < 3; }
 };
 
@@ -156,8 +196,12 @@ public:
     virtual void think() = 0;
 };
 
-class GenericRobot : public MovingRobot, public ShootingRobot, 
-                    public SeeingRobot, public ThinkingRobot {
+class GenericRobot : public virtual MovingRobot,
+                     public ShootingRobot, 
+                     public SeeingRobot, 
+                     public ThinkingRobot,
+                     public HideBot, 
+                     public JumpBot {
 private:
     Battlefield* battlefield;
     int shells;
