@@ -80,7 +80,7 @@ void Battlefield::simulateTurn() {
     bool simulation = true;
 
     // Shuffle robots for random turn order
-    shuffle(robots.begin(), robots.end(), gen);
+    // shuffle(robots.begin(), robots.end(), gen);
 
     vector<shared_ptr<Robot>> copy = robots;  
 
@@ -93,10 +93,9 @@ void Battlefield::simulateTurn() {
         copy.end()
     );
 
-    // Order robot
+    // Print order robot
     string r_order = "Robots order: " + copy[0] -> getName();
     int size = copy.size();
-
     for(int i=1; i<size; i++){
         r_order+= "--> " + copy[i]-> getName();
     }
@@ -108,43 +107,7 @@ void Battlefield::simulateTurn() {
     for (auto& robot : robots) {
 
         if (robot->alive()) {
-
-            if (robot->isScout()) {
-                int count = robot->getScoutCount();
-
-                if(count > 3){
-                    cout << "Cannot see the entire battlefield — the ability has already been used." << endl;
-                }
-
-                else{
-                    int index=0;
-                    robot->setScoutCount(count + 1);
-                    cout << "see the entire battlefield, cout "<< robot->getScoutCount()<< endl;
-
-                    for (auto& copy_robot : copy) {
-
-                        if(copy_robot->getName()!= robot->getName()){
-                            robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
-
-                        }
-
-                        else{
-                            continue;
-                        }
-                    }
-
-                    cout<<"size "<< robot->getsize_ScoutPoints()<<endl;
-
-                    // 怎样 cout ScoutPoint
-                    for (const auto& pt : robot->getScoutPoints()) {
-                        cout << "closer point (" << pt.first << ", " << pt.second << ")\n";
-                    }
-
-                }
-            }
-
-            executeRobotTurn(robot);
-            
+            executeRobotTurn(robot,copy);
         }
 
         else if (robot->shouldRespawn()) {
@@ -169,7 +132,7 @@ void Battlefield::simulateTurn() {
     
 }
 
-void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
+void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
     if (!robot->alive()) return;  // Skip dead robots
 
     if (auto gr = dynamic_cast<GenericRobot*>(robot.get())) {
@@ -178,9 +141,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            {"look", "fire", "move"},
+            // {"look", "fire", "move"},
             // {"look", "move", "fire"},
-            // {"fire", "look", "move"},
+            {"fire", "look", "move"},
             // {"fire", "move", "look"},
             // {"move", "look", "fire"},
             // {"move", "fire", "look"}
@@ -188,7 +151,112 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
         // Select random order
         auto& order = actionOrders[rand() % actionOrders.size()];
-        cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+        cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+
+        // ScoutBot
+        if (robot->isScout()) {
+
+            // Check how many times power has been used  
+            int count = robot->getScoutCount();
+
+            if(count == 3){
+                cout << "Cannot see the entire battlefield — the ability has already been used 3 times." << endl;
+            }
+
+            else{
+                // move/fire --> look, use power. 
+                // Push values to vectors 
+                // 1) enemy points which are surrounding the robot, 
+                // 2) enemy points which are NOT surrounding the robot, 
+                // 3) empty points which are surrounding the robot
+
+                if(order[0]!="look"){ 
+
+                    // All enemies point
+                     for (auto& copy_robot : copy){
+                        if(copy_robot->getName()!= robot->getName()){
+                            robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
+                        }
+                        else continue; 
+                    }
+
+                    // useScout == true
+                    robot->setUseScout(true);
+                    robot->setScoutCount(count + 1);
+                    vector<string> ordinal_numbers ={"1st","2nd","3rd"};
+                    cout << "See the entire battlefield - count " << ordinal_numbers[count] << "." << endl;
+
+                    int x = robot->getX();
+                    int y = robot->getY();
+
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        for (int dx = -1; dx <= 1; ++dx) {
+
+                            int lookX = x + dx;
+                            int lookY = y + dy;         
+
+                            // Robot itself point
+                            if (dx == 0 && dy == 0) continue;
+
+                            // Out of bounds
+                            else if (lookX <=0 ||lookY <=0 || lookX > getWidth() || lookY > getHeight()) continue;
+
+                            // Enemy robot
+                            if (isRobotAt(lookX, lookY)) {
+                                // 1) enemy points which are surrounding the robot, 
+                                robot->add_LookGotEnemyPoint({lookX, lookY});
+                            }
+
+                            // Empty space
+                            else {
+                                // 2) enemy points which are NOT surrounding the robot, 
+                                robot->add_EmptyPoint({lookX, lookY});
+                            }
+                        }
+                    }
+
+                    // 3) empty points which are surrounding the robot
+                    for (const auto& point : robot->getScoutPoints()) {
+                        bool isSurrounding = false;
+                        for (const auto& s : robot->get_LookGotEnemyPoint()) {
+                            if (point == s) {
+                                isSurrounding = true;
+                                break;
+                            }
+                        }
+                        if (!isSurrounding) {
+                            robot->add_enemy_Outside_surrouding_point(point);
+                        }
+                    }
+
+                    cout << "surrounding enemy" << endl;
+                    for (const auto& pt : robot->get_LookGotEnemyPoint()) {
+                        cout << "(" << pt.first << ", " << pt.second << "), ";
+                    }
+
+                    cout<< endl;
+
+                    cout << "outside surrounding enemy" << endl;
+                    for (const auto& pt : robot->get_enemy_Outside_surrouding_point()) {
+                        cout << "(" << pt.first << ", " << pt.second << "), ";
+                    }
+
+                    cout<< endl;
+
+                    cout << "empty point" << endl;
+                    for (const auto& pt : robot->get_EmptyPoint()) {
+                        cout << "(" << pt.first << ", " << pt.second << "), ";
+                    }
+
+                    cout<< endl;
+
+                }
+
+                else{
+                    cout << "Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
+                }
+            }
+        }
 
         for (const auto& action : order){
             int dx,dy;

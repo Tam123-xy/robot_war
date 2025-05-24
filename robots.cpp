@@ -36,24 +36,19 @@ void GenericRobot::look(int dx, int dy) {
             string status;           
 
             // Robot itself point
-            if (dx == 0 && dy == 0 ){
-                // status = "Sendiri";
-                continue;
-            }
-            
+            if (dx == 0 && dy == 0 )  continue;
+
             // Out of bounds
-            else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
-                // status = "Out of bounds";
-                continue;
-            }
+            else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()) continue;
 
             // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
                 status = "Enemy robot";
                 lookGot_enemy_point.push_back({lookX, lookY}); 
                 cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
-                
             }
+
+            // Empty space
             else {
                 status = "Empty space";
                 empty_point.push_back({lookX, lookY}); 
@@ -130,7 +125,7 @@ void GenericRobot::move(int dx, int dy) {
 
     srand(time(0));
 
-    // move -> look
+    // move -> look, take the POINTS which are surrounding robot itself . POINTS --> (is occupied/ move)
     if (!hasLooked) {
         if (surrounding_points.empty()) {
             cout << name << " has no space to move!" << endl;
@@ -152,7 +147,8 @@ void GenericRobot::move(int dx, int dy) {
         }
     }
 
-    // look -> move
+    // look -> move , take the EMPTY POINTS which are surrounding robot itself . POINTS --> (no point/ move)
+    // ScoutBot , if size == 8 , move to closer point
     else {
         if (empty_points.empty()) {
             cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
@@ -194,12 +190,12 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
-    
     int targetX ;
     int targetY ;
 
     // fire --> look, take the POINTS which are surrounding robot itself . POINTS --> (shot no enemy/ shot enemy)
-    if(hasLooked == false){
+    if(hasLooked == false && useScout == false){
+
         vector<pair<int, int>> surrounding_point;
         int centerX = getX() ;
         int centerY = getY() ;
@@ -234,8 +230,10 @@ void GenericRobot::fire(int dx, int dy) {
     }
         
     // look --> fire, take the POINTS which are contain enemies. POINTS --> (NO shot no enemy/ shot enemy)
-    else{
+    else if (hasLooked == true || useScout == true){
         hasFired = true;
+        useScout = false;
+
         int cout_enemy = lookGot_enemy_point.size();
 
         // NO shot no enemy, return back
@@ -320,8 +318,6 @@ void GenericRobot::fire(int dx, int dy) {
             // if (rand() % 100 > 70) { // 70% will success destroy enemy
                 cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
                 enemy->destroy();
-
-
                 chooseUpgrade(); // Upgrade
             }
 

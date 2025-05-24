@@ -56,15 +56,20 @@ public:
     virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
     virtual bool hide() { return false; } // Base implementation - no defense
 
+    // ScoutBot
     virtual const vector<pair<int, int>>& getScoutPoints() const = 0;
-    virtual int getsize_ScoutPoints() const { return 0; }
-    virtual bool isScout() const { return false; } // 默认不是 Scout
+    virtual bool isScout() const { return false; } 
     virtual int getScoutCount() const { return 0; }
     virtual void setScoutCount(int) {}
+    virtual void setUseScout(bool) {}
     virtual void addScoutPoint(pair<int, int> pos) = 0;
+    virtual void add_EmptyPoint(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_EmptyPoint() const =0;
+    virtual void add_LookGotEnemyPoint(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_LookGotEnemyPoint() const =0;
+    virtual void add_enemy_Outside_surrouding_point(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const =0;
 
-
-    
 };
 
 class MovingRobot : virtual public Robot {
@@ -288,50 +293,24 @@ public:
     using Robot::Robot;
     virtual void look(int dx, int dy) = 0;
 
+    // ScoutBot
     bool isScoutBot = false;
-    bool isTrackBot = false;
-    bool isPredictBot = false;
-
-    // bool getScoutBot() const { return isScoutBot; }
-    bool getTrackBot() const { return isTrackBot; }
-    bool getPredictBot() const { return isPredictBot; }
-
-    // 使用构造函数设定 scout 类型
-    SeeingRobot(bool isScout = false) : isScoutBot(isScout) {}
-
-    // ✅ 重写虚函数
+    bool useScout = false;
     bool isScout() const override { return isScoutBot; }
     int getScoutCount() const override { return scoutCount; }
     void setScoutCount(int c) override { scoutCount = c; }
+    void setUseScout(bool c) override { useScout = c; }
+    void addScoutPoint(pair<int, int> pos) override{ScoutPoint.push_back(pos);}
+    const vector<pair<int, int>>& getScoutPoints() const override{return ScoutPoint;}
 
-   void addScoutPoint(pair<int, int> pos) override {
-        ScoutPoint.push_back(pos);
-    }
+    // TrackBot
+    bool isTrackBot = false;
+    bool getTrackBot() const { return isTrackBot; }
 
+    // PredictBot
+    bool isPredictBot = false;
+    bool getPredictBot() const { return isPredictBot; }
 
-    const vector<pair<int, int>>& getScoutPoints() const override {
-        return ScoutPoint;
-    }
-
-    // void addScoutPoint(int x, int y) {
-    //     ScoutPoint.emplace_back(x, y);
-    // }
-
-    int getsize_ScoutPoints() const override{ return ScoutPoint.size(); }
-
-
-
-    // void grantScout() { scoutCount = 3; }
-    // void grantTrack() { trackCount = 3; }
-
-    // bool canScout() const { return scoutCount > 0; }
-    // void useScout() { if (scoutCount > 0) scoutCount--; }
-
-    // bool canTrack() const { return trackCount > 0; }
-    // void useTrack() { if (trackCount > 0) trackCount--; }
-
-    // void extendVision() { visionRange = 9999; } // entire battlefield
-    // int getVisionRange() const { return visionRange; }
 };
 
 
@@ -351,7 +330,6 @@ private:
     set<string> upgradedAreas;
     vector<string> upgradeNames;
 
-   
 protected:
     int upgradeCount = 0;
     bool hasLooked = false;
@@ -359,13 +337,25 @@ protected:
     bool hasMoved = false;
     vector<pair<int, int>> empty_point;
     vector<pair<int, int>> lookGot_enemy_point;
-
+    vector<pair<int, int>> enemy_outside_surrouding_point;
+    
 public:
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
-    
+
+    void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}
+    const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;}
+    void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}
+    const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}
+    void add_enemy_Outside_surrouding_point(pair<int, int> pos) override{ enemy_outside_surrouding_point.push_back(pos);}
+    const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const override{  return enemy_outside_surrouding_point;}
+
     // Action methods
     void resetTurn() {
         hasLooked = hasFired = hasMoved = false;
+        empty_point.clear();
+        lookGot_enemy_point.clear();
+        enemy_outside_surrouding_point.clear();
+        ScoutPoint.clear();
     }
     void think() override;
     virtual void look(int dx, int dy) override;

@@ -52,7 +52,7 @@ public:
 
 
     // Action sequence methods
-    void executeRobotTurn(shared_ptr<Robot> robot);
+    void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy);
     void executeAttack(GenericRobot* gr);
     void executeConserve(GenericRobot* gr);
     void executeExplore(GenericRobot* gr);
