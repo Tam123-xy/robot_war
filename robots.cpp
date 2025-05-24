@@ -6,12 +6,21 @@
 using namespace std;
 
 GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
-    : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
+    // : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
+    : Robot(name, x, y, w, h), 
+      MovingRobot(), 
+      ShootingRobot(), 
+      SeeingRobot(), 
+      ThinkingRobot(), 
+      HideBot(), 
+      JumpBot(),
+      battlefield(bf), shells(10), selfDestructed(false)
     //   selfDestructed(false),empty_point(empty_point) {
-    selfDestructed(false) {
+{
+    // selfDestructed(false) {
     cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
+    // }
 }
-
 void GenericRobot::think() {
     cout << name << " is thinking...\n";
 }
@@ -26,6 +35,8 @@ void GenericRobot::look(int dx, int dy) {
 
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
+            if (dx == 0 && dy == 0)
+            continue;
 
             int lookX = centerX + dx;
             int lookY = centerY + dy;
@@ -46,10 +57,17 @@ void GenericRobot::look(int dx, int dy) {
 
             // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
-                status = "Enemy robot";
-                lookGot_enemy_point.push_back({lookX, lookY}); 
-                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
-                
+                auto robot = battlefield->findRobotAt(lookX, lookY);
+                if (robot && !robot->getIsHidden()) {
+                    status = "Enemy robot";
+                    lookGot_enemy_point.push_back({lookX, lookY}); 
+                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                } else {
+                    status = "Empty space"; // Hidden robot is treated as invisible
+                    empty_point.push_back({lookX, lookY}); 
+                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status 
+                        << " (since " << robot->getName() << " is hidden)" << endl ;
+                }
             }
             else {
                 status = "Empty space";
@@ -127,6 +145,31 @@ void GenericRobot::move(int dx, int dy) {
 
     srand(time(0));
 
+    //After upgraded to HideBot
+    if (hasHideAbility) {
+        bool tryHide = (rand() % 2 == 0);
+
+        if (tryHide && canHide()){
+            hide();
+            return;
+        }
+
+        // If not hiding or hide failed, try normal move
+        if (!empty_points.empty()) {
+            int num = rand() % empty_points.size();
+            newX = empty_points[num].first;
+            newY = empty_points[num].second;
+
+            setPosition(newX, newY);
+            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            battlefield->triggerMineIfAny(this, newX, newY);
+        } else {
+            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
+        }
+
+        return; // Done with move turn
+    }
+
     // After upgraded to JumpBot
     if (hasJumpAbility) {
         bool tryJump = (rand() % 2 == 0); // 50% chance to jump
@@ -136,10 +179,10 @@ void GenericRobot::move(int dx, int dy) {
             int randY = rand() % battlefield->getHeight();
 
             if (battlefield->isRobotAt(newX, newY)) {
-            auto enemy = battlefield->findRobotAt(newX, newY);
-            cout << name << " cannot jump to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+                auto enemy = battlefield->findRobotAt(newX, newY);
+                cout << name << " cannot jump to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
             } else {
-                // Ensure the jump is more than 1 step and the target is not occupied
+                // Ensure the jump is more than 1 step
                 if (abs(randX - centerX) > 1 || abs(randY - centerY > 1)) {
                     if (jump(randX, randY)) {
                         return; // Successful jump, end move
@@ -211,7 +254,6 @@ void GenericRobot::fire(int dx, int dy) {
         return;
     }
     
-    
     int targetX ;
     int targetY ;
 
@@ -228,7 +270,7 @@ void GenericRobot::fire(int dx, int dy) {
                 int lookY = centerY + dy;       
 
                 // Robot itself point
-                if (dx == 0 && dy == 0 ){
+                if (dx == 0 && dy == 0){
                     continue;
                 }
                 
@@ -271,12 +313,7 @@ void GenericRobot::fire(int dx, int dy) {
         } 
     }
 
-
-    //HideBot
     if (battlefield->findRobotAt(targetX, targetY)) {
-        auto enemy = battlefield->findRobotAt(targetX, targetY);
-
-
         if(isSemiAuto){
             int consecutive = 3;    //SemiAutoBot
             do{
@@ -399,9 +436,11 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = 1;
+                int choice = rand() % 3;
                 if (choice == 0) {
+                    activateHideAbility();
                     upgradeNames.push_back("HideBot");
+                    cout << name << " can now hide 3 times per match!\n";
                 } else 
                 if (choice == 1){
                     activateJumpAbility();

@@ -81,6 +81,13 @@ void Battlefield::simulateTurn() {
     
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
+
+    //HideBot
+    for (auto& robot : robots) {
+        if (robot->alive()) {
+            robot->unhide();
+        }
+    }
     
     for (auto& robot : robots) {
         if (robot->alive()) {
@@ -99,7 +106,6 @@ void Battlefield::simulateTurn() {
             }),
         robots.end()
     );
-    
 }
 
 void Battlefield::processRespawn() {
