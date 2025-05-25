@@ -49,7 +49,6 @@ public:
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
     string getName() const { return name; }
-    // int getCoutUpgrade() const { return upgradeCount; }
     int getLives() const { return lives; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
@@ -70,6 +69,9 @@ public:
     virtual void add_enemy_Outside_surrouding_point(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const =0;
 
+    // Update
+    virtual int getUpgradeCount() const { return 0; }
+    virtual void init_Upgrade() {}
 };
 
 class MovingRobot : virtual public Robot {
@@ -326,7 +328,6 @@ private:
     Battlefield* battlefield;
     int shells;
     bool selfDestructed;
-    // int upgradeCount = 0;
     set<string> upgradedAreas;
     vector<string> upgradeNames;
 
@@ -340,8 +341,16 @@ protected:
     vector<pair<int, int>> enemy_outside_surrouding_point;
     
 public:
-    GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
+    // Update
+    int getUpgradeCount() const override { return upgradeCount; }
+    void init_Upgrade() override { 
+        upgradeCount = 0; 
+        isScoutBot = false;
+        upgradedAreas.clear();
+        upgradeNames.clear();
+    }
 
+    GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
     void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}
     const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;}
     void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}

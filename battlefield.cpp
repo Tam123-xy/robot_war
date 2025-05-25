@@ -144,9 +144,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            // {"look", "fire", "move"},
+            {"look", "fire", "move"},
             // {"look", "move", "fire"},
-            {"fire", "look", "move"},
+            // {"fire", "look", "move"},
             // {"fire", "move", "look"},
             // {"move", "look", "fire"},
             // {"move", "fire", "look"}
@@ -232,22 +232,22 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                         }
                     }
 
+                    vector<pair<int, int>> copy_scoutPoints = robot->getScoutPoints();
+                    int size = copy_scoutPoints.size();
+                    if (size == 0){
+                        cout << "No enemy found on the battlefield." << endl;
+                    } 
+                    else {
+
+                        string sentence = "All enemies' points: (" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
+                        for(size_t i =1;i<size; i++ ){
+                            sentence+= ",(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
+                        }
+                       cout<< sentence <<endl;
+                    }
+
                     cout << "surrounding enemy" << endl;
                     for (const auto& pt : robot->get_LookGotEnemyPoint()) {
-                        cout << "(" << pt.first << ", " << pt.second << "), ";
-                    }
-
-                    cout<< endl;
-
-                    cout << "outside surrounding enemy" << endl;
-                    for (const auto& pt : robot->get_enemy_Outside_surrouding_point()) {
-                        cout << "(" << pt.first << ", " << pt.second << "), ";
-                    }
-
-                    cout<< endl;
-
-                    cout << "empty point" << endl;
-                    for (const auto& pt : robot->get_EmptyPoint()) {
                         cout << "(" << pt.first << ", " << pt.second << "), ";
                     }
 
@@ -306,7 +306,6 @@ void Battlefield::processRespawn() {
             tempQueue.pop();
         }
         cout << respawn_order<< endl; 
-        cout << endl;
 
         // ProcessRespawn
         auto robot = respawnQueue.front();

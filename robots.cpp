@@ -79,6 +79,7 @@ void Robot::respawn(int x, int y) {
         positionX = x;
         positionY = y;
         isAlive = true;
+        init_Upgrade();
         cout << name << " respawned at (" << x << "," << y << "), " << lives << " lives remaining." << endl;
     }
 }
@@ -87,12 +88,9 @@ bool Robot::shouldRespawn() const {
     return !isAlive && lives > 0;
 }
 
-
 string GenericRobot::getType() const {
     return "GenericRobot";
 }
-
-
 
 void GenericRobot::move(int dx, int dy) {
     hasMoved = true;
@@ -250,27 +248,25 @@ void GenericRobot::fire(int dx, int dy) {
 
         // many enemies, need to check which is the higher level enemy
         else{
-            // int i = 0;
-            // int max_i = 0;
-            // int max = 0;
-            // int count;
-            // for (const auto& point : lookGot_enemy_point){
-            //     auto enemy = battlefield->findRobotAt(point.first, point.second);
-            //     count = enemy -> getCoutUpgrade();
-            //     if(count> max){
-            //         max = count;
-            //         max_i = i;
-            //     }
-            //     i++;
-            // }
-
-            // targetX = lookGot_enemy_point[max_i].first;
-            // targetY = lookGot_enemy_point[max_i].second;
-            // cout<< "Higher level enemy, point (" << targetX<< " ,"<< targetY << " )"<< endl;
-            targetX = lookGot_enemy_point[0].first;
-            targetY = lookGot_enemy_point[0].second;
-       
-            
+            int i = 0;
+            int max_i = 0;
+            int max = 0;
+            int count;
+            for (const auto& point : lookGot_enemy_point){
+                auto enemy = battlefield->findRobotAt(point.first, point.second);
+                count = enemy -> getUpgradeCount();
+                if(count> max){
+                    max = count;
+                    max_i = i;
+                }
+                i++;
+            }
+            cout << max <<" Higher level";
+            targetX = lookGot_enemy_point[max_i].first;
+            targetY = lookGot_enemy_point[max_i].second;
+            cout<< "Higher level enemy, point (" << targetX<< " ,"<< targetY << " )"<< endl;
+            // targetX = lookGot_enemy_point[0].first;
+            // targetY = lookGot_enemy_point[0].second;
         } 
     }
 
@@ -343,7 +339,6 @@ void GenericRobot::fire(int dx, int dy) {
     lookGot_enemy_point.clear();
 }
 
-
 void GenericRobot::respawn(int x, int y) {
     Robot::respawn(x, y);  
     if (alive()) {
@@ -359,7 +354,9 @@ void GenericRobot::destroy() {
         Robot::destroy();  
         upgradedAreas.clear();
         upgradeNames.clear();
-        upgradeCount =0 ;
+        // upgradeCount =0 ;   有bug，这里init不到。我在复活的时候init。我已经修好了，这里跟你们说一声
+        // isScoutBot = false; 这里init不到，你们去robots.h --> init_Upgrade()加你们要init的东西
+
     }
 }
 
@@ -398,7 +395,9 @@ void GenericRobot::chooseUpgrade() {
         cout << s << ' ' ;
     }
     cout<< upgradeCount << " upgradeCount"<< endl;
+    
     cout << endl;
+    
 
     // vector<int> availableOptions;
     // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
@@ -412,7 +411,6 @@ void GenericRobot::chooseUpgrade() {
     // // chooseUpgrade(chosenOption);
     // chooseUpgrade(randomIndex);
 }
-
 
 // void GenericRobot::chooseUpgrade(int upgradeOption) {
 //     if (upgradeCount >= 3) return;
