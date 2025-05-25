@@ -11,12 +11,12 @@ GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield*
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
     //   selfDestructed(false),empty_point(empty_point) {
     selfDestructed(false) {
-    cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
+        // battlefield->display();
+        cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
 void GenericRobot::think() {
     cout << name << " is thinking... ";
-
 }
 
 void GenericRobot::look(int dx, int dy) {

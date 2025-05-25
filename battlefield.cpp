@@ -365,8 +365,13 @@ void Battlefield::triggerMineIfAny(Robot* robot, int x, int y) {
 }
 
 void Battlefield::display() {
-    vector<vector<char>> grid(height, vector<char>(width, '.')); 
+    vector<vector<char>> grid(height, vector<char>(height, '.')); 
 
+    // for (const auto& robot : robots) {
+    //     if (robot->alive()) {
+    //         grid[robot->getX()-1][robot->getY()-1] = 'R';
+    //     }
+    // }
     for (const auto& robot : robots) {
         if (robot->alive()) {
             grid[robot->getX()-1][robot->getY()-1] = 'R';
@@ -374,10 +379,12 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int i =0 ; i < width; i++) {
+        for (int j = 0; j < height; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
     }
+
 }
+
