@@ -115,10 +115,16 @@ void Battlefield::simulateTurn() {
             if (it != copy.end()) {
                 cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
             }
+        }      
+    }
 
+    for(auto& robot : copy){
+        if(robot->shouldRespawn()){
             respawnQueue.push(robot);
         }
     }
+
+        
 
 
     // Remove dead robots with no lives left
@@ -288,9 +294,26 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 }
 
 void Battlefield::processRespawn() {
+
+    int size = respawnQueue.size();
+    cout << size << " respawn"<< endl;
     
     // Respon the first queue robot
     if (!respawnQueue.empty()) {
+        // Print respawn order
+        queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
+        auto copy_robot = tempQueue.front();
+        tempQueue.pop(); 
+        string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
+        while (!tempQueue.empty()) {
+            shared_ptr<Robot> robot = tempQueue.front();
+            respawn_order+= "--> " + robot->getName();
+            tempQueue.pop();
+        }
+        cout << respawn_order<< endl; 
+        cout << endl;
+
+        // ProcessRespawn
         auto robot = respawnQueue.front();
         respawnQueue.pop();
         

@@ -71,6 +71,7 @@ void Robot::destroy() {
             cout << name << " has no lives remaining!" << endl << endl;
         }
     }
+    
 }
 
 void Robot::respawn(int x, int y) {
