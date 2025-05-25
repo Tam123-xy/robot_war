@@ -124,9 +124,6 @@ void Battlefield::simulateTurn() {
         }
     }
 
-        
-
-
     // Remove dead robots with no lives left
     robots.erase(
         remove_if(robots.begin(), robots.end(),
@@ -294,12 +291,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 }
 
 void Battlefield::processRespawn() {
-
-    int size = respawnQueue.size();
-    cout << size << " respawn"<< endl;
     
-    // Respon the first queue robot
+    // Got robot that needs to respawn
     if (!respawnQueue.empty()) {
+
         // Print respawn order
         queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
         auto copy_robot = tempQueue.front();
@@ -336,64 +331,6 @@ void Battlefield::processRespawn() {
         }
     }
 }
-
-// void Battlefield::simulateTurn() {
-//     processRespawn();
-//     bool simulation = true;
-
-//     // Shuffle robots for random turn order
-//     shuffle(robots.begin(), robots.end(), gen);
-
-//     vector<shared_ptr<Robot>> copy = robots;  
-
-//     // Store the robot which are alive in this turn
-//     copy.erase(
-//         remove_if(copy.begin(), copy.end(),
-//             [](const shared_ptr<Robot>& r) { 
-//                 return !r->alive();
-//             }),
-//         copy.end()
-//     );
-
-//     // Order robot
-//     string r_order = "Robots order: " + copy[0] -> getName();
-//     int size = copy.size();
-
-//     for(int i=1; i<size; i++){
-//         r_order+= "--> " + copy[i]-> getName();
-//     }
-
-//     // Print robot order
-//     cout << r_order<< endl; 
-//     cout << endl;
-
-//     for (auto& robot : robots) {
-
-//         if (robot->alive()) {
-//             executeRobotTurn(robot);
-//         }
-
-//         else if (robot->shouldRespawn()) {
-//             auto it = find(copy.begin(), copy.end(), robot);
-//             if (it != copy.end()) {
-//                 cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
-//             }
-
-//             respawnQueue.push(robot);
-//         }
-//     }
-
-
-//     // Remove dead robots with no lives left
-//     robots.erase(
-//         remove_if(robots.begin(), robots.end(),
-//             [](const shared_ptr<Robot>& r) { 
-//                 return !r->alive() && r->getLives() <= 0;
-//             }),
-//         robots.end()
-//     );
-    
-// }
 
 void Battlefield::placeMineAt(int x, int y) {
     const_cast<set<pair<int, int>>&>(mines).insert({x, y});
