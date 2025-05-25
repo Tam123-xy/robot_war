@@ -261,12 +261,14 @@ void GenericRobot::fire(int dx, int dy) {
                 }
                 i++;
             }
-            cout << max <<" Higher level";
+
             targetX = lookGot_enemy_point[max_i].first;
             targetY = lookGot_enemy_point[max_i].second;
-            cout<< "Higher level enemy, point (" << targetX<< " ,"<< targetY << " )"<< endl;
-            // targetX = lookGot_enemy_point[0].first;
-            // targetY = lookGot_enemy_point[0].second;
+            auto enemy = battlefield->findRobotAt(targetX, targetY );
+            if(max!=0){
+                cout << name << " found out that " << enemy->getName()
+                << " has " << max << " updates and a higher level compared to other enemies." << endl;
+            }
         } 
     }
 
