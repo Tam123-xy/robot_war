@@ -72,6 +72,7 @@ public:
     // Update
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
+    virtual const vector<string>& get_upgradeNames() const = 0;
 };
 
 class MovingRobot : virtual public Robot {
@@ -349,6 +350,7 @@ public:
         upgradedAreas.clear();
         upgradeNames.clear();
     }
+    const vector<string>& get_upgradeNames() const override{return upgradeNames;}
 
     GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf);
     void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}

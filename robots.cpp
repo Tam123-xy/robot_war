@@ -43,7 +43,8 @@ void GenericRobot::look(int dx, int dy) {
 
             // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
-                status = "Enemy robot";
+                auto enemy = battlefield->findRobotAt(lookX, lookY);
+                status = enemy->getName();
                 lookGot_enemy_point.push_back({lookX, lookY}); 
                 cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
             }
@@ -375,12 +376,13 @@ int GenericRobot::getY() const {
 
 void GenericRobot::chooseUpgrade() {
     if (upgradeCount == 3) {
-        // cout << name << " now is " ;
-        // for(auto s: upgradeNames){
-        //     cout << s << ' ' ;
-        // }
-        // cout << endl;
-        cout << "Cannot Upgrade Anymore" << endl;
+        string sentence = name + " is " + upgradeNames[0];
+        int size = upgradeNames.size();
+        for(size_t i =1; size<i ;i++){
+            sentence+= "," + upgradeNames[i];
+        }
+        sentence+= ". Cannot upgrade anymore, max upgrade 3 times";
+        cout << sentence<< endl;
         return;
     }
 
@@ -392,14 +394,13 @@ void GenericRobot::chooseUpgrade() {
     upgradeNames.push_back("ScoutBot");
     upgradeCount++;
 
-    cout << name << " now is " ;
-    for(auto s: upgradeNames){
-        cout << s << ' ' ;
-    }
     cout<< upgradeCount << " upgradeCount"<< endl;
-    
-    cout << endl;
-    
+    string sentence = name + " now is " + upgradeNames[0];
+    int size = upgradeNames.size();
+    for(size_t i =1; i<size ;i++){
+        sentence+= ", " + upgradeNames[i];
+    }
+    cout << sentence<< endl;
 
     // vector<int> availableOptions;
     // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);

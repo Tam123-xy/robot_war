@@ -74,7 +74,6 @@ int Battlefield::countLiveRobot() const {
     return count;
 }
 
-
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
@@ -107,6 +106,18 @@ void Battlefield::simulateTurn() {
     for (auto& robot : robots) {
 
         if (robot->alive()) {
+
+            // Cout robot upgrade name
+            if(robot->getUpgradeCount()>=1){
+                vector<string> copy_upgradeNames = robot->get_upgradeNames();
+                string sentence = robot->getName() + " is " + copy_upgradeNames[0];
+                int size = copy_upgradeNames.size();
+                for(size_t i =1; size<i ;i++){
+                    sentence+= "," + copy_upgradeNames[i];
+                }
+                cout<< sentence <<endl;
+            }
+            
             executeRobotTurn(robot,copy);
         }
 
@@ -114,6 +125,7 @@ void Battlefield::simulateTurn() {
             auto it = find(copy.begin(), copy.end(), robot);
             if (it != copy.end()) {
                 cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
+                cout<<endl;
             }
         }      
     }
@@ -177,7 +189,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
                     // All enemies point
                      for (auto& copy_robot : copy){
-                        if(copy_robot->getName()!= robot->getName()){
+                        if(copy_robot->getName()!= robot->getName() && copy_robot->alive()){
                             robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
                         }
                         else continue; 
@@ -238,21 +250,21 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                         cout << "No enemy found on the battlefield." << endl;
                     } 
                     else {
-
-                        string sentence = "All enemies' points: (" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
+                        auto enemy = findRobotAt(copy_scoutPoints[0].first, copy_scoutPoints[0].second);
+                        string sentence = "All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
                         for(size_t i =1;i<size; i++ ){
-                            sentence+= ",(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
+                            enemy = findRobotAt(copy_scoutPoints[i].first, copy_scoutPoints[i].second);
+                            sentence+= ", "+ enemy->getName()+"(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
                         }
-                       cout<< sentence <<endl;
-                    }
+                        cout<< sentence <<endl;
 
-                    cout << "surrounding enemy" << endl;
-                    for (const auto& pt : robot->get_LookGotEnemyPoint()) {
-                        cout << "(" << pt.first << ", " << pt.second << "), ";
-                    }
+                        // cout << "surrounding enemy" << endl;
+                        // for (const auto& pt : robot->get_LookGotEnemyPoint()) {
+                        //     cout << "(" << pt.first << ", " << pt.second << "), ";
+                        // }
+                        // cout<< endl;
 
-                    cout<< endl;
-
+                        }
                 }
 
                 else{
