@@ -383,8 +383,8 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             {
-                int choice = 0;
-                if (choice == rand() % 2) {
+                int choice = rand() % 2;
+                if (choice == 0) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
                 } else {
