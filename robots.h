@@ -93,6 +93,7 @@ public:
 
 };
 
+
 class ShootingRobot : virtual public Robot {
 protected:
     int shells = 10;
@@ -130,8 +131,12 @@ public:
     virtual void think() = 0;
 };
 
-class GenericRobot : public MovingRobot, public ShootingRobot, 
-                    public SeeingRobot, public ThinkingRobot {
+class GenericRobot : public virtual MovingRobot,
+                     public ShootingRobot, 
+                     public SeeingRobot, 
+                     public ThinkingRobot,
+                     public HideBot, 
+                     public JumpBot {
 private:
     // Battlefield* battlefield;
     // int shells;
