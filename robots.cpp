@@ -387,11 +387,9 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
                 if (choice == 0) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
-                    cout << name << " can now hide 3 times per match!\n";
                 } else {
                     upgradeName = "JumpBot";
                     newBot = createUpgradedBot<JumpBot>();
-                    cout << name << " can now jump 3 times per match!\n";
                 }
                 cout << name << " upgraded movement: " << upgradeName << endl;
             }
