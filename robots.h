@@ -131,12 +131,8 @@ public:
     virtual void think() = 0;
 };
 
-class GenericRobot : public virtual MovingRobot,
-                     public ShootingRobot, 
-                     public SeeingRobot, 
-                     public ThinkingRobot,
-                     public HideBot, 
-                     public JumpBot {
+class GenericRobot : public MovingRobot, public ShootingRobot, 
+                    public SeeingRobot, public ThinkingRobot {
 private:
     // Battlefield* battlefield;
     // int shells;
@@ -210,11 +206,11 @@ class HideBot : virtual public GenericRobot {
 public:
     HideBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
         :   Robot(name, x, y, w, h, bf),
-            GenericRobot(name, x, y, w, h, bf), // 正确传递参数
+            GenericRobot(name, x, y, w, h, bf), 
             hideCount(3),
             m_isHidden(false) {}
 
-    bool isHidden() const override { return m_isHidden; } // 统一函数名
+    bool isHidden() const override { return m_isHidden; } 
     void setHidden(bool state) { m_isHidden = state; }
 
     void move(int dx, int dy) override {
@@ -240,7 +236,6 @@ public:
 
     void move(int dx, int dy) override {
         if (jumpCount > 0) {
-            // 修改2: 生成合法坐标（1-based）
             int newX = 1 + rand() % battlefield->getWidth();
             int newY = 1 + rand() % battlefield->getHeight();
 
@@ -268,7 +263,6 @@ public:
 
     void look(int dx, int dy) override {
         if (scoutUses > 0) {
-            // 修改3: 实现全局视野
             cout << name << " sees entire battlefield:" << endl;
             for (int y = 1; y <= battlefield->getHeight(); ++y) {
                 for (int x = 1; x <= battlefield->getWidth(); ++x) {
@@ -290,7 +284,7 @@ public:
 
 class TrackBot : virtual public GenericRobot {
     int trackers;
-    set<shared_ptr<Robot>> trackedRobots; // 新增追踪列表
+    set<shared_ptr<Robot>> trackedRobots; 
 public:
     TrackBot(const string& name, int x, int y, int w, int h, Battlefield* bf)
         :   Robot(name, x, y, w, h, bf),
@@ -298,7 +292,6 @@ public:
 
     void look(int dx, int dy) override {
         if (trackers > 0 && !lookGot_enemy_point.empty()) {
-            // 修改4: 随机追踪可见敌人
             int idx = rand() % lookGot_enemy_point.size();
             auto& point = lookGot_enemy_point[idx];
             int x = point.first;
@@ -310,7 +303,7 @@ public:
                      << " (" << trackers << " trackers left)" << endl;
             }
         }
-        GenericRobot::look(dx, dy); // 保持原有观察逻辑
+        GenericRobot::look(dx, dy);
     }
     
     // 新增追踪显示
@@ -335,12 +328,11 @@ public:
             GenericRobot(name, x, y, w, h, bf) {}
 
     void fire(int dx, int dy) override {
-        // 修改6: 距离验证
         if (abs(dx) + abs(dy) > fireRange) {
             cout << name << " can't fire that far! (Max " << fireRange << ")" << endl;
             return;
         }
-        GenericRobot::fire(dx, dy); // 使用基类开火逻辑
+        GenericRobot::fire(dx, dy); 
     }
 
     string getType() const override { return "LongShotBot"; }
