@@ -332,7 +332,7 @@ void GenericRobot::fire(int dx, int dy) {
         cout << " (Left shells: " << shells <<"/10)"<< endl;
 
         if (enemy->isHidden()) {
-            cout << "Attack missed! Target is hidden" << endl;
+            cout << "Attack missed! " << enemy->getName() << " is hidden!" << endl;
             return;
         }
 
@@ -462,21 +462,21 @@ void GenericRobot::chooseUpgrade() {
 //     auto self = shared_from_this();
 //     shared_ptr<GenericRobot> newBot;
 //     string upgradeName = "";
-    
-//     switch (upgradeOption) {
-//         case 0: // Moving upgrade
-//             {
-//                 int choice = rand() % 2;
-//                 if (choice == 0) {
-//                     upgradeName = "HideBot";
-//                     newBot = createUpgradedBot<HideBot>();
-//                 } else {
-//                     upgradeName = "JumpBot";
-//                     newBot = createUpgradedBot<JumpBot>();
-//                 }
-//                 cout << name << " upgraded movement: " << upgradeName << endl;
+
+// switch (upgradeOption) {
+//     case 0: // Moving upgrade
+//         {
+//             int choice = 0;
+//             if (choice == rand() % 2) {
+//                 upgradeName = "HideBot";
+//                 newBot = createUpgradedBot<HideBot>();
+//             } else {
+//                 upgradeName = "JumpBot";
+//                 newBot = createUpgradedBot<JumpBot>();
 //             }
-//             break;
+//             cout << name << " upgraded movement: " << upgradeName << endl;
+//         }
+//         break;
 
 //         case 1: // Shooting upgrade
 //             {
