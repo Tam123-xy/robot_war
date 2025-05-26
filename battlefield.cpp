@@ -197,13 +197,9 @@ void Battlefield::processRespawn() {
 
         int remainingLives = robot->getLives();
         if (remainingLives <= 0) return; 
-
-        int remainingLives = robot->getLives();
-        if (remainingLives <= 0) return; 
         
         // check robot has live
         if (robot->getLives() > 0) {
-            int newX, newY;
             int newX, newY;
             int attempts = 0;
             do {
@@ -335,7 +331,8 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                         
                 }
                 else{
-                    cout << "Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
+                    cout << "ScoutBot -- Since the order of actions starts with LOOK," <<endl;
+                    cout<<"the power to see the entire battlefield will be preserved for next time." << endl;
                 }
             }
         }

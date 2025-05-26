@@ -19,17 +19,12 @@ class Robot : public std::enable_shared_from_this<Robot>{
 // class Robot {
 protected:
     Battlefield* battlefield;
-    Battlefield* battlefield;
     string name;
     int lives = 3;
     bool isAlive = true;
     bool inRespawnQueue = false;
     int positionX, positionY; // Changed from private to protected
     int width, height;
-
-    int shells = 10;
-    int fireRange = 1;
-    bool selfDestructed = false;
 
     int shells = 10;
     int fireRange = 1;
@@ -46,16 +41,6 @@ public:
     int getY() const { return positionY; }
 
     virtual string getType() const = 0;
-    Robot() = delete;
-
-    void setLives(int l) { lives = l; } 
-    virtual bool isHidden() const { return false; } 
-
-    virtual void resetTurn() = 0;
-    virtual void think() = 0;
-    virtual void look(int dx, int dy) = 0;
-    virtual void fire(int dx, int dy) = 0;
-    virtual void move(int dx, int dy) = 0;
     Robot() = delete;
 
     void setLives(int l) { lives = l; } 
@@ -109,15 +94,11 @@ protected:
 public:
     MovingRobot(string name, int x, int y, int w, int h, Battlefield* bf) 
         : Robot(name, x, y, w, h, bf) {}
-    MovingRobot(string name, int x, int y, int w, int h, Battlefield* bf) 
-        : Robot(name, x, y, w, h, bf) {}
     virtual ~MovingRobot() = default;
 
     //Basic Movement
     virtual void move(int dx, int dy) =0;
-    
-    virtual void move(int dx, int dy) =0;
-    
+
     //Movement validation
     bool isValidMove(int dx, int dy) const {
         int newX = positionX + dx;
@@ -168,17 +149,8 @@ protected:
 public:
     ShootingRobot(string name, int x, int y, int w, int h, Battlefield* bf)
         : Robot(name, x, y, w, h, bf) {}
-    ShootingRobot(string name, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(name, x, y, w, h, bf) {}
     virtual void fire(int dx, int dy) = 0;
 
-    void reloadThirtyShots() { 
-        shells = 30; 
-        hasThirtyShots = true; 
-    }
-    void extendRange() { 
-        fireRange = 3; 
-    }
     void reloadThirtyShots() { 
         shells = 30; 
         hasThirtyShots = true; 
@@ -199,8 +171,6 @@ public:
 
 class ThinkingRobot : virtual public Robot {
 public:
-    ThinkingRobot(string name, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(name, x, y, w, h, bf) {}
     ThinkingRobot(string name, int x, int y, int w, int h, Battlefield* bf)
         : Robot(name, x, y, w, h, bf) {}
     virtual void think() = 0;
@@ -270,7 +240,6 @@ public:
         ScoutPoint.clear();
     }
     void think() override;
-    void look(int dx, int dy) override;
     void look(int dx, int dy) override;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
