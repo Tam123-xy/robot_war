@@ -406,27 +406,27 @@ void GenericRobot::chooseUpgrade() {
     upgradeNames.push_back("ScoutBot");
     upgradeCount++;
 
-    // string sentence = name + " now is " + upgradeNames[0];
-    // int size = upgradeNames.size();
-    // for(size_t i =1; i<size ;i++){
-    //     sentence+= ", " + upgradeNames[i];
-    // }
-    // cout << sentence<< endl;
+//     string sentence = name + " now is " + upgradeNames[0];
+//     int size = upgradeNames.size();
+//     for(size_t i =1; i<size ;i++){
+//         sentence+= ", " + upgradeNames[i];
+//     }
+//     cout << sentence<< endl;
 
-    // vector<int> availableOptions;
-    // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
-    // if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
-    // if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
+//     vector<int> availableOptions;
+//     if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+//     if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+//     if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
 
-    // if (availableOptions.empty()) {
-    //     cout << name << " has no more areas to upgrade!" << endl;
-    //     return;
-    // }
+//     if (availableOptions.empty()) {
+//         cout << name << " has no more areas to upgrade!" << endl;
+//         return;
+//     }
 
-    // int randomIndex = rand() % availableOptions.size();
-    // int chosenOption = availableOptions[randomIndex];
-    // chooseUpgrade(chosenOption);
-}
+//     int randomIndex = rand() % availableOptions.size();
+//     int chosenOption = availableOptions[randomIndex];
+//     chooseUpgrade(chosenOption);
+// }
 
 // void GenericRobot::chooseUpgrade(int upgradeOption) {
 //     if (upgradeCount >= 3) {
@@ -538,7 +538,7 @@ void GenericRobot::chooseUpgrade() {
 //     } else {
 //         cout << "Failed to create upgraded robot for " << upgradeName << endl;
 //     }
-// }
+}
 
 // void GenericRobot::replaceWithCombination(const vector<string>& types) {
 //     if (types.size() < 2) return; 
