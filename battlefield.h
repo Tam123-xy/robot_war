@@ -1,6 +1,6 @@
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
-
+#pragma once
 #include <queue>
 #include <random>
 #include <algorithm>
@@ -10,10 +10,7 @@
 #include <iostream>
 #include <mutex>
 using namespace std;
-
 class Robot;
-class HideBot;
-class JumpBot;
 
 class Battlefield {
 private:
@@ -24,11 +21,9 @@ private:
     mt19937 gen;
     uniform_int_distribution<> xDist;
     uniform_int_distribution<> yDist;
-
     mutex respawnMutex;
-
     set<pair<int, int>> landmines;
-    
+    // void processRespawn();
     
 public:
     Battlefield(int w, int h);
@@ -47,25 +42,21 @@ public:
     void processRespawn();
     void addToRespawn(shared_ptr<Robot> robot);
 
-
-
     // Action sequence methods
-    void executeRobotTurn(shared_ptr<Robot> robot);
+    void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy);
     // void executeAttack(GenericRobot* gr);
     // void executeConserve(GenericRobot* gr);
     // void executeExplore(GenericRobot* gr);
 
     void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
-
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
-
     void addLandmine(int x, int y);
     bool checkLandmine(int x, int y) ;
 
-//    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
-//         auto it = find(robots.begin(), robots.end(), oldBot);
-//         if (it != robots.end()) *it = newBot;
-//    }
+    // set<pair<int, int>> mines;
+    // void placeMineAt(int x, int y);
+    // bool checkMineAt(int x, int y) const;
+    // void triggerMineIfAny(Robot* robot, int x, int y);
 };
 
 #endif

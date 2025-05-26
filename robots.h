@@ -9,12 +9,14 @@
 #include <set>
 #include <mutex>
 #include "battlefield.h"
+#include <mutex>
+#include "battlefield.h"
 using namespace std;
 
-
-class Battlefield;
+class Battlefield;  // Forward declaration
 
 class Robot : public std::enable_shared_from_this<Robot>{
+// class Robot {
 protected:
     Battlefield* battlefield;
     string name;
@@ -29,9 +31,10 @@ protected:
     bool selfDestructed = false;
    
 public:
-    Robot(string name, int x, int y, int w, int h, Battlefield* bf)  
+   Robot(string name, int x, int y, int w, int h, Battlefield* bf)  
         : name(name), positionX(x), positionY(y), width(w), height(h), 
           battlefield(bf) {}
+
     virtual ~Robot() = default;
 
     int getX() const { return positionX; }
@@ -61,6 +64,28 @@ public:
     void setShells(int s) { shells = s; }
     virtual bool hasSelfDestructed() const = 0;
     virtual int getShells() const = 0;
+    // virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
+    // virtual bool hide() { return false; } // Base implementation - no defense
+
+    // ScoutBot
+    virtual const vector<pair<int, int>>& getScoutPoints() const = 0;
+    virtual bool isScout() const { return false; } 
+    virtual int getScoutCount() const { return 0; }
+    virtual void setScoutCount(int) {}
+    virtual bool getUseScout() const {return false;}
+    virtual void setUseScout(bool) {}
+    virtual void addScoutPoint(pair<int, int> pos) = 0;
+    virtual void add_EmptyPoint(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_EmptyPoint() const =0;
+    virtual void add_LookGotEnemyPoint(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_LookGotEnemyPoint() const =0;
+    virtual void add_enemy_Outside_surrouding_point(pair<int, int> pos) =0;
+    virtual const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const =0;
+
+    // Update
+    virtual int getUpgradeCount() const { return 0; }
+    virtual void init_Upgrade() {}
+    virtual const vector<string>& get_upgradeNames() const = 0;
 };
 
 class MovingRobot : virtual public Robot {
@@ -73,7 +98,7 @@ public:
 
     //Basic Movement
     virtual void move(int dx, int dy) =0;
-    
+
     //Movement validation
     bool isValidMove(int dx, int dy) const {
         int newX = positionX + dx;
@@ -85,14 +110,34 @@ public:
 class SeeingRobot : virtual public Robot {
 protected:
     int visionRange = 1;
+    int scoutCount = 0;
+    int trackCount = 0;
+    vector<pair<int, int>> ScoutPoint;
 
 public:
-    SeeingRobot(string name, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(name, x, y, w, h, bf) {}
+    using Robot::Robot;
     virtual void look(int dx, int dy) = 0;
 
-};
+    // ScoutBot
+    bool isScoutBot = false;
+    bool useScout = false;
+    bool isScout() const override { return isScoutBot; }
+    int getScoutCount() const override { return useScout; }
+    void setScoutCount(int c) override { scoutCount = c; }
+    void setUseScout(bool c) override { useScout = c; }
+    bool getUseScout() const override {return false;}
+    void addScoutPoint(pair<int, int> pos) override{ScoutPoint.push_back(pos);}
+    const vector<pair<int, int>>& getScoutPoints() const override{return ScoutPoint;}
 
+    // TrackBot
+    bool isTrackBot = false;
+    bool getTrackBot() const { return isTrackBot; }
+
+    // PredictBot
+    bool isPredictBot = false;
+    bool getPredictBot() const { return isPredictBot; }
+
+};
 
 class ShootingRobot : virtual public Robot {
 protected:
@@ -120,7 +165,7 @@ public:
 
     virtual void selfDestruct() {
         isAlive = false;
-        cout << name << " self-destructed!\n";
+        std::cout << name << " self-destructed!\n";
     }
 };
 
@@ -137,20 +182,21 @@ private:
     // Battlefield* battlefield;
     // int shells;
     // bool selfDestructed;
-    int upgradeCount = 0;
+    // int upgradeCount = 0;
     set<string> upgradedAreas;
     vector<string> upgradeNames;
     template<typename T>
     shared_ptr<T> createUpgradedBot();
     void replaceWithCombination(const vector<string>& types);
 
-   
 protected:
+    int upgradeCount = 0;
     bool hasLooked = false;
     bool hasFired = false;
     bool hasMoved = false;
     vector<pair<int, int>> empty_point;
     vector<pair<int, int>> lookGot_enemy_point;
+    vector<pair<int, int>> enemy_outside_surrouding_point;
 
     Battlefield* battlefield;
     int shells;
@@ -163,14 +209,35 @@ protected:
         x = getX() + fireDx;
         y = getY() + fireDy;
     }
-
-
+    
 public:
     GenericRobot(const string& name, int x, int y, int w, int h, Battlefield* bf);
-    
+
+    // Update
+    int getUpgradeCount() const override { return upgradeCount; }
+    void init_Upgrade() override { 
+        upgradeCount = 0; 
+        isScoutBot = false;
+        upgradedAreas.clear();
+        upgradeNames.clear();
+    }
+    const vector<string>& get_upgradeNames() const override{return upgradeNames;}
+
+    // ScoutBot
+    void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}
+    const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;}
+    void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}
+    const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}
+    void add_enemy_Outside_surrouding_point(pair<int, int> pos) override{ enemy_outside_surrouding_point.push_back(pos);}
+    const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const override{  return enemy_outside_surrouding_point;}
+
     // Action methods
     void resetTurn() {
         hasLooked = hasFired = hasMoved = false;
+        empty_point.clear();
+        lookGot_enemy_point.clear();
+        enemy_outside_surrouding_point.clear();
+        ScoutPoint.clear();
     }
     void think() override;
     void look(int dx, int dy) override;
@@ -191,9 +258,8 @@ public:
 
     void chooseUpgrade();
     void chooseUpgrade(int upgradeOption);
-    void showUpgrades() const;
+    // void showUpgrades() const;
     
-
     int getX() const;   
     int getY() const; 
     string getType() const override;
@@ -259,31 +325,31 @@ public:
 };
 
 class ScoutBot : virtual public GenericRobot {
-    int scoutUses;
-public:
-    ScoutBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
-        :   Robot(name, x, y, w, h, bf),
-            GenericRobot(name, x, y, w, h, bf), scoutUses(3) {}
+//     int scoutUses;
+// public:
+//     ScoutBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
+//         :   Robot(name, x, y, w, h, bf),
+//             GenericRobot(name, x, y, w, h, bf), scoutUses(3) {}
 
-    void look(int dx, int dy) override {
-        if (scoutUses > 0) {
-            cout << name << " sees entire battlefield:" << endl;
-            for (int y = 1; y <= battlefield->getHeight(); ++y) {
-                for (int x = 1; x <= battlefield->getWidth(); ++x) {
-                    if (battlefield->isRobotAt(x, y)) {
-                        auto robot = battlefield->findRobotAt(x, y);
-                        cout << "  (" << x << "," << y << "): " 
-                             << robot->getName() << endl;
-                    }
-                }
-            }
-            scoutUses--;
-        } else {
-            GenericRobot::look(dx, dy);
-        }
-    }
+//     void look(int dx, int dy) override {
+//         if (scoutUses > 0) {
+//             cout << name << " sees entire battlefield:" << endl;
+//             for (int y = 1; y <= battlefield->getHeight(); ++y) {
+//                 for (int x = 1; x <= battlefield->getWidth(); ++x) {
+//                     if (battlefield->isRobotAt(x, y)) {
+//                         auto robot = battlefield->findRobotAt(x, y);
+//                         cout << "  (" << x << "," << y << "): " 
+//                              << robot->getName() << endl;
+//                     }
+//                 }
+//             }
+//             scoutUses--;
+//         } else {
+//             GenericRobot::look(dx, dy);
+//         }
+//     }
 
-    string getType() const override { return "ScoutBot"; }
+//     string getType() const override { return "ScoutBot"; }
 };
 
 class TrackBot : virtual public GenericRobot {
@@ -303,7 +369,7 @@ public:
             if (auto target = battlefield->findRobotAt(x, y)) {
                 trackedRobots.insert(target);
                 trackers--;
-                cout << name << " tracks " << target->getName() 
+                std:: cout << name << " tracks " << target->getName() 
                      << " (" << trackers << " trackers left)" << endl;
             }
         }
@@ -314,7 +380,7 @@ public:
     void displayTracked() {
         for (auto& robot : trackedRobots) {
             if (robot->alive()) {
-                cout << "  Tracking " << robot->getName()
+                std:: cout << "  Tracking " << robot->getName()
                      << " at (" << robot->getX() << "," << robot->getY() << ")" << endl;
             }
         }
@@ -333,7 +399,7 @@ public:
 
     void fire(int dx, int dy) override {
         if (abs(dx) + abs(dy) > fireRange) {
-            cout << name << " can't fire that far! (Max " << fireRange << ")" << endl;
+            std:: cout << name << " can't fire that far! (Max " << fireRange << ")" << endl;
             return;
         }
         GenericRobot::fire(dx, dy); 
@@ -360,11 +426,11 @@ public:
                 auto target = battlefield->findRobotAt(targetX, targetY);
                 if (target && target->alive()) {
                     target->destroy();
-                    cout << name << " hits " << target->getName() 
+                    std:: cout << name << " hits " << target->getName() 
                          << " at (" << targetX << "," << targetY << ")!" << endl;
                 }
             } else {
-                cout << name << " fires at empty space (" << targetX << "," << targetY << ")." << endl;
+                std:: cout << name << " fires at empty space (" << targetX << "," << targetY << ")." << endl;
             }
 
             useShell();  // consume a shell
@@ -382,7 +448,7 @@ public:
         :   Robot(name, x, y, w, h, bf),
             GenericRobot(name, x, y, w, h, bf)  {
         shells = 30; // 修改8: 直接设置弹药量
-        cout << name << " loaded 30 shells!" << endl;
+        std:: cout << name << " loaded 30 shells!" << endl;
     }
     string getType() const override { return "ThirtyShotBot"; }
 };
@@ -403,7 +469,7 @@ public:
         // 如果没有击中目标
         if (!battlefield->isRobotAt(targetX, targetY)) {
             battlefield->addLandmine(targetX, targetY);
-            cout << name << " placed landmine at (" << targetX << "," << targetY << ")\n";
+            std:: cout << name << " placed landmine at (" << targetX << "," << targetY << ")\n";
         }
     }
 
@@ -466,201 +532,203 @@ public:
     string getType() const override { return "JumpLandmineBot"; }
 };
 
-class HideScoutBot : public HideBot, public ScoutBot {
-public:
-    HideScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideScoutBot"; }
-};
+//-----------------------------------------------
 
-class HideTrackBot : public HideBot, public TrackBot {
-public:
-    HideTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideTrackBot"; }
-};
+// class HideScoutBot : public HideBot, public ScoutBot {
+// public:
+//     HideScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideScoutBot"; }
+// };
 
-class JumpScoutBot : public JumpBot, public ScoutBot {
-public:
-    JumpScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpScoutBot"; }
-};
+// class HideTrackBot : public HideBot, public TrackBot {
+// public:
+//     HideTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideTrackBot"; }
+// };
 
-class JumpTrackBot : public JumpBot, public TrackBot {
-public:
-    JumpTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpTrackBot"; }
-};
+// class JumpScoutBot : public JumpBot, public ScoutBot {
+// public:
+//     JumpScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpScoutBot"; }
+// };
 
-class LongShotScoutBot : public LongShotBot, public ScoutBot {
-public:
-    LongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "LongShotScoutBot"; }
-};
+// class JumpTrackBot : public JumpBot, public TrackBot {
+// public:
+//     JumpTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpTrackBot"; }
+// };
 
-class LongShotTrackBot : public LongShotBot, public TrackBot {
-public:
-    LongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "LongShotTrackBot"; }
-};
+// class LongShotScoutBot : public LongShotBot, public ScoutBot {
+// public:
+//     LongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "LongShotScoutBot"; }
+// };
 
-class SemiAutoScoutBot : public SemiAutoBot, public ScoutBot {
-public:
-    SemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "SemiAutoScoutBot"; }
-};
+// class LongShotTrackBot : public LongShotBot, public TrackBot {
+// public:
+//     LongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "LongShotTrackBot"; }
+// };
 
-class SemiAutoTrackBot : public SemiAutoBot, public TrackBot {
-public:
-    SemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "SemiAutoTrackBot"; }
-};
+// class SemiAutoScoutBot : public SemiAutoBot, public ScoutBot {
+// public:
+//     SemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "SemiAutoScoutBot"; }
+// };
 
-class ThirtyShotScoutBot : public ThirtyShotBot, public ScoutBot {
-public:
-    ThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "ThirtyShotScoutBot"; }
-};
+// class SemiAutoTrackBot : public SemiAutoBot, public TrackBot {
+// public:
+//     SemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "SemiAutoTrackBot"; }
+// };
 
-class ThirtyShotTrackBot : public ThirtyShotBot, public TrackBot {
-public:
-    ThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "ThirtyShotTrackBot"; }
-};
+// class ThirtyShotScoutBot : public ThirtyShotBot, public ScoutBot {
+// public:
+//     ThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "ThirtyShotScoutBot"; }
+// };
 
-class LandmineScoutBot : public LandmineBot, public ScoutBot {
-public:
-    LandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "LandmineScoutBot"; }
-};
+// class ThirtyShotTrackBot : public ThirtyShotBot, public TrackBot {
+// public:
+//     ThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "ThirtyShotTrackBot"; }
+// };
 
-class LandmineTrackBot : public LandmineBot, public TrackBot {
-public:
-    LandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "LandmineTrackBot"; }
-};
+// class LandmineScoutBot : public LandmineBot, public ScoutBot {
+// public:
+//     LandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "LandmineScoutBot"; }
+// };
 
-class HideLongShotScoutBot : public HideBot, public LongShotBot, public ScoutBot {
-public:
-    HideLongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideLongShotScoutBot"; }
-};
+// class LandmineTrackBot : public LandmineBot, public TrackBot {
+// public:
+//     LandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "LandmineTrackBot"; }
+// };
 
-class HideLongShotTrackBot : public HideBot, public LongShotBot, public TrackBot {
-public:
-    HideLongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideLongShotTrackBot"; }
-};
+// class HideLongShotScoutBot : public HideBot, public LongShotBot, public ScoutBot {
+// public:
+//     HideLongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideLongShotScoutBot"; }
+// };
 
-class HideSemiAutoScoutBot : public HideBot, public SemiAutoBot, public ScoutBot {
-public:
-    HideSemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideSemiAutoScoutBot"; }
-};
+// class HideLongShotTrackBot : public HideBot, public LongShotBot, public TrackBot {
+// public:
+//     HideLongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideLongShotTrackBot"; }
+// };
 
-class HideSemiAutoTrackBot : public HideBot, public SemiAutoBot, public TrackBot {
-public:
-    HideSemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideSemiAutoTrackBot"; }
-};
+// class HideSemiAutoScoutBot : public HideBot, public SemiAutoBot, public ScoutBot {
+// public:
+//     HideSemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideSemiAutoScoutBot"; }
+// };
 
-class HideThirtyShotScoutBot : public HideBot, public ThirtyShotBot, public ScoutBot {
-public:
-    HideThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideThirtyShotScoutBot"; }
-};
+// class HideSemiAutoTrackBot : public HideBot, public SemiAutoBot, public TrackBot {
+// public:
+//     HideSemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideSemiAutoTrackBot"; }
+// };
 
-class HideThirtyShotTrackBot : public HideBot, public ThirtyShotBot, public TrackBot {
-public:
-    HideThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideThirtyShotTrackBot"; }
-};
+// class HideThirtyShotScoutBot : public HideBot, public ThirtyShotBot, public ScoutBot {
+// public:
+//     HideThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideThirtyShotScoutBot"; }
+// };
 
-class HideLandmineScoutBot : public HideBot, public LandmineBot, public ScoutBot {
-public:
-    HideLandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideLandmineScoutBot"; }
-};
+// class HideThirtyShotTrackBot : public HideBot, public ThirtyShotBot, public TrackBot {
+// public:
+//     HideThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideThirtyShotTrackBot"; }
+// };
 
-class HideLandmineTrackBot : public HideBot, public LandmineBot, public TrackBot {
-public:
-    HideLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "HideLandmineTrackBot"; }
-};
+// class HideLandmineScoutBot : public HideBot, public LandmineBot, public ScoutBot {
+// public:
+//     HideLandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideLandmineScoutBot"; }
+// };
 
-class JumpLongShotScoutBot : public JumpBot, public LongShotBot, public ScoutBot {
-public:
-    JumpLongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpLongShotScoutBot"; }
-};
+// class HideLandmineTrackBot : public HideBot, public LandmineBot, public TrackBot {
+// public:
+//     HideLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), HideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "HideLandmineTrackBot"; }
+// };
 
-class JumpLongShotTrackBot : public JumpBot, public LongShotBot, public TrackBot {
-public:
-    JumpLongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpLongShotTrackBot"; }
-};
+// class JumpLongShotScoutBot : public JumpBot, public LongShotBot, public ScoutBot {
+// public:
+//     JumpLongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpLongShotScoutBot"; }
+// };
 
-class JumpSemiAutoScoutBot : public JumpBot, public SemiAutoBot, public ScoutBot {
-public:
-    JumpSemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpSemiAutoScoutBot"; }
-};
+// class JumpLongShotTrackBot : public JumpBot, public LongShotBot, public TrackBot {
+// public:
+//     JumpLongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpLongShotTrackBot"; }
+// };
 
-class JumpSemiAutoTrackBot : public JumpBot, public SemiAutoBot, public TrackBot {
-public:
-    JumpSemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpSemiAutoTrackBot"; }
-};
+// class JumpSemiAutoScoutBot : public JumpBot, public SemiAutoBot, public ScoutBot {
+// public:
+//     JumpSemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpSemiAutoScoutBot"; }
+// };
 
-class JumpThirtyShotScoutBot : public JumpBot, public ThirtyShotBot, public ScoutBot {
-public:
-    JumpThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpThirtyShotScoutBot"; }
-};
+// class JumpSemiAutoTrackBot : public JumpBot, public SemiAutoBot, public TrackBot {
+// public:
+//     JumpSemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpSemiAutoTrackBot"; }
+// };
 
-class JumpThirtyShotTrackBot : public JumpBot, public ThirtyShotBot, public TrackBot {
-public:
-    JumpThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpThirtyShotTrackBot"; }
-};
+// class JumpThirtyShotScoutBot : public JumpBot, public ThirtyShotBot, public ScoutBot {
+// public:
+//     JumpThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpThirtyShotScoutBot"; }
+// };
 
-class JumpLandmineScoutBot : public JumpBot, public LandmineBot, public ScoutBot {
-public:
-    JumpLandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpLandmineScoutBot"; }
-};
+// class JumpThirtyShotTrackBot : public JumpBot, public ThirtyShotBot, public TrackBot {
+// public:
+//     JumpThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpThirtyShotTrackBot"; }
+// };
 
-class JumpLandmineTrackBot : public JumpBot, public LandmineBot, public TrackBot {
-public:
-    JumpLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
-    string getType() const override { return "JumpLandmineTrackBot"; }
-};
+// class JumpLandmineScoutBot : public JumpBot, public LandmineBot, public ScoutBot {
+// public:
+//     JumpLandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpLandmineScoutBot"; }
+// };
+
+// class JumpLandmineTrackBot : public JumpBot, public LandmineBot, public TrackBot {
+// public:
+//     JumpLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+//         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+//     string getType() const override { return "JumpLandmineTrackBot"; }
+// };
 
 
 #endif
