@@ -267,7 +267,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                 }
 
                 else{
-                    cout << "ScoutBot -- Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
+                    cout << "Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
                 }
             }
         }

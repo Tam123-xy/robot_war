@@ -24,7 +24,7 @@ void GenericRobot::look(int dx, int dy) {
     int centerX = getX() ;
     int centerY = getY() ;
 
-    cout << name << " now at (" << centerX << "," << centerY << ")" <<endl; 
+    cout << name << " at (" << centerX << "," << centerY << "), LOOK around ..." <<endl; 
 
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
@@ -66,9 +66,9 @@ void Robot::destroy() {
         setPosition(0, 0); // Move to outside battle field
 
         if (lives > 0) {
-            cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
+            cout << name << " is waiting to respawn (Total: " << lives << "/3)" << endl;
         } else {
-            cout << name << " has no lives remaining!" << endl << endl;
+            cout << name << " has no lives remaining! (Total: " << lives << "/3)" << endl;
         }
     }
     
@@ -183,7 +183,7 @@ void GenericRobot::move(int dx, int dy) {
                     final_enemy_name = closest_enemy_name;
                 }
             }
-            cout << "ScoutBot -- Best move is to (" << best_move.first << ", " << best_move.second << ")"
+            cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
                 << " with closest enemy "<< final_enemy_name << endl;
                 newX = best_move.first;
                 newY = best_move.second;
@@ -331,7 +331,7 @@ void GenericRobot::fire(int dx, int dy) {
 
                 if (true) {
                 // if (rand() % 100 > 70) {
-                    cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
+                    cout << "Target hit! " << enemy->getName() << " has been destroyed!" ;
                     enemy->destroy();                    
                     chooseUpgrade();
                     consecutive = 3; // reset if hit
@@ -350,7 +350,7 @@ void GenericRobot::fire(int dx, int dy) {
 
             if (true) {
             // if (rand() % 100 > 70) { // 70% will success destroy enemy
-                cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
+                cout << "Target hit! " << enemy->getName() << " has been destroyed! ";
                 enemy->destroy();
                 chooseUpgrade(); // Upgrade
             }
@@ -420,15 +420,10 @@ void GenericRobot::chooseUpgrade() {
         return;
     }
 
-    // isLandmine = true;
-    // upgradeNames.push_back("LandmineBot");
-    // upgradeCount++;
-
     isScoutBot = true;
     upgradeNames.push_back("ScoutBot");
     upgradeCount++;
 
-    cout<< upgradeCount << " upgradeCount"<< endl;
     string sentence = name + " now is " + upgradeNames[0];
     int size = upgradeNames.size();
     for(size_t i =1; i<size ;i++){
