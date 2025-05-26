@@ -202,21 +202,22 @@ public:
 
 class HideBot : virtual public GenericRobot {
     int hideCount;
-    bool m_isHidden; 
+    bool hidden; 
 public:
     HideBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
         :   Robot(name, x, y, w, h, bf),
             GenericRobot(name, x, y, w, h, bf), 
             hideCount(3),
-            m_isHidden(false) {}
+            hidden(false) {}
 
-    bool isHidden() const override { return m_isHidden; } 
-    void setHidden(bool state) { m_isHidden = state; }
+    bool isHidden() const override { return hidden; } 
+    void setHidden(bool state) { hidden = state; }
 
     void move(int dx, int dy) override {
         if (hideCount > 0) {
             hideCount--;
             setHidden(true);
+            cout << name << " is now hidden! (" << hideCount << " hides left)" << endl;
         } else {
             GenericRobot::move(dx, dy);
             setHidden(false);
@@ -228,6 +229,8 @@ public:
 
 class JumpBot : virtual public GenericRobot {
     int jumpCount;
+    int newX;
+    int newY;
 public:
     JumpBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
         :   Robot(name, x, y, w, h, bf),
@@ -236,24 +239,25 @@ public:
 
     void move(int dx, int dy) override {
         if (jumpCount > 0) {
-            int newX = 1 + rand() % battlefield->getWidth();
-            int newY = 1 + rand() % battlefield->getHeight();
-
-            newX = (newX < 1) ? 1 : (newX > battlefield->getWidth()) ? battlefield->getWidth() : newX;
-            newY = (newY < 1) ? 1 : (newY > battlefield->getHeight()) ? battlefield->getHeight() : newY;
-            
-            if (!battlefield->isRobotAt(newX, newY)) {
-                setPosition(newX, newY);
-                jumpCount--;
-                cout << name << " jumps to (" << newX << "," << newY << ") "
-                     << "(" << jumpCount << " jumps left)" << endl;
+            while (true) {
+                newX = 1 + rand() % battlefield->getWidth();
+                newY = 1 + rand() % battlefield->getHeight();
+                
+                if (!battlefield->isRobotAt(newX, newY) && (abs(newX - getX()) > 1 || abs(newY - getY()) > 1)) {
+                    break;  // Valid jump found
+                }
             }
+            setPosition(newX, newY);
+            jumpCount--;
+            cout << name << " jumps to (" << newX << "," << newY << ") "
+                << "(" << jumpCount << " jumps left)" << endl;
         } else {
             GenericRobot::move(dx, dy);
         }
     }
     string getType() const override { return "JumpBot"; }
 };
+
 class ScoutBot : virtual public GenericRobot {
     int scoutUses;
 public:

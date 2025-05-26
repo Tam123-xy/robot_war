@@ -273,10 +273,10 @@ void GenericRobot::fire(int dx, int dy) {
         std::uniform_int_distribution<> dis(0, 99);
 
         shells--;
-        cout << name << " fires at " << enemy->getName() 
+        cout << name << " fires " << enemy->getName() 
              << " at (" << targetX << "," << targetY << ")\n";
         if (enemy->isHidden()) {
-            cout << "Attack missed! Target is hidden" << endl;
+            cout << "Attack missed! " << enemy->getName() << " is hidden!" << endl;
             return;
         }
             
@@ -383,8 +383,8 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             {
-                int choice = rand() % 2;
-                if (choice == 0) {
+                int choice = 0;
+                if (choice == rand() % 2) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
                 } else {
