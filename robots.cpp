@@ -3,24 +3,39 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <mutex>
 using namespace std;
 
-GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield* bf)
-    // : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
-    : Robot(name, x, y, w, h), 
-      MovingRobot(), 
-      ShootingRobot(), 
-      SeeingRobot(), 
-      ThinkingRobot(), 
-      HideBot(), 
-      JumpBot(),
-      battlefield(bf), shells(10), selfDestructed(false)
-    //   selfDestructed(false),empty_point(empty_point) {
-{
-    // selfDestructed(false) {
-    cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
-    // }
+GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battlefield* bf)
+    : Robot(name, x, y, w, h, bf),
+      MovingRobot(name, x, y, w, h, bf),
+      ShootingRobot(name, x, y, w, h, bf),
+      SeeingRobot(name, x, y, w, h, bf),
+      ThinkingRobot(name, x, y, w, h, bf),
+      battlefield(bf),
+      shells(10),
+      selfDestructed(false) {
+        //cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
+
+template<typename T>
+shared_ptr<T> GenericRobot::createUpgradedBot() {
+        auto newBot = make_shared<T>(
+            name, 
+            getX(), 
+            getY(),
+            getWidth(),
+            getHeight(),
+            battlefield
+        );
+
+        // newBot->upgradedAreas = this->upgradedAreas;
+        // newBot->upgradeNames = this->upgradeNames;
+        // newBot->upgradeCount = this->upgradeCount;
+        return newBot;
+    }
+
+
 void GenericRobot::think() {
     cout << name << " is thinking...\n";
 }
@@ -87,6 +102,7 @@ void Robot::destroy() {
 
         if (lives > 0) {
             cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
+            battlefield->addToRespawn(shared_from_this());
         } else {
             cout << name << " has no lives remaining!" << endl << endl;
         }
@@ -97,8 +113,7 @@ void Robot::respawn(int x, int y) {
     if (lives > 0) {
         positionX = x;
         positionY = y;
-        isAlive = true;
-        cout << name << " respawned, " << lives << " lives remaining." << endl;
+        isAlive = true; 
     }
 }
 
@@ -224,7 +239,6 @@ void GenericRobot::move(int dx, int dy) {
         } else {
             setPosition(newX, newY);
             cout << name << " moved to (" << newX << "," << newY << ")." << endl;
-            battlefield->triggerMineIfAny(this, newX, newY); 
         }
     }
 
@@ -241,7 +255,17 @@ void GenericRobot::move(int dx, int dy) {
 
         setPosition(newX, newY);
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
-        battlefield->triggerMineIfAny(this, newX, newY); 
+    }
+
+    if (battlefield->checkLandmine(newX, newY)) {
+        if (rand() % 100 < 50) {
+            cout << name << " triggered a landmine at (" 
+                 << newX << "," << newY << ")!\n";
+            destroy();
+        } else {
+            cout << name << " narrowly avoided a landmine at ("
+                 << newX << "," << newY << ")!\n";
+        }
     }
 }
 
@@ -298,7 +322,7 @@ void GenericRobot::fire(int dx, int dy) {
         int cout_enemy = lookGot_enemy_point.size();
 
         if(cout_enemy==0){
-          cout << "Preserving shell for next turn since " << name << " didn't find any robots around." << endl;
+          cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells:" << shells << ")" << endl;
           return;
         }
 
@@ -314,57 +338,28 @@ void GenericRobot::fire(int dx, int dy) {
     }
 
     if (battlefield->findRobotAt(targetX, targetY)) {
-        if(isSemiAuto){
-            int consecutive = 3;    //SemiAutoBot
-            do{
-                auto enemy = battlefield->findRobotAt(targetX, targetY);
-                shells--;
-                cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
-                cout << " left shells: " << shells << endl;
+        auto enemy = battlefield->findRobotAt(targetX, targetY);
+        std::random_device rd;
+        std::mt19937 gen(rd()); // Mersenne Twister
+        std::uniform_int_distribution<> dis(0, 99);
 
-                if (rand() % 100 > 70){
-                    cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
-                    enemy->destroy();
-                    chooseUpgrade();
-                    consecutive = 3;
-                    // performUpgrade();
-                }
-                else{
-                    cout << " - MISS!" << endl;
-                    consecutive--;
-                }
-            }while (consecutive >= 0);
+        shells--;
+        cout << name << " fires at " << enemy->getName() 
+             << " at (" << targetX << "," << targetY << ")\n";
+        if (enemy->isHidden()) {
+            cout << "Attack missed! Target is hidden" << endl;
+            return;
         }
-
-        else{
-            if(battlefield->findRobotAt(targetX, targetY)){
-                auto enemy = battlefield->findRobotAt(targetX, targetY);
-                shells--;
-                cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
-                cout << " left shells: " << shells << endl;
-
-                std::random_device rd;
-                std::mt19937 gen(rd()); // Mersenne Twister
-                std::uniform_int_distribution<> dis(0, 99);
-
-                // if (rand() % 100 < 70){
-                if (dis(gen) < 70){
-                    cout << "Target hit! " << enemy->getName() << " has been destroyed! " << endl;
-                    enemy->destroy();
-                    chooseUpgrade(); // Upgrade
-                    // return;
-                }
-                else{
-                    cout << " - MISS!" << endl;
-                    if (isLandmine) {
-                        minePositions.emplace_back(targetX, targetY);   //landmine
-                        battlefield->placeMineAt(targetX, targetY);
-                        cout << name << " planted a mine at (" << targetX << "," << targetY << ")" << endl;
-                    }
-                }
-            } 
+            
+        if (dis(gen) < 70) {  // 70% hit chance
+            cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
+            enemy->destroy();
+            chooseUpgrade();
+        } else {
+            cout << " - MISS!" << endl;
         }
-    }
+        
+    }   
 
     else{
         shells--;
@@ -407,9 +402,9 @@ int GenericRobot::getY() const {
 
 void GenericRobot::chooseUpgrade() {
     if (upgradeCount >= 3) {
-        cout << name << " now is " ;
+        cout << name << " now is ";
         for(auto s: upgradeNames){
-            cout << s << ' ' ;
+            cout << s << ' ';
         }
         cout << endl;
         cout << "Cannot Upgrade Anymore" << endl;
@@ -421,93 +416,273 @@ void GenericRobot::chooseUpgrade() {
     if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
     if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
 
-    if (availableOptions.empty()) return;
+    if (availableOptions.empty()) {
+        cout << name << " has no more areas to upgrade!" << endl;
+        return;
+    }
 
     int randomIndex = rand() % availableOptions.size();
-    // int chosenOption = availableOptions[randomIndex];
-    // chooseUpgrade(chosenOption);
-    chooseUpgrade(randomIndex);
+    int chosenOption = availableOptions[randomIndex];
+    chooseUpgrade(chosenOption);
 }
 
-
 void GenericRobot::chooseUpgrade(int upgradeOption) {
-    if (upgradeCount >= 3) return;
+    if (upgradeCount >= 3) {
+        cout << name << " cannot upgrade anymore (max 3 upgrades reached)" << endl;
+        return;
+    }
 
+    const char* area = "";
+    switch (upgradeOption) {
+        case 0: area = "move"; break;
+        case 1: area = "shoot"; break;
+        case 2: area = "see"; break;
+        default: 
+            cout << "Invalid upgrade option: " << upgradeOption << endl;
+            return;
+    }
+    
+    if (upgradedAreas.find(area) != upgradedAreas.end()) {
+        cout << name << " already upgraded " << area << " area!" << endl;
+        return;
+    }
+
+    auto self = shared_from_this();
+    shared_ptr<GenericRobot> newBot;
+    string upgradeName = "";
+    
     switch (upgradeOption) {
         case 0: // Moving upgrade
-            if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = rand() % 3;
+            {
+                int choice = rand() % 2;
                 if (choice == 0) {
-                    activateHideAbility();
-                    upgradeNames.push_back("HideBot");
+                    upgradeName = "HideBot";
+                    newBot = createUpgradedBot<HideBot>();
                     cout << name << " can now hide 3 times per match!\n";
-                } else 
-                if (choice == 1){
-                    activateJumpAbility();
-                    upgradeNames.push_back("JumpBot");
+                } else {
+                    upgradeName = "JumpBot";
+                    newBot = createUpgradedBot<JumpBot>();
                     cout << name << " can now jump 3 times per match!\n";
-                } else if (choice == 2){
-                    upgradeNames.push_back("??Bot");
                 }
-                
-                upgradedAreas.insert("move");
-                upgradeCount++;
-                cout << name << " upgraded movement: " << upgradeNames.back() << endl;
-                cout << name << " now has upgrades: " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
+                cout << name << " upgraded movement: " << upgradeName << endl;
             }
-        break;
+            break;
 
         case 1: // Shooting upgrade
-            if (upgradedAreas.find("shoot") == upgradedAreas.end()) {
+            {
                 int choice = rand() % 4;
                 if (choice == 0) {
-                    extendRange();
-                    upgradeNames.push_back("LongShotBot");
+                    upgradeName = "LongShotBot";
+                    newBot = createUpgradedBot<LongShotBot>();
                 } else if (choice == 1) {
-                    isSemiAuto = true;
-                    upgradeNames.push_back("SemiAutoBot");
-                } else if (choice == 2){
-                    reloadThirtyShots();
-                    upgradeNames.push_back("ThirtyShotBot");
-                } else if (choice == 3){
-                    isLandmine = true;
-                    upgradeNames.push_back("LandmineBot");
+                    upgradeName = "SemiAutoBot";
+                    newBot = createUpgradedBot<SemiAutoBot>();
+                } else if (choice == 2) {
+                    upgradeName = "ThirtyShotBot";
+                    newBot = createUpgradedBot<ThirtyShotBot>();
+                } else {
+                    upgradeName = "LandmineBot";
+                    newBot = createUpgradedBot<LandmineBot>();
                 }
-
-                upgradedAreas.insert("shoot");
-                upgradeCount++;
-                cout << name << " upgraded shooting: " << upgradeNames.back() << endl;
-                cout << name << " now has upgrades: " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
+                cout << name << " upgraded shooting: " << upgradeName << endl;
             }
-        break;
+            break;
 
         case 2: // Seeing upgrade
-            if (upgradedAreas.find("see") == upgradedAreas.end()) {
-                if (rand() % 2 == 0) {
-                    upgradeNames.push_back("ScoutBot");
+            {
+                int choice = rand() % 2;
+                if (choice == 0) {
+                    upgradeName = "ScoutBot";
+                    newBot = createUpgradedBot<ScoutBot>();
                 } else {
-                    upgradeNames.push_back("TrackBot");
+                    upgradeName = "TrackBot";
+                    newBot = createUpgradedBot<TrackBot>();
                 }
-                upgradedAreas.insert("see");
-                upgradeCount++;
-                cout << name << " upgraded vision: " << upgradeNames.back() << endl;
-                cout << name << " now has upgrades: " ;
-                for(auto s: upgradeNames){
-                    cout << s << ' ' ;
-                }
-                cout << endl;
+                cout << name << " upgraded vision: " << upgradeName << endl;
             }
-        break;
-
-        default:
             break;
+    }
+
+    if (newBot) {
+        // 更新升级状态 - 重要：在替换前更新状态
+        upgradeNames.push_back(upgradeName);
+        upgradedAreas.insert(area);
+        upgradeCount++;
+        
+        // 将当前状态传递给新机器人
+        newBot->upgradeNames = this->upgradeNames;
+        newBot->upgradedAreas = this->upgradedAreas;
+        newBot->upgradeCount = this->upgradeCount;
+        newBot->name = this->name;  // 保持相同的名字
+        
+        // 执行替换
+        battlefield->replaceRobot(self, newBot);
+        
+        cout << name << " now has upgrades: ";
+        for(const auto& s: upgradeNames){
+            cout << s << ' ';
+        }
+        cout << " (Total: " << upgradeCount << "/3)" << endl;
+        
+        // 检查是否需要组合升级（当有2个或3个升级时）
+        if(upgradeCount >= 2) {
+            // 注意：这里应该调用newBot的方法，因为self已经被替换了
+            newBot->replaceWithCombination(newBot->upgradeNames);
+        }
+    } else {
+        cout << "Failed to create upgraded robot for " << upgradeName << endl;
+    }
+}
+
+void GenericRobot::replaceWithCombination(const vector<string>& types) {
+    if (types.size() < 2) return;  // 至少需要2个升级才能组合
+    
+    auto self = shared_from_this();
+    shared_ptr<GenericRobot> newBot;
+    string combinationName = "";
+    
+    auto hasType = [&](const string& type) {
+        return find(types.begin(), types.end(), type) != types.end();
+    };
+
+    cout << "Attempting combination with " << types.size() << " upgrades: ";
+    for (const auto& t : types) cout << t << " ";
+    cout << endl;
+
+    // 二级组合 (2个升级)
+    if (types.size() == 2) {
+        // Movement + Shooting combinations
+        if (hasType("HideBot") && hasType("LongShotBot")) {
+            newBot = createUpgradedBot<HideLongShotBot>();
+            combinationName = "HideLongShotBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot")) {
+            newBot = createUpgradedBot<HideSemiAutoBot>();
+            combinationName = "HideSemiAutoBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot")) {
+            newBot = createUpgradedBot<HideThirtyShotBot>();
+            combinationName = "HideThirtyShotBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot")) {
+            newBot = createUpgradedBot<HideLandmineBot>();
+            combinationName = "HideLandmineBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot")) {
+            newBot = createUpgradedBot<JumpLongShotBot>();
+            combinationName = "JumpLongShotBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoBot>();
+            combinationName = "JumpSemiAutoBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotBot>();
+            combinationName = "JumpThirtyShotBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot")) {
+            newBot = createUpgradedBot<JumpLandmineBot>();
+            combinationName = "JumpLandmineBot";
+        }
+        // Movement + Vision combinations
+        else if (hasType("HideBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideScoutBot>();
+            combinationName = "HideScoutBot";
+        } else if (hasType("HideBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideTrackBot>();
+            combinationName = "HideTrackBot";
+        } else if (hasType("JumpBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpScoutBot>();
+            combinationName = "JumpScoutBot";
+        } else if (hasType("JumpBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpTrackBot>();
+            combinationName = "JumpTrackBot";
+        }
+        // Shooting + Vision combinations
+        else if (hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<LongShotScoutBot>();
+            combinationName = "LongShotScoutBot";
+        } else if (hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<LongShotTrackBot>();
+            combinationName = "LongShotTrackBot";
+        } else if (hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<SemiAutoScoutBot>();
+            combinationName = "SemiAutoScoutBot";
+        } else if (hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<SemiAutoTrackBot>();
+            combinationName = "SemiAutoTrackBot";
+        } else if (hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<ThirtyShotScoutBot>();
+            combinationName = "ThirtyShotScoutBot";
+        } else if (hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<ThirtyShotTrackBot>();
+            combinationName = "ThirtyShotTrackBot";
+        } else if (hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<LandmineScoutBot>();
+            combinationName = "LandmineScoutBot";
+        } else if (hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<LandmineTrackBot>();
+            combinationName = "LandmineTrackBot";
+        }
+    } 
+    // 三级组合 (3个升级)
+    else if (types.size() == 3) {
+        if (hasType("HideBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideLongShotScoutBot>();
+            combinationName = "HideLongShotScoutBot";
+        } else if (hasType("HideBot") && hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideLongShotTrackBot>();
+            combinationName = "HideLongShotTrackBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideSemiAutoScoutBot>();
+            combinationName = "HideSemiAutoScoutBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideSemiAutoTrackBot>();
+            combinationName = "HideSemiAutoTrackBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideThirtyShotScoutBot>();
+            combinationName = "HideThirtyShotScoutBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideThirtyShotTrackBot>();
+            combinationName = "HideThirtyShotTrackBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideLandmineScoutBot>();
+            combinationName = "HideLandmineScoutBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideLandmineTrackBot>();
+            combinationName = "HideLandmineTrackBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpLongShotScoutBot>();
+            combinationName = "JumpLongShotScoutBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpLongShotTrackBot>();
+            combinationName = "JumpLongShotTrackBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoScoutBot>();
+            combinationName = "JumpSemiAutoScoutBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoTrackBot>();
+            combinationName = "JumpSemiAutoTrackBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotScoutBot>();
+            combinationName = "JumpThirtyShotScoutBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotTrackBot>();
+            combinationName = "JumpThirtyShotTrackBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpLandmineScoutBot>();
+            combinationName = "JumpLandmineScoutBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpLandmineTrackBot>();
+            combinationName = "JumpLandmineTrackBot";
+        }
+    }
+
+    if (newBot && !combinationName.empty()) {
+        // 传递状态给组合机器人
+        newBot->upgradeNames = this->upgradeNames;
+        newBot->upgradedAreas = this->upgradedAreas;
+        newBot->upgradeCount = this->upgradeCount;
+        newBot->name = this->name;
+        
+        battlefield->replaceRobot(self, newBot);
+        cout << "Successfully combined " << name << " into " << combinationName << "!" << endl;
+    } else {
+        cout << name << " upgrade combination not found for: ";
+        for (const auto& s : types) cout << s << ' ';
+        cout << "\nUsing individual upgrades instead." << endl;
     }
 }
