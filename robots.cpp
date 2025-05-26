@@ -276,7 +276,7 @@ void GenericRobot::fire(int dx, int dy) {
         cout << name << " fires " << enemy->getName() 
              << " at (" << targetX << "," << targetY << ")\n";
         if (enemy->isHidden()) {
-            cout << "Attack missed! Target is hidden" << endl;
+            cout << "Attack missed! " << enemy->getName() << " is hidden!" << endl;
             return;
         }
             
@@ -383,15 +383,13 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             {
-                int choice = rand() % 2;
-                if (choice == 0) {
+                int choice = 0;
+                if (choice == rand() % 2) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
-                    cout << name << " can now hide 3 times per match!\n";
                 } else {
                     upgradeName = "JumpBot";
                     newBot = createUpgradedBot<JumpBot>();
-                    cout << name << " can now jump 3 times per match!\n";
                 }
                 cout << name << " upgraded movement: " << upgradeName << endl;
             }
