@@ -8,7 +8,12 @@
 #include <vector>
 #include <set>
 #include <iostream>
-#include "robots.h"
+#include <mutex>
+using namespace std;
+
+class Robot;
+class HideBot;
+class JumpBot;
 
 class Battlefield {
 private:
@@ -20,7 +25,9 @@ private:
     uniform_int_distribution<> xDist;
     uniform_int_distribution<> yDist;
 
-    void processRespawn();
+    mutex respawnMutex;
+
+    set<pair<int, int>> landmines;
     
     
 public:
@@ -37,18 +44,30 @@ public:
     Robot* getAliveRobot() const;
     shared_ptr<Robot> findRobotAt(int x, int y);
     int countLiveRobot() const;
+    void processRespawn();
+    void addToRespawn(shared_ptr<Robot> robot);
+
 
 
     // Action sequence methods
     void executeRobotTurn(shared_ptr<Robot> robot);
-    void executeAttack(GenericRobot* gr);
-    void executeConserve(GenericRobot* gr);
-    void executeExplore(GenericRobot* gr);
+    // void executeAttack(GenericRobot* gr);
+    // void executeConserve(GenericRobot* gr);
+    // void executeExplore(GenericRobot* gr);
 
-    set<pair<int, int>> mines;
-    void placeMineAt(int x, int y);
-    bool checkMineAt(int x, int y) const;
-    void triggerMineIfAny(Robot* robot, int x, int y);
+    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
+
+    bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
+
+    void addLandmine(int x, int y);
+
+    // 检查并触发地雷
+    bool checkLandmine(int x, int y) ;
+
+//    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
+//         auto it = find(robots.begin(), robots.end(), oldBot);
+//         if (it != robots.end()) *it = newBot;
+//    }
 };
 
 #endif
