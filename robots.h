@@ -60,6 +60,7 @@ public:
     virtual bool isScout() const { return false; } 
     virtual int getScoutCount() const { return 0; }
     virtual void setScoutCount(int) {}
+    virtual bool getUseScout() const {return false;}
     virtual void setUseScout(bool) {}
     virtual void addScoutPoint(pair<int, int> pos) = 0;
     virtual void add_EmptyPoint(pair<int, int> pos) =0;
@@ -284,7 +285,6 @@ public:
     }
 };
 
-
 class SeeingRobot : virtual public Robot {
 protected:
     int visionRange = 1;
@@ -300,9 +300,10 @@ public:
     bool isScoutBot = false;
     bool useScout = false;
     bool isScout() const override { return isScoutBot; }
-    int getScoutCount() const override { return scoutCount; }
+    int getScoutCount() const override { return useScout; }
     void setScoutCount(int c) override { scoutCount = c; }
     void setUseScout(bool c) override { useScout = c; }
+    bool getUseScout() const override {return false;}
     void addScoutPoint(pair<int, int> pos) override{ScoutPoint.push_back(pos);}
     const vector<pair<int, int>>& getScoutPoints() const override{return ScoutPoint;}
 
@@ -315,7 +316,6 @@ public:
     bool getPredictBot() const { return isPredictBot; }
 
 };
-
 
 class ThinkingRobot : virtual public Robot {
 public:

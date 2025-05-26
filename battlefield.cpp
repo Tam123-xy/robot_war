@@ -188,14 +188,13 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                 if(order[0]!="look"){ 
 
                     // All enemies point
-                     for (auto& copy_robot : copy){
+                    for (auto& copy_robot : copy){
                         if(copy_robot->getName()!= robot->getName() && copy_robot->alive()){
                             robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
                         }
                         else continue; 
                     }
 
-                    // useScout == true
                     robot->setUseScout(true);
                     robot->setScoutCount(count + 1);
                     vector<string> ordinal_numbers ={"1st","2nd","3rd"};
@@ -284,13 +283,22 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             }
             
             else{
-                // gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                gr->move(rand() % 3 - 1, rand() % 3 - 1);
                 // display();
 
             }
         }
 
         cout<<endl;
+
+        // useScout = false;
+        for (auto& copy_robot : copy){
+            if(copy_robot->getUseScout()){
+                robot->setUseScout(false); 
+            }
+            else continue; 
+        }
+
 
         // Handle destruction if out of shells
         if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {

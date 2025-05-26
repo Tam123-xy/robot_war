@@ -11,7 +11,6 @@ GenericRobot::GenericRobot(string name, int x, int y, int w, int h, Battlefield*
     : Robot(name, x, y, w, h), battlefield(bf), shells(10), 
     //   selfDestructed(false),empty_point(empty_point) {
     selfDestructed(false) {
-        // battlefield->display();
         cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
@@ -126,7 +125,7 @@ void GenericRobot::move(int dx, int dy) {
     srand(time(0));
 
     // move -> look, take the POINTS which are surrounding robot itself . POINTS --> (is occupied/ move)
-    if (!hasLooked) {
+    if (!hasLooked && useScout == false) {
         if (surrounding_points.empty()) {
             cout << name << " has no space to move!" << endl;
             return;
@@ -149,15 +148,52 @@ void GenericRobot::move(int dx, int dy) {
 
     // look -> move , take the EMPTY POINTS which are surrounding robot itself . POINTS --> (no point/ move)
     // ScoutBot , if size == 8 , move to closer point
-    else {
+    else if ( hasLooked || useScout == true) {
+
         if (empty_points.empty()) {
             cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
             return;
         }
 
-        int num = rand() % empty_points.size();
-        newX = empty_points[num].first;
-        newY = empty_points[num].second;
+        // Got empty point to move
+
+        // ScoutBot will move to an emepty point which is the closer point to an enemy, condition "Surrounding no enemy and outside surrounding got enemy"
+        if(useScout == true && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_points.size()>=2){
+            pair<int, int> best_move = empty_points[0];
+            int min_distance = INT_MAX;
+            string final_enemy_name; 
+
+            for (auto& space : empty_points) {
+                int closest_enemy_dist = INT_MAX;
+                string closest_enemy_name; 
+
+                for (auto& enemy : enemy_outside_surrouding_point) {
+                    int dist = abs(space.first - enemy.first) + abs(space.second - enemy.second);
+                    auto enemyy = battlefield->findRobotAt(enemy.first, enemy.second);
+                    if (dist < closest_enemy_dist) {
+                        closest_enemy_dist = dist;
+                        closest_enemy_name = enemyy->getName();
+                    }
+                }
+
+                // Keep the space that gives the minimum distance to any enemy
+                if (closest_enemy_dist < min_distance) {
+                    min_distance = closest_enemy_dist;
+                    best_move = space;
+                    final_enemy_name = closest_enemy_name;
+                }
+            }
+            cout << "Best move is to (" << best_move.first << ", " << best_move.second << ")"
+                << " with closest enemy "<< final_enemy_name << endl;
+                newX = best_move.first;
+                newY = best_move.second;
+        }
+        
+        else{
+            int num = rand() % empty_points.size();
+            newX = empty_points[num].first;
+            newY = empty_points[num].second;
+        }
 
         setPosition(newX, newY);
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
@@ -232,8 +268,6 @@ void GenericRobot::fire(int dx, int dy) {
     // look --> fire, take the POINTS which are contain enemies. POINTS --> (NO shot no enemy/ shot enemy)
     else if (hasLooked == true || useScout == true){
         hasFired = true;
-        useScout = false;
-
         int cout_enemy = lookGot_enemy_point.size();
 
         // NO shot no enemy, return back
