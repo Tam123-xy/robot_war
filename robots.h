@@ -132,7 +132,6 @@ public:
     bool canJump() const { return hasJumpAbility && jumpCount < 3; }
 };
 
-
 class ShootingRobot : virtual public Robot {
 protected:
     int shells = 10;
@@ -259,7 +258,6 @@ public:
     int getX() const;   
     int getY() const; 
     string getType() const override;
-
 };
 
 #endif

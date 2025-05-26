@@ -145,7 +145,7 @@ void GenericRobot::move(int dx, int dy) {
 
     srand(time(0));
 
-    //After upgraded to HideBot
+    // After upgraded to HideBot
     if (hasHideAbility) {
         bool tryHide = (rand() % 2 == 0);
 
@@ -178,15 +178,10 @@ void GenericRobot::move(int dx, int dy) {
             int randX = rand() % battlefield->getWidth();
             int randY = rand() % battlefield->getHeight();
 
-            if (battlefield->isRobotAt(newX, newY)) {
-                auto enemy = battlefield->findRobotAt(newX, newY);
-                cout << name << " cannot jump to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
-            } else {
-                // Ensure the jump is more than 1 step
-                if (abs(randX - centerX) > 1 || abs(randY - centerY > 1)) {
-                    if (jump(randX, randY)) {
-                        return; // Successful jump, end move
-                    }
+            if (!battlefield->isRobotAt(randX, randY) &&   // jump if the spot is empty
+                (abs(randX - centerX) > 1 || abs(randY - centerY) > 1)) {   // // Ensure the jump is more than 1 step
+                if (jump(randX, randY)) {
+                    return; // Successful jump, end move
                 }
             }
         }
@@ -436,18 +431,18 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             if (upgradedAreas.find("move") == upgradedAreas.end()) {
-                int choice = rand() % 3;
+                int choice = rand() % 3 ;
                 if (choice == 0) {
                     activateHideAbility();
                     upgradeNames.push_back("HideBot");
-                    cout << name << " can now hide 3 times per match!\n";
-                } else 
-                if (choice == 1){
+                    cout << name << " can now hide 3 times per match!" << endl;
+                } else if (choice == 1){
                     activateJumpAbility();
                     upgradeNames.push_back("JumpBot");
-                    cout << name << " can now jump 3 times per match!\n";
+                    cout << name << " can now jump 3 times per match!" << endl;
                 } else if (choice == 2){
-                    upgradeNames.push_back("??Bot");
+                    activateShadowAbility();
+                    upgradeNames.push_back("ShadowBot");
                 }
                 
                 upgradedAreas.insert("move");
