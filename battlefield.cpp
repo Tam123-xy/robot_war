@@ -197,8 +197,8 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
                     robot->setUseScout(true);
                     robot->setScoutCount(count + 1);
-                    vector<string> ordinal_numbers ={"1st","2nd","3rd"};
-                    cout << "See the entire battlefield - count " << ordinal_numbers[count] << "." << endl;
+                    vector<string> ordinal_numbers ={"1","2","3"};
+                    cout << "ScoutBot -- See the entire battlefield (Total: " << ordinal_numbers[count] << "/3)." << endl;
 
                     int x = robot->getX();
                     int y = robot->getY();
@@ -250,7 +250,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                     } 
                     else {
                         auto enemy = findRobotAt(copy_scoutPoints[0].first, copy_scoutPoints[0].second);
-                        string sentence = "All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
+                        string sentence = "ScoutBot -- All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
                         for(size_t i =1;i<size; i++ ){
                             enemy = findRobotAt(copy_scoutPoints[i].first, copy_scoutPoints[i].second);
                             sentence+= ", "+ enemy->getName()+"(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
@@ -267,7 +267,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                 }
 
                 else{
-                    cout << "Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
+                    cout << "ScoutBot -- Since the order of actions starts with LOOK, the power to see the entire battlefield will be preserved for next time." << endl;
                 }
             }
         }

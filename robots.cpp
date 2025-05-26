@@ -183,7 +183,7 @@ void GenericRobot::move(int dx, int dy) {
                     final_enemy_name = closest_enemy_name;
                 }
             }
-            cout << "Best move is to (" << best_move.first << ", " << best_move.second << ")"
+            cout << "ScoutBot -- Best move is to (" << best_move.first << ", " << best_move.second << ")"
                 << " with closest enemy "<< final_enemy_name << endl;
                 newX = best_move.first;
                 newY = best_move.second;
