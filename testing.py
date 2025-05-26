@@ -1,8 +1,8 @@
 import itertools
 
-moves = ['Hide', 'Jump']
-shoots = ['LongShot', 'SemiAuto', 'ThirtyShot','Landmine']
-sees = ['Scout', 'Track']
+moves = ['Hide', 'Jump','NEWMOVES']
+shoots = ['LongShot', 'SemiAuto', 'ThirtyShot','NEWSHOOT']
+sees = ['Scout', 'Track', 'NEWSEES']
 
 # 生成一级类
 for cls in moves + shoots + sees:
