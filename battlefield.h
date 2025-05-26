@@ -60,8 +60,6 @@ public:
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
 
     void addLandmine(int x, int y);
-
-    // 检查并触发地雷
     bool checkLandmine(int x, int y) ;
 
 //    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {

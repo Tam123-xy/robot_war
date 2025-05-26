@@ -504,18 +504,15 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     }
 
     if (newBot) {
-        // 更新升级状态 - 重要：在替换前更新状态
         upgradeNames.push_back(upgradeName);
         upgradedAreas.insert(area);
         upgradeCount++;
         
-        // 将当前状态传递给新机器人
         newBot->upgradeNames = this->upgradeNames;
         newBot->upgradedAreas = this->upgradedAreas;
         newBot->upgradeCount = this->upgradeCount;
-        newBot->name = this->name;  // 保持相同的名字
+        newBot->name = this->name;  /
         
-        // 执行替换
         battlefield->replaceRobot(self, newBot);
         
         cout << name << " now has upgrades: ";
@@ -524,9 +521,8 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
         }
         cout << " (Total: " << upgradeCount << "/3)" << endl;
         
-        // 检查是否需要组合升级（当有2个或3个升级时）
+
         if(upgradeCount >= 2) {
-            // 注意：这里应该调用newBot的方法，因为self已经被替换了
             newBot->replaceWithCombination(newBot->upgradeNames);
         }
     } else {
@@ -535,7 +531,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
 }
 
 void GenericRobot::replaceWithCombination(const vector<string>& types) {
-    if (types.size() < 2) return;  // 至少需要2个升级才能组合
+    if (types.size() < 2) return; 
     
     auto self = shared_from_this();
     shared_ptr<GenericRobot> newBot;
@@ -549,7 +545,6 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
     for (const auto& t : types) cout << t << " ";
     cout << endl;
 
-    // 二级组合 (2个升级)
     if (types.size() == 2) {
         // Movement + Shooting combinations
         if (hasType("HideBot") && hasType("LongShotBot")) {
@@ -618,7 +613,6 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
             combinationName = "LandmineTrackBot";
         }
     } 
-    // 三级组合 (3个升级)
     else if (types.size() == 3) {
         if (hasType("HideBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
             newBot = createUpgradedBot<HideLongShotScoutBot>();
@@ -672,7 +666,6 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
     }
 
     if (newBot && !combinationName.empty()) {
-        // 传递状态给组合机器人
         newBot->upgradeNames = this->upgradeNames;
         newBot->upgradedAreas = this->upgradedAreas;
         newBot->upgradeCount = this->upgradeCount;
