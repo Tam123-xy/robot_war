@@ -50,8 +50,6 @@ void GenericRobot::look(int dx, int dy) {
 
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
-            if (dx == 0 && dy == 0)
-            continue;
 
             int lookX = centerX + dx;
             int lookY = centerY + dy;
@@ -72,17 +70,10 @@ void GenericRobot::look(int dx, int dy) {
 
             // Enemy robot
             else if (battlefield->isRobotAt(lookX, lookY)) {
-                auto robot = battlefield->findRobotAt(lookX, lookY);
-                if (robot && !robot->getIsHidden()) {
-                    status = "Enemy robot";
-                    lookGot_enemy_point.push_back({lookX, lookY}); 
-                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
-                } else {
-                    status = "Empty space"; // Hidden robot is treated as invisible
-                    empty_point.push_back({lookX, lookY}); 
-                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status 
-                        << " (since " << robot->getName() << " is hidden)" << endl ;
-                }
+                status = "Enemy robot";
+                lookGot_enemy_point.push_back({lookX, lookY}); 
+                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                
             }
             else {
                 status = "Empty space";
@@ -159,68 +150,6 @@ void GenericRobot::move(int dx, int dy) {
     }
 
     srand(time(0));
-
-    //After upgraded to HideBot
-    if (hasHideAbility) {
-        bool tryHide = (rand() % 2 == 0);
-
-        if (tryHide && canHide()){
-            hide();
-            return;
-        }
-
-        // If not hiding or hide failed, try normal move
-        if (!empty_points.empty()) {
-            int num = rand() % empty_points.size();
-            newX = empty_points[num].first;
-            newY = empty_points[num].second;
-
-            setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
-            battlefield->triggerMineIfAny(this, newX, newY);
-        } else {
-            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
-        }
-
-        return; // Done with move turn
-    }
-
-    // After upgraded to JumpBot
-    if (hasJumpAbility) {
-        bool tryJump = (rand() % 2 == 0); // 50% chance to jump
-
-        if (tryJump && canJump()) {
-            int randX = rand() % battlefield->getWidth();
-            int randY = rand() % battlefield->getHeight();
-
-            if (battlefield->isRobotAt(newX, newY)) {
-                auto enemy = battlefield->findRobotAt(newX, newY);
-                cout << name << " cannot jump to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
-            } else {
-                // Ensure the jump is more than 1 step
-                if (abs(randX - centerX) > 1 || abs(randY - centerY > 1)) {
-                    if (jump(randX, randY)) {
-                        return; // Successful jump, end move
-                    }
-                }
-            }
-        }
-
-        // If not jumping or jump failed, try normal move
-        if (!empty_points.empty()) {
-            int num = rand() % empty_points.size();
-            newX = empty_points[num].first;
-            newY = empty_points[num].second;
-
-            setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
-            battlefield->triggerMineIfAny(this, newX, newY);
-        } else {
-            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
-        }
-
-        return; // Done with move turn
-    }
 
     // move -> look
     if (!hasLooked) {
@@ -511,7 +440,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
         newBot->upgradeNames = this->upgradeNames;
         newBot->upgradedAreas = this->upgradedAreas;
         newBot->upgradeCount = this->upgradeCount;
-        newBot->name = this->name;  /
+        newBot->name = this->name;  
         
         battlefield->replaceRobot(self, newBot);
         
