@@ -254,6 +254,7 @@ public:
     }
     string getType() const override { return "JumpBot"; }
 };
+
 class ScoutBot : virtual public GenericRobot {
     int scoutUses;
 public:

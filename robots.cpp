@@ -251,7 +251,7 @@ void GenericRobot::fire(int dx, int dy) {
         int cout_enemy = lookGot_enemy_point.size();
 
         if(cout_enemy==0){
-          cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells:" << shells << ")" << endl;
+          cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
           return;
         }
 
@@ -273,7 +273,7 @@ void GenericRobot::fire(int dx, int dy) {
         std::uniform_int_distribution<> dis(0, 99);
 
         shells--;
-        cout << name << " fires at " << enemy->getName() 
+        cout << name << " fires " << enemy->getName() 
              << " at (" << targetX << "," << targetY << ")\n";
         if (enemy->isHidden()) {
             cout << "Attack missed! Target is hidden" << endl;
@@ -595,6 +595,7 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
     }
 
     if (newBot && !combinationName.empty()) {
+        
         newBot->upgradeNames = this->upgradeNames;
         newBot->upgradedAreas = this->upgradedAreas;
         newBot->upgradeCount = this->upgradeCount;
