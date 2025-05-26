@@ -1,15 +1,3 @@
-/**********|**********|**********|
-Program: main.cpp / robots.h / battlefield.h
-Course: OOPDS
-Trimester: 2520
-Name: TAM XIN YI | YIAP WEI SHANZ |TAY SHI XIANG
-ID: 243UC247G6 | 243UC247CV | 243UC247GE
-Lecture Section: TC1L
-Tutorial Section: TT2L
-Email: TAM.XIN.YI@student.mmu.edu.my | YIAP.WEI.SHANZ@student.mmu.edu.my | TAY.SHI.XIANG@student.mmu.edu.my
-Phone: 011-11026051 | 011-59964357 | 019-3285968
-**********|**********|**********/
-
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
 
@@ -20,7 +8,12 @@ Phone: 011-11026051 | 011-59964357 | 019-3285968
 #include <vector>
 #include <set>
 #include <iostream>
-#include "robots.h"
+#include <mutex>
+using namespace std;
+
+class Robot;
+class HideBot;
+class JumpBot;
 
 class Battlefield {
 private:
@@ -32,7 +25,9 @@ private:
     uniform_int_distribution<> xDist;
     uniform_int_distribution<> yDist;
 
-    void processRespawn();
+    mutex respawnMutex;
+
+    set<pair<int, int>> landmines;
     
     
 public:
@@ -49,18 +44,28 @@ public:
     Robot* getAliveRobot() const;
     shared_ptr<Robot> findRobotAt(int x, int y);
     int countLiveRobot() const;
+    void processRespawn();
+    void addToRespawn(shared_ptr<Robot> robot);
+
 
 
     // Action sequence methods
     void executeRobotTurn(shared_ptr<Robot> robot);
-    void executeAttack(GenericRobot* gr);
-    void executeConserve(GenericRobot* gr);
-    void executeExplore(GenericRobot* gr);
+    // void executeAttack(GenericRobot* gr);
+    // void executeConserve(GenericRobot* gr);
+    // void executeExplore(GenericRobot* gr);
 
-    set<pair<int, int>> mines;
-    void placeMineAt(int x, int y);
-    bool checkMineAt(int x, int y) const;
-    void triggerMineIfAny(Robot* robot, int x, int y);
+    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
+
+    bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
+
+    void addLandmine(int x, int y);
+    bool checkLandmine(int x, int y) ;
+
+//    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
+//         auto it = find(robots.begin(), robots.end(), oldBot);
+//         if (it != robots.end()) *it = newBot;
+//    }
 };
 
 #endif

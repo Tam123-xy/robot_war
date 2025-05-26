@@ -1,6 +1,7 @@
 #include "battlefield.h"
 #include "robots.h"
 #include <iostream>
+#include <mutex>
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
@@ -74,6 +75,36 @@ int Battlefield::countLiveRobot() const {
     return count;
 }
 
+void Battlefield::addToRespawn(shared_ptr<Robot> robot) {
+        lock_guard<mutex> lock(respawnMutex);
+        respawnQueue.push(robot);
+}
+
+
+bool Battlefield::checkAttackHit(shared_ptr<Robot> attacker, 
+                               shared_ptr<Robot> target) {
+    if (auto hideBot = dynamic_cast<HideBot*>(target.get())) {
+        return !hideBot->isHidden();
+    }
+    return true;
+}
+
+void Battlefield::addLandmine(int x, int y) {
+        landmines.emplace(x, y);
+    }
+
+
+bool Battlefield::checkLandmine(int x, int y) {
+    auto it = landmines.find({x, y});
+    if (it != landmines.end()) {
+        landmines.erase(it); 
+        if (rand() % 100 < 50) { 
+            cout << "Landmine triggered at (" << x << "," << y << ")!\n";
+            return true;
+        }
+    }
+    return false;
+}
 
 void Battlefield::simulateTurn() {
     processRespawn();
@@ -82,20 +113,14 @@ void Battlefield::simulateTurn() {
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
 
-    //HideBot
-    for (auto& robot : robots) {
-        if (robot->alive()) {
-            robot->unhide();
-        }
-    }
     
     for (auto& robot : robots) {
         if (robot->alive()) {
             executeRobotTurn(robot);
         }
-        else if (robot->shouldRespawn()) {
-            respawnQueue.push(robot);
-        }
+        // else if (robot->shouldRespawn()) {
+        //     respawnQueue.push(robot);
+        // }
     }
     
     // Remove dead robots with no lives left
@@ -109,28 +134,37 @@ void Battlefield::simulateTurn() {
 }
 
 void Battlefield::processRespawn() {
-    
+    lock_guard<mutex> lock(respawnMutex);
     // Respon the first queue robot
     if (!respawnQueue.empty()) {
         auto robot = respawnQueue.front();
         respawnQueue.pop();
+
+        int remainingLives = robot->getLives();
+        if (remainingLives <= 0) return; 
         
         // check robot has live
         if (robot->getLives() > 0) {
-            int x, y;
+            int newX, newY;
             int attempts = 0;
             do {
-                x = xDist(gen); // Generate random point x
-                y = yDist(gen); // Generate random point x
+                newX = 1 + rand() % width;  
+                newY = 1 + rand() % height;  
                 if (++attempts > 100) {
                     cout << "Couldn't find empty spot for " << robot->getName() << endl;
                     respawnQueue.push(robot);  // Retry next turn
                     return;
                 }
-            } while (findRobotAt(x, y));
+            } while (findRobotAt(newX,newY));
             
-            robot->respawn(x, y);
-            cout << robot->getName() << " respawned at (" << x << "," << y << ")" << endl;
+            auto gr = make_shared<GenericRobot>(
+                robot->getName(), newX, newY, width, height, this
+            );
+            gr->setLives(remainingLives);
+            
+            replaceRobot(robot, gr);
+            gr->respawn(newX, newY);
+            cout << robot->getName() << " respawned at (" << newX << "," << newY << ") " << remainingLives << " lives remaining." << endl;
             
             display();
         }
@@ -139,72 +173,64 @@ void Battlefield::processRespawn() {
 
 void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     if (!robot->alive()) return;  // Skip dead robots
+    if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
+        trackBot->displayTracked();
+    }
 
-    if (auto gr = dynamic_cast<GenericRobot*>(robot.get())) {
-        gr->resetTurn();
-        gr->think();  // Always think first
+    robot->resetTurn();
+    robot->think();
 
-        // Create all possible action permutations
-        const vector<vector<string>> actionOrders = {
-            {"look", "fire", "move"},
-            {"look", "move", "fire"},
-            {"fire", "look", "move"},
-            {"fire", "move", "look"},
-            {"move", "look", "fire"},
-            {"move", "fire", "look"}
-        };
+    // Create all possible action permutations
+    const vector<vector<string>> actionOrders = {
+        {"look", "fire", "move"},
+        {"look", "move", "fire"},
+        //{"fire", "look", "move"},
+        //{"fire", "move", "look"},
+        {"move", "look", "fire"},
+        //{"move", "fire", "look"}
+    };
 
-        // Select random order
-        auto& order = actionOrders[rand() % actionOrders.size()];
-        cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+    // Select random order
+    auto& order = actionOrders[rand() % actionOrders.size()];
+    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-        for (const auto& action : order){
-            int dx,dy;
-            if (action == "look") {
-                gr->look(dx, dy);
-            }
-
-            else if (action == "fire"){
-                gr->fire(dx, dy);
-            }
-            
-            else{
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
-                display();
-
-            }
+    for (const auto& action : order){
+        int dx,dy;
+        if (action == "look") {
+            robot->look(dx, dy);
         }
 
-        cout<<endl;
+        else if (action == "fire"){
+            robot->fire(dx, dy);
+        }
+        
+        else{
+            robot->move(rand() % 3 - 1, rand() % 3 - 1);
+            display();
 
-        // Handle destruction if out of shells
-        if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {
-            gr->destroy();
-            if (gr->shouldRespawn()) {
-                respawnQueue.push(shared_ptr<Robot>(robot));
-            }
+        }
+    }
+
+    cout<<endl;
+
+    // Handle destruction if out of shells
+    if (robot->getShells() <= 0 && !robot->hasSelfDestructed()) {
+        robot->destroy();
+        if (robot->shouldRespawn()) {
+            respawnQueue.push(shared_ptr<Robot>(robot));
         }
     }
 }
 
-void Battlefield::placeMineAt(int x, int y) {
-    const_cast<set<pair<int, int>>&>(mines).insert({x, y});
-    mines.insert({x, y});
-}
 
-bool Battlefield::checkMineAt(int x, int y) const{
-    return mines.find({x, y}) != mines.end();
-}
-
-void Battlefield::triggerMineIfAny(Robot* robot, int x, int y) {
-    if (checkMineAt(x, y)) {
-        if (rand() % 100 < 50) {
-            cout << robot->getName() << " stepped on a mine at (" << x << "," << y << ") and was damaged!" << endl;
-            robot->destroy();
-        } else {
-            cout << robot->getName() << " stepped on a mine but avoided damage." << endl;
-        }
-        mines.erase({x, y});
+void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
+    newBot->setPosition(oldBot->getX(), oldBot->getY());
+    newBot->setLives(oldBot->getLives()); 
+    newBot->setShells(oldBot->getShells());
+    
+    auto it = find(robots.begin(), robots.end(), oldBot);
+    if (it != robots.end()) {
+        *it = newBot; 
     }
 }
 
@@ -213,7 +239,7 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getX()-1][robot->getY()-1] = 'R';
+            grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];
         }
     }
 
