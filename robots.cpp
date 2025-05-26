@@ -286,7 +286,7 @@ void GenericRobot::fire(int dx, int dy) {
 
         // NO shot no enemy, return back
         if(cout_enemy==0){
-          cout << "Preserving shell for next turn since " << name << " didn't find any robots around." << endl;
+          cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
           return;
         }
 

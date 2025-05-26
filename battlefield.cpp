@@ -2,6 +2,7 @@
 #include "robots.h"
 #include <iostream>
 #include <mutex>
+#include <mutex>
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
@@ -169,7 +170,6 @@ void Battlefield::simulateTurn() {
             }),
         robots.end()
     );
-    
 }
 
 void Battlefield::processRespawn() {
@@ -197,12 +197,18 @@ void Battlefield::processRespawn() {
 
         int remainingLives = robot->getLives();
         if (remainingLives <= 0) return; 
+
+        int remainingLives = robot->getLives();
+        if (remainingLives <= 0) return; 
         
         // check robot has live
         if (robot->getLives() > 0) {
             int newX, newY;
+            int newX, newY;
             int attempts = 0;
             do {
+                newX = 1 + rand() % width;  
+                newY = 1 + rand() % height;  
                 newX = 1 + rand() % width;  
                 newY = 1 + rand() % height;  
                 if (++attempts > 100) {
@@ -227,6 +233,9 @@ void Battlefield::processRespawn() {
 
 void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
     if (!robot->alive()) return;  // Skip dead robots
+    if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
+        trackBot->displayTracked();
+    }
 
     if (auto gr = dynamic_cast<GenericRobot*>(robot.get())) {
         gr->resetTurn();
@@ -331,11 +340,11 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             }
         }
 
-        for (const auto& action : order){
-            int dx,dy;
-            if (action == "look") {
-                gr->look(dx, dy);
-            }
+    for (const auto& action : order){
+        int dx,dy;
+        if (action == "look") {
+            robot->look(dx, dy);
+        }
 
             else if (action == "fire"){
                 gr->fire(dx, dy);
@@ -345,8 +354,8 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                 gr->move(rand() % 3 - 1, rand() % 3 - 1);
                 // display();
 
-            }
         }
+    }
 
         cout<<endl;
 
@@ -390,7 +399,7 @@ void Battlefield::display() {
     // }
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getX()-1][robot->getY()-1] = 'R';
+            grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];
         }
     }
 
