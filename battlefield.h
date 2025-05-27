@@ -57,6 +57,13 @@ public:
     // void placeMineAt(int x, int y);
     // bool checkMineAt(int x, int y) const;
     // void triggerMineIfAny(Robot* robot, int x, int y);
+
+    void processBestMove(int& newX, int& newY,
+                     const vector<pair<int, int>>& empty_points,
+                     const vector<pair<int, int>>& enemy_outside_surrouding_point,
+                     Battlefield* battlefield);
+
+    void seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy);
 };
 
 #endif

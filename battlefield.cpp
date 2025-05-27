@@ -2,7 +2,7 @@
 #include "robots.h"
 #include <iostream>
 #include <mutex>
-#include <mutex>
+#include <climits>
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
@@ -154,14 +154,6 @@ void Battlefield::simulateTurn() {
             }
         }      
     }
-
-    // End turn, for those robots who died in turn will go respawn queue
-    // for(auto& robot : copy){
-    //     if(robot->shouldRespawn()){
-    //         respawnQueue.push(robot);
-    //     }
-    // }
-
     // Remove dead robots with no lives left
     robots.erase(
         remove_if(robots.begin(), robots.end(),
@@ -232,110 +224,25 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
     if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
         trackBot->displayTracked();
     }
+    robot->resetTurn();
+    robot->think(); 
 
-    if (auto gr = dynamic_cast<GenericRobot*>(robot.get())) {
-        gr->resetTurn();
-        gr->think(); 
+    // Create all possible action permutations
+    const vector<vector<string>> actionOrders = {
+        // {"look", "fire", "move"},
+        // {"look", "move", "fire"},
+        {"fire", "look", "move"},
+        // {"fire", "move", "look"},
+        // {"move", "look", "fire"},
+        // {"move", "fire", "look"}
+    };
 
-        // robot->resetTurn();
-        // robot->think();
+    // Cout order action
+    auto& order = actionOrders[rand() % actionOrders.size()];
+    cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-        // Create all possible action permutations
-        const vector<vector<string>> actionOrders = {
-            {"look", "fire", "move"},
-            // {"look", "move", "fire"},
-            // {"fire", "look", "move"},
-            // {"fire", "move", "look"},
-            // {"move", "look", "fire"},
-            // {"move", "fire", "look"}
-        };
-
-        // Cout order action
-        auto& order = actionOrders[rand() % actionOrders.size()];
-        cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
-
-        // ScoutBot
-        if (robot->isScout()) {
-            int count = robot->getScoutCount(); // Check how many times power has been used  
-            if(count == 3){
-                cout << "Cannot see the entire battlefield — the ability has already been used 3 times." << endl;
-            }else{
-                // move/fire --> look, use power. 
-                // Push values to vectors 
-                // 1) enemy points which are surrounding the robot, 
-                // 2) enemy points which are NOT surrounding the robot, 
-                // 3) empty points which are surrounding the robot
-                if(order[0]!="look"){ 
-
-                    // All enemies point
-                    for (auto& copy_robot : copy){
-                        if(copy_robot->getName()!= robot->getName() && copy_robot->alive()){
-                            robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
-                        }else continue; 
-                    }
-
-                    robot->setUseScout(true);
-                    robot->setScoutCount(count + 1);
-                    vector<string> ordinal_numbers ={"1","2","3"};
-                    cout << "ScoutBot -- See the entire battlefield (Total: " << ordinal_numbers[count] << "/3)." << endl;
-
-                    int x = robot->getX();
-                    int y = robot->getY();
-
-                    for (int dy = -1; dy <= 1; ++dy) {
-                        for (int dx = -1; dx <= 1; ++dx) {
-
-                            int lookX = x + dx;
-                            int lookY = y + dy;         
-
-                            if (dx == 0 && dy == 0) continue; // Robot itself point
-                           
-                            else if (lookX <=0 ||lookY <=0 || lookX > getWidth() || lookY > getHeight()) continue;  // Out of bounds
-
-                            if (isRobotAt(lookX, lookY)) { // Enemy robot
-                                robot->add_LookGotEnemyPoint({lookX, lookY}); // 1) enemy points which are surrounding the robot, 
-
-                            }else{ // Empty space   
-                                robot->add_EmptyPoint({lookX, lookY}); // 2) enemy points which are NOT surrounding the robot, 
-                            }
-                        }
-                    }
-
-                    // 3) empty points which are surrounding the robot
-                    for (const auto& point : robot->getScoutPoints()) {
-                        bool isSurrounding = false;
-                        for (const auto& s : robot->get_LookGotEnemyPoint()) {
-                            if (point == s) {
-                                isSurrounding = true;
-                                break;
-                            }
-                        }
-                        if (!isSurrounding) {
-                            robot->add_enemy_Outside_surrouding_point(point);
-                        }
-                    }
-
-                    vector<pair<int, int>> copy_scoutPoints = robot->getScoutPoints();
-                    int size = copy_scoutPoints.size();
-                    if (size == 0){
-                        cout << "No enemy found on the battlefield." << endl;
-                    }else{
-                        auto enemy = findRobotAt(copy_scoutPoints[0].first, copy_scoutPoints[0].second);
-                        string sentence = "ScoutBot -- All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
-                        for(size_t i =1;i<size; i++ ){
-                            enemy = findRobotAt(copy_scoutPoints[i].first, copy_scoutPoints[i].second);
-                            sentence+= ", "+ enemy->getName()+"(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
-                        }
-                        cout<< sentence <<endl;
-                        }
-                        
-                }
-                else{
-                    cout << "ScoutBot -- Since the order of actions starts with LOOK," <<endl;
-                    cout<<"the power to see the entire battlefield will be preserved for next time." << endl;
-                }
-            }
-        }
+    // ScoutBot
+    seeBattlefield(robot, order, copy);
 
     for (const auto& action : order){
         int dx,dy;
@@ -344,33 +251,30 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
         }
 
             else if (action == "fire"){
-                gr->fire(dx, dy);
+                robot->fire(dx, dy);
             }
             
             else{
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                robot->move(rand() % 3 - 1, rand() % 3 - 1);
                 // display();
-
         }
+    
+        cout<<endl;
     }
 
-        cout<<endl;
-
-        // useScout = false;
-        for (auto& copy_robot : copy){
-            if(copy_robot->getUseScout()){
-                robot->setUseScout(false); 
-            }
-            else continue; 
+    // useScout = false;
+    for (auto& copy_robot : copy){
+        if(copy_robot->getUseScout()){
+            robot->setUseScout(false); 
         }
+        else continue; 
+    }
 
-
-        // Handle destruction if out of shells
-        if (gr->getShells() <= 0 && !gr->hasSelfDestructed()) {
-            gr->destroy();
-            if (gr->shouldRespawn()) {
-                respawnQueue.push(shared_ptr<Robot>(robot));
-            }
+    // Handle destruction if out of shells
+    if (robot->getShells() <= 0 && !robot->hasSelfDestructed()) {
+        robot->destroy();
+        if (robot->shouldRespawn()) {
+            respawnQueue.push(shared_ptr<Robot>(robot));
         }
     }
 }
@@ -410,3 +314,123 @@ void Battlefield::display() {
 
 }
 
+void Battlefield::processBestMove(int& newX, int& newY,
+                     const vector<pair<int, int>>& empty_points,
+                     const vector<pair<int, int>>& enemy_outside_surrouding_point,
+                     Battlefield* battlefield){
+                        
+    pair<int, int> best_move = empty_points[0];
+    int min_distance = INT_MAX;
+    string final_enemy_name; 
+
+    for (auto& space : empty_points) {
+        int closest_enemy_dist = INT_MAX;
+        string closest_enemy_name; 
+
+        for (auto& enemy : enemy_outside_surrouding_point) {
+            int dist = abs(space.first - enemy.first) + abs(space.second - enemy.second);
+            auto enemyy = battlefield->findRobotAt(enemy.first, enemy.second);
+
+            if (dist < closest_enemy_dist) {
+                closest_enemy_dist = dist;
+                closest_enemy_name = enemyy->getName();
+            }
+        }
+
+        // Keep the space that gives the minimum distance to any enemy
+        if (closest_enemy_dist < min_distance) {
+            min_distance = closest_enemy_dist;
+            best_move = space;
+            final_enemy_name = closest_enemy_name;
+        }
+    }
+    cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
+        << " with closest enemy "<< final_enemy_name << endl;
+        newX = best_move.first;
+        newY = best_move.second;
+}
+
+void Battlefield::seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy){
+
+    if (robot->isScout()) {
+        int count = robot->getScoutCount(); // Check how many times power has been used  
+        if(count == 3){
+            cout << "Cannot see the entire battlefield — the ability has already been used 3 times." << endl;
+        }else{
+            // move/fire --> look, use power. 
+            // Push values to vectors 
+            // 1) enemy points which are surrounding the robot, 
+            // 2) enemy points which are NOT surrounding the robot, 
+            // 3) empty points which are surrounding the robot
+            if(order[0]!="look"){ 
+
+                // All enemies point
+                for (auto& copy_robot : copy){
+                    if(copy_robot->getName()!= robot->getName() && copy_robot->alive()){
+                        robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
+                    }else continue; 
+                }
+
+                robot->setUseScout(true);
+                robot->setScoutCount(count + 1);
+                vector<string> ordinal_numbers ={"1","2","3"};
+                cout << "ScoutBot -- See the entire battlefield (Total: " << ordinal_numbers[count] << "/3)." << endl;
+
+                int x = robot->getX();
+                int y = robot->getY();
+
+                for (int dy = -1; dy <= 1; ++dy) {
+                    for (int dx = -1; dx <= 1; ++dx) {
+
+                        int lookX = x + dx;
+                        int lookY = y + dy;         
+
+                        if (dx == 0 && dy == 0) continue; // Robot itself point
+                    
+                        else if (lookX <=0 ||lookY <=0 || lookX > getWidth() || lookY > getHeight()) continue;  // Out of bounds
+
+                        else if (isRobotAt(lookX, lookY)) { // Enemy robot
+                            robot->add_LookGotEnemyPoint({lookX, lookY}); // 1) enemy points which are surrounding the robot, 
+
+                        }else{ // Empty space   
+                            robot->add_EmptyPoint({lookX, lookY}); // 2) enemy points which are NOT surrounding the robot, 
+                        }
+                    }
+                }
+
+                // 3) empty points which are surrounding the robot
+                for (const auto& point : robot->getScoutPoints()) {
+                    bool isSurrounding = false;
+                    for (const auto& s : robot->get_LookGotEnemyPoint()) {
+                        if (point == s) {
+                            isSurrounding = true;
+                            break;
+                        }
+                    }
+                    if (!isSurrounding) {
+                        robot->add_enemy_Outside_surrouding_point(point);
+                    }
+                }
+
+                vector<pair<int, int>> copy_scoutPoints = robot->getScoutPoints();
+                int size = copy_scoutPoints.size();
+                if (size == 0){
+                    cout << "No enemy found on the battlefield." << endl;
+                }else{
+                    auto enemy = findRobotAt(copy_scoutPoints[0].first, copy_scoutPoints[0].second);
+                    string sentence = "ScoutBot -- All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
+                    for(size_t i =1;i<size; i++ ){
+                        enemy = findRobotAt(copy_scoutPoints[i].first, copy_scoutPoints[i].second);
+                        sentence+= ", "+ enemy->getName()+"(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
+                    }
+                    cout<< sentence <<endl;
+                    }
+                    
+            }
+            else{
+                cout << "ScoutBot -- Since the order of actions starts with LOOK," <<endl;
+                cout<<"the power to see the entire battlefield will be preserved for next time." << endl;
+            }
+        }
+    }
+}

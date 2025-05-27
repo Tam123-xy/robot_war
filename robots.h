@@ -11,6 +11,9 @@
 #include "battlefield.h"
 #include <mutex>
 #include "battlefield.h"
+#include <random>
+// std::random_device rd;
+// std::mt19937 gen(rd());
 using namespace std;
 
 class Battlefield;  // Forward declaration
@@ -86,6 +89,8 @@ public:
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
     virtual const vector<string>& get_upgradeNames() const = 0;
+
+   
 };
 
 class MovingRobot : virtual public Robot {
@@ -188,6 +193,7 @@ private:
     template<typename T>
     shared_ptr<T> createUpgradedBot();
     void replaceWithCombination(const vector<string>& types);
+    mt19937 gen;
 
 protected:
     int upgradeCount = 0;
@@ -264,6 +270,27 @@ public:
     int getY() const; 
     string getType() const override;
 
+    void surrouding_point_TARGET(int& targetX, int& targetY){
+        int centerX = getX() ;
+        int centerY = getY() ;
+        vector<pair<int, int>> surrounding_points;
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int pointX = centerX + dx;
+                int pointY = centerY + dy;       
+
+                if (dx == 0 && dy == 0) continue; // Robot itself
+                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+                else{ surrounding_points.push_back({pointX, pointY});} // Enemy + empty points
+            }
+        }
+
+        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
+        int num = dis(gen);
+        targetX = surrounding_points[num].first;
+        targetY = surrounding_points[num].second;
+    }
 };
 
 class HideBot : virtual public GenericRobot {
@@ -326,6 +353,7 @@ public:
 
 class ScoutBot : virtual public GenericRobot {
     int scoutUses;
+
 public:
     ScoutBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
         :   Robot(name, x, y, w, h, bf),
@@ -349,7 +377,8 @@ public:
         }
     }
 
-    string getType() const override { return "ScoutBot"; }
+
+    // string getType() const override { return "ScoutBot"; }
 };
 
 class TrackBot : virtual public GenericRobot {
@@ -388,7 +417,6 @@ public:
 
     string getType() const override { return "TrackBot"; }
 };
-
 
 class LongShotBot : virtual public GenericRobot { // 修改5: 继承GenericRobot
     int fireRange = 3;
@@ -531,8 +559,6 @@ public:
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpLandmineBot"; }
 };
-
-//-----------------------------------------------
 
 class HideScoutBot : public HideBot, public ScoutBot {
 public:
@@ -729,6 +755,5 @@ public:
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpLandmineTrackBot"; }
 };
-
 
 #endif

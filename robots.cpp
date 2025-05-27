@@ -4,9 +4,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <mutex>
+#include <random>
 using namespace std;
-// random_device rd;
-// mt19937 gen(rd());
+random_device rd;
+mt19937 gen(rd());
 
 GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h, bf),
@@ -16,7 +17,8 @@ GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battl
       ThinkingRobot(name, x, y, w, h, bf),
       battlefield(bf),
       shells(10),
-      selfDestructed(false) {
+      selfDestructed(false),
+      gen(random_device{}()) {
         //cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
@@ -118,47 +120,12 @@ string GenericRobot::getType() const {
 
 void GenericRobot::move(int dx, int dy) {
     hasMoved = true;
-    int centerX = getX();
-    int centerY = getY();
-  
     int newX, newY;
 
-    vector<pair<int, int>> empty_points;
-    vector<pair<int, int>> surrounding_points;
-
-    for (int dy_ = -1; dy_ <= 1; ++dy_) {
-        for (int dx_ = -1; dx_ <= 1; ++dx_) {
-            int pointX = centerX + dx_;
-            int pointY = centerY + dy_;
-
-            if (dx_ == 0 && dy_ == 0)
-                continue;
-
-            // Out of bounds
-            if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())
-                continue;
-
-            // Enemy or empty
-            surrounding_points.push_back({pointX, pointY});
-            if (!battlefield->isRobotAt(pointX, pointY)) {
-                empty_points.push_back({pointX, pointY});
-            }
-        }
-    }
-
-    srand(time(0));
-
-    // move -> look, take the POINTS which are surrounding robot itself . POINTS --> (is occupied/ move)
+    // move -> look, surrounding POINTS --> (is occupied/ move)
     if (!hasLooked && useScout == false) {
-        if (surrounding_points.empty()) {
-            cout << name << " has no space to move!" << endl;
-            return;
-        }
-
-        int num = rand() % surrounding_points.size();
-        uniform_int_distribution<> dis(0, 99);
-        newX = surrounding_points[num].first;
-        newY = surrounding_points[num].second;
+      
+        surrouding_point_TARGET(newX, newY);
 
         if (battlefield->isRobotAt(newX, newY)) {
             auto enemy = battlefield->findRobotAt(newX, newY);
@@ -169,53 +136,25 @@ void GenericRobot::move(int dx, int dy) {
         }
     }
 
-    // look -> move , take the EMPTY POINTS which are surrounding robot itself . POINTS --> (no point/ move)
-    // ScoutBot , if size == 8 , move to closer point
+    // look -> move , empty POINTS --> (no point/ move)
+    // ScoutBot 
     else if ( hasLooked || useScout == true) {
 
-        if (empty_points.empty()) {
+        if (empty_point.empty()) {
             cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
             return;
         }
 
-        // Got empty point to move
-
-        // ScoutBot will move to an emepty point which is the closer point to an enemy, condition "Surrounding no enemy and outside surrounding got enemy"
-        if(useScout == true && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_points.size()>=2){
-            pair<int, int> best_move = empty_points[0];
-            int min_distance = INT_MAX;
-            string final_enemy_name; 
-
-            for (auto& space : empty_points) {
-                int closest_enemy_dist = INT_MAX;
-                string closest_enemy_name; 
-
-                for (auto& enemy : enemy_outside_surrouding_point) {
-                    int dist = abs(space.first - enemy.first) + abs(space.second - enemy.second);
-                    auto enemyy = battlefield->findRobotAt(enemy.first, enemy.second);
-                    if (dist < closest_enemy_dist) {
-                        closest_enemy_dist = dist;
-                        closest_enemy_name = enemyy->getName();
-                    }
-                }
-
-                // Keep the space that gives the minimum distance to any enemy
-                if (closest_enemy_dist < min_distance) {
-                    min_distance = closest_enemy_dist;
-                    best_move = space;
-                    final_enemy_name = closest_enemy_name;
-                }
-            }
-            cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
-                << " with closest enemy "<< final_enemy_name << endl;
-                newX = best_move.first;
-                newY = best_move.second;
+        // ScoutBot will move to an emepty point which is the closer point to an enemy, condition --surrounding no enemy and outside surrounding got enemy and at least 2 empty points"
+        if(useScout == true && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_point.size()>=2){
+            battlefield->processBestMove( newX, newY, lookGot_enemy_point, enemy_outside_surrouding_point, battlefield);
         }
         
         else{
-            int num = rand() % empty_points.size();
-            newX = empty_points[num].first;
-            newY = empty_points[num].second;
+            uniform_int_distribution<> dis(0, empty_point.size() - 1);
+            int num = dis(gen);
+            newX = empty_point[num].first;
+            newY = empty_point[num].second;
         }
 
         setPosition(newX, newY);
@@ -232,11 +171,9 @@ void GenericRobot::move(int dx, int dy) {
                 << newX << "," << newY << ")!\n";
         }
     }
-
 }
 
 void GenericRobot::fire(int dx, int dy) {
-    
     if (shells == 0) {
         cout << name << " has no shells left! Self-destructing..." << endl;
         selfDestructed = true;
@@ -247,39 +184,13 @@ void GenericRobot::fire(int dx, int dy) {
     int targetX ;
     int targetY ;
 
-    // fire --> look, take the POINTS which are surrounding robot itself . POINTS --> (shot no enemy/ shot enemy)
+    // fire --> look, surrounding POINTS --> (shot no enemy/ shot enemy)
     if(hasLooked == false && useScout == false){
-
-        vector<pair<int, int>> surrounding_point;
-        int centerX = getX() ;
-        int centerY = getY() ;
-        
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-
-                int lookX = centerX + dx;
-                int lookY = centerY + dy;       
-
-                // Robot itself point
-                if (dx == 0 && dy == 0 ) continue;
-                
-                // Out of bounds
-                else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()) continue;
-
-                else{
-                    surrounding_point.push_back({lookX, lookY});
-                }
-            }
-        }
-
-        int size = surrounding_point.size();
-        srand(time(0));            
-        int num = rand() % size ;
-        targetX = surrounding_point[num].first;
-        targetY = surrounding_point[num].second;
+        surrouding_point_TARGET(targetX, targetY);
     }
         
-    // look --> fire, take the POINTS which are contain enemies. POINTS --> (NO shot no enemy/ shot enemy)
+    // look --> fire, enemy POINTS --> (NO shot no enemy/ shot enemy)
+    // ScoutBot 
     else if (hasLooked == true || useScout == true){
         hasFired = true;
         int cout_enemy = lookGot_enemy_point.size();
@@ -321,13 +232,12 @@ void GenericRobot::fire(int dx, int dy) {
         } 
     }
 
+    // shot robot
     if(battlefield->findRobotAt(targetX, targetY)){
         auto enemy = battlefield->findRobotAt(targetX, targetY);
-        std::random_device rd;
-        std::mt19937 gen(rd()); // Mersenne Twister
-        std::uniform_int_distribution<> dis(0, 99);
-              
+        uniform_int_distribution<> dis(0, 99);
         shells--;
+
         cout << name << " fires "<< enemy->getName() <<" at (" << targetX << "," << targetY << ")";
         cout << " (Left shells: " << shells <<"/10)"<< endl;
 
@@ -356,7 +266,6 @@ void GenericRobot::fire(int dx, int dy) {
         cout << " (Left shells: " << shells <<"/10)"<< endl;
     }
     
-    lookGot_enemy_point.clear();
 }
 
 void GenericRobot::respawn(int x, int y) {
@@ -382,6 +291,7 @@ void GenericRobot::destroy() {
 bool GenericRobot::shouldRespawn() const {
     return !isAlive && lives > 0;
 }
+
 int GenericRobot::getX() const {
     return positionX;
 }
@@ -402,30 +312,30 @@ void GenericRobot::chooseUpgrade() {
         return;
     }
 
-    // isScoutBot = true;
-    // upgradeNames.push_back("ScoutBot");
-    // upgradeCount++;
+    isScoutBot = true;
+    upgradeNames.push_back("ScoutBot");
+    upgradeCount++;
 
-    // string sentence = name + " now is " + upgradeNames[0];
-    // int size = upgradeNames.size();
-    // for(size_t i =1; i<size ;i++){
-    //     sentence+= ", " + upgradeNames[i];
-    // }
-    // cout << sentence<< endl;
-
-    vector<int> availableOptions;
-    if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
-    if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
-    if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
-
-    if (availableOptions.empty()) {
-        cout << name << " has no more areas to upgrade!" << endl;
-        return;
+    string sentence = name + " now is " + upgradeNames[0];
+    int size = upgradeNames.size();
+    for(size_t i =1; i<size ;i++){
+        sentence+= ", " + upgradeNames[i];
     }
+    cout << sentence<< endl;
 
-    int randomIndex = rand() % availableOptions.size();
-    int chosenOption = availableOptions[randomIndex];
-    chooseUpgrade(chosenOption);
+    // vector<int> availableOptions;
+    // if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+    // if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+    // if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
+
+    // if (availableOptions.empty()) {
+    //     cout << name << " has no more areas to upgrade!" << endl;
+    //     return;
+    // }
+
+    // int randomIndex = rand() % availableOptions.size();
+    // int chosenOption = availableOptions[randomIndex];
+    // chooseUpgrade(chosenOption);
 }
 
 void GenericRobot::chooseUpgrade(int upgradeOption) {
