@@ -124,15 +124,22 @@ void GenericRobot::move(int dx, int dy) {
 
     // move -> look, surrounding POINTS --> (is occupied/ move)
     if (!hasLooked && useScout == false) {
+        bool track_move = true;
+
+        if(isTrackBot){
+            Track_surrouding_point_TARGET(newX, newY,track_move);
+        }
       
         surrouding_point_TARGET(newX, newY);
 
-        if (battlefield->isRobotAt(newX, newY)) {
-            auto enemy = battlefield->findRobotAt(newX, newY);
-            cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
-        } else {
-            setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+        if(track_move){
+            if (battlefield->isRobotAt(newX, newY)) {
+                auto enemy = battlefield->findRobotAt(newX, newY);
+                cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+            } else {
+                setPosition(newX, newY);
+                cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            }
         }
     }
 

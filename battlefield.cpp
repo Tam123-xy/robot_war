@@ -217,9 +217,10 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        {"look", "fire", "move"},
+        // {"look", "fire", "move"},
         // {"look", "move", "fire"},
         // {"fire", "look", "move"},
+        {"fire", "move", "move"},
         // {"fire", "move", "look"},
         // {"move", "look", "fire"},
         // {"move", "fire", "look"}
@@ -465,7 +466,7 @@ void Battlefield::trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Ro
     else{
         point = to_string(copy_TrackedBot[0]->getX()) + ","+ to_string(copy_TrackedBot[0]->getY());
     }
-    sentense= robot->getName() + " tracks " + copy_TrackedBot[0]->getName() + "("+point+")";
+    sentense= "TrackBot -- "+robot->getName() + " tracks " + copy_TrackedBot[0]->getName() + "("+point+")";
 
     int size = copy_TrackedBot.size();
     for(int i=1 ; i<size; i++){

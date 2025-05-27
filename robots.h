@@ -92,6 +92,12 @@ public:
     virtual void setTrackCount(int) {}
     virtual const vector<shared_ptr<Robot>> get_TrackedBot() const =0;
     virtual void add_TrackedBot(shared_ptr<Robot> bot) =0;
+
+    virtual const vector<shared_ptr<Robot>> get_surrounding_track_robots() const =0;
+    virtual void add_surrounding_track_robots(shared_ptr<Robot> bot) =0;
+
+    virtual const vector<shared_ptr<Robot>> get_outside_surrounding_track_robots() const =0;
+    virtual void add_outside_surrounding_track_robots(shared_ptr<Robot> bot) =0;
     
     // Update
     virtual int getUpgradeCount() const { return 0; }
@@ -121,6 +127,8 @@ public:
 };
 
 class SeeingRobot : virtual public Robot {
+private:
+    mt19937 gen;
 protected:
     // ScoutBot
     int scoutCount = 0;
@@ -129,6 +137,8 @@ protected:
     // TarckBot
     int trackCount = 0;
     vector<shared_ptr<Robot>> tracked_robots; 
+    vector<shared_ptr<Robot>> surrounding_track_robots; 
+    vector<shared_ptr<Robot>> outside_surrounding_track_robots;
 
 public:
     using Robot::Robot;
@@ -154,6 +164,57 @@ public:
     void setTrackCount(int c) override { trackCount = c; }
     const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;}
     void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);}
+    const vector<shared_ptr<Robot>> get_surrounding_track_robots() const override {return surrounding_track_robots;}
+    void add_surrounding_track_robots(shared_ptr<Robot> bot) override{surrounding_track_robots.push_back(bot);}
+    const vector<shared_ptr<Robot>> get_outside_surrounding_track_robots() const override {return outside_surrounding_track_robots;}
+    void add_outside_surrounding_track_robots(shared_ptr<Robot> bot) override{outside_surrounding_track_robots.push_back(bot);}
+
+    // Enemy(!= tracked Bot) + empty points
+    void Track_surrouding_point_TARGET(int& targetX, int& targetY, bool& track_move){
+        int centerX = getX() ;
+        int centerY = getY() ;
+        vector<pair<int, int>> surrounding_points;
+        vector<shared_ptr<Robot>> gotLive_trackedBot;
+
+        for (auto& t : get_TrackedBot()) {
+            if(t->getX()==0)continue;
+            gotLive_trackedBot.push_back(t);
+        }
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int pointX = centerX + dx;
+                int pointY = centerY + dy;       
+
+                if (dx == 0 && dy == 0) continue; // Robot itself
+                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+                else if (battlefield->isRobotAt(pointX, pointY)){
+                    auto enemy = battlefield->findRobotAt(pointX, pointY);
+                    bool isTracked = false;
+                    for (auto& t : gotLive_trackedBot) {
+                        if (t == enemy) {
+                            isTracked = true;
+                            break;
+                        }
+                    }
+                    if (!isTracked) { // 是敌人，不是 trackedBot，加入
+                        surrounding_points.emplace_back(pointX, pointY);
+                    }
+                }
+                else{ surrounding_points.push_back({pointX, pointY});} // empty points
+            }
+        }
+
+        if(surrounding_points.size()==0){
+            cout<< name <<" cannot move! "<< name <<" is surrounding by tracked Bot"<<endl;
+            track_move = false;
+        }
+
+        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
+        int num = dis(gen);
+        targetX = surrounding_points[num].first;
+        targetY = surrounding_points[num].second;
+    }
     
     // PredictBot
     bool isPredictBot = false;
@@ -260,7 +321,7 @@ public:
     const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}
     void add_enemy_Outside_surrouding_point(pair<int, int> pos) override{ enemy_outside_surrouding_point.push_back(pos);}
     const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const override{  return enemy_outside_surrouding_point;}
-
+    
     // Action methods
     void resetTurn() {
         hasLooked = hasFired = hasMoved = false;
@@ -273,7 +334,6 @@ public:
     void look(int dx, int dy) override;
     void move(int dx, int dy) override;
     void fire(int dx, int dy) override;
-    // vector<string> scout(int dx, int dy);
     
     // State check methods
     bool canLook() const { return !hasLooked; }
