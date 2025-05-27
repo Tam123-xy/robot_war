@@ -312,8 +312,8 @@ void GenericRobot::chooseUpgrade() {
         return;
     }
 
-    isScoutBot = true;
-    upgradeNames.push_back("ScoutBot");
+    isTrackBot = true;
+    upgradeNames.push_back("TrackBot");
     upgradeCount++;
 
     string sentence = name + " now is " + upgradeNames[0];

@@ -85,6 +85,14 @@ public:
     virtual void add_enemy_Outside_surrouding_point(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const =0;
 
+    // TarckBot
+    virtual bool isTrack() const { return false; } 
+    virtual bool got_trackRot() const { return false; } 
+    virtual int getTrackCount() const { return 0; }
+    virtual void setTrackCount(int) {}
+    virtual const vector<shared_ptr<Robot>> get_TrackedBot() const =0;
+    virtual void add_TrackedBot(shared_ptr<Robot> bot) =0;
+    
     // Update
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
@@ -114,10 +122,13 @@ public:
 
 class SeeingRobot : virtual public Robot {
 protected:
-    int visionRange = 1;
+    // ScoutBot
     int scoutCount = 0;
-    int trackCount = 0;
     vector<pair<int, int>> ScoutPoint;
+
+    // TarckBot
+    int trackCount = 0;
+    vector<shared_ptr<Robot>> tracked_robots; 
 
 public:
     using Robot::Robot;
@@ -125,8 +136,8 @@ public:
 
     // ScoutBot
     bool isScoutBot = false;
-    bool useScout = false;
     bool isScout() const override { return isScoutBot; }
+    bool useScout = false;
     int getScoutCount() const override { return useScout; }
     void setScoutCount(int c) override { scoutCount = c; }
     void setUseScout(bool c) override { useScout = c; }
@@ -136,8 +147,14 @@ public:
 
     // TrackBot
     bool isTrackBot = false;
-    bool getTrackBot() const { return isTrackBot; }
-
+    bool isTrack() const override { return isTrackBot; }
+    bool trackRot = false;
+    bool got_trackRot() const override { return trackRot; }
+    int getTrackCount() const override { return trackCount; }
+    void setTrackCount(int c) override { trackCount = c; }
+    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;}
+    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);}
+    
     // PredictBot
     bool isPredictBot = false;
     bool getPredictBot() const { return isPredictBot; }
@@ -226,6 +243,13 @@ public:
         isScoutBot = false;
         upgradedAreas.clear();
         upgradeNames.clear();
+
+        //TrackBot
+        isTrackBot = false;
+        trackRot = false;
+        tracked_robots.clear();
+        trackCount = 0;
+
     }
     const vector<string>& get_upgradeNames() const override{return upgradeNames;}
 

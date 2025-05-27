@@ -64,6 +64,7 @@ public:
                      Battlefield* battlefield);
 
     void seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy);
+    void trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Robot>>& copy);
 };
 
 #endif

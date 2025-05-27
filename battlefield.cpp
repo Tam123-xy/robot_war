@@ -154,6 +154,7 @@ void Battlefield::simulateTurn() {
             }
         }      
     }
+
     // Remove dead robots with no lives left
     robots.erase(
         remove_if(robots.begin(), robots.end(),
@@ -166,8 +167,6 @@ void Battlefield::simulateTurn() {
 
 void Battlefield::processRespawn() {
 
-    lock_guard<mutex> lock(respawnMutex);
-    
     // Got robot that needs to respawn
     if (!respawnQueue.empty()) {
 
@@ -182,38 +181,27 @@ void Battlefield::processRespawn() {
             tempQueue.pop();
         }
         cout << respawn_order<< endl; 
+        cout << endl;
 
         // ProcessRespawn
         auto robot = respawnQueue.front();
         respawnQueue.pop();
-
-        int remainingLives = robot->getLives();
-        if (remainingLives <= 0) return; 
         
         // check robot has live
         if (robot->getLives() > 0) {
-            int newX, newY;
+            int x, y;
             int attempts = 0;
             do {
-                newX = 1 + rand() % width;  
-                newY = 1 + rand() % height;  
-                newX = 1 + rand() % width;  
-                newY = 1 + rand() % height;  
+                x = xDist(gen); // Generate random point x
+                y = yDist(gen); // Generate random point x
                 if (++attempts > 100) {
                     cout << "Couldn't find empty spot for " << robot->getName() << endl;
                     respawnQueue.push(robot);  // Retry next turn
                     return;
                 }
-            } while (findRobotAt(newX,newY));
+            } while (findRobotAt(x, y));
             
-            auto gr = make_shared<GenericRobot>(
-                robot->getName(), newX, newY, width, height, this
-            );
-            gr->setLives(remainingLives);
-            
-            replaceRobot(robot, gr);
-            gr->respawn(newX, newY);
-            
+            robot->respawn(x, y);
             // display();
         }
     }
@@ -229,9 +217,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        // {"look", "fire", "move"},
+        {"look", "fire", "move"},
         // {"look", "move", "fire"},
-        {"fire", "look", "move"},
+        // {"fire", "look", "move"},
         // {"fire", "move", "look"},
         // {"move", "look", "fire"},
         // {"move", "fire", "look"}
@@ -243,6 +231,11 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // ScoutBot
     seeBattlefield(robot, order, copy);
+
+    // TrackBot
+    if(robot->isTrack()){
+        trackRobot(robot,copy);
+    }
 
     for (const auto& action : order){
         int dx,dy;
@@ -287,17 +280,14 @@ void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBo
     auto it = find(robots.begin(), robots.end(), oldBot);
     if (it != robots.end()) {
         *it = newBot; 
+        robots.erase(it);
     }
+
 }
 
 void Battlefield::display() {
     vector<vector<char>> grid(height, vector<char>(height, '.')); 
 
-    // for (const auto& robot : robots) {
-    //     if (robot->alive()) {
-    //         grid[robot->getX()-1][robot->getY()-1] = 'R';
-    //     }
-    // }
     for (const auto& robot : robots) {
         if (robot->alive()) {
             grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];
@@ -305,8 +295,8 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i =0 ; i < width; i++) {
-        for (int j = 0; j < height; j++) {
+    for (int i =0 ; i < height; i++) {
+        for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
@@ -356,7 +346,8 @@ void Battlefield::seeBattlefield(shared_ptr<Robot> robot, const vector<string> &
         int count = robot->getScoutCount(); // Check how many times power has been used  
         if(count == 3){
             cout << "Cannot see the entire battlefield — the ability has already been used 3 times." << endl;
-        }else{
+        }
+        else{
             // move/fire --> look, use power. 
             // Push values to vectors 
             // 1) enemy points which are surrounding the robot, 
@@ -433,4 +424,64 @@ void Battlefield::seeBattlefield(shared_ptr<Robot> robot, const vector<string> &
             }
         }
     }
+}
+
+void Battlefield::trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Robot>>& copy){
+
+    vector<shared_ptr<Robot>> copy_robots = copy; 
+    shuffle(copy_robots.begin(), copy_robots.end(), gen); // Shuffle
+
+    // Track 3 robots which are alive, can die in this turn. 
+    // Condition -- dosen't track robot before and tracked robot less than 3
+    if (!robot->got_trackRot() || robot->getTrackCount() < 3) {
+       for (auto& copy : copy_robots) {
+            if (robot->getTrackCount() == 3) break;
+            if (copy == robot) continue;
+
+            bool alreadyTracked = false;
+            for (auto& t : robot->get_TrackedBot()) {
+                if (t == copy) {
+                    alreadyTracked = true;
+                    break;
+                }
+            }
+            if (alreadyTracked) continue;
+
+            robot->add_TrackedBot(copy);
+            robot->setTrackCount(robot->getTrackCount() + 1);
+        }
+    }
+
+    vector<shared_ptr<Robot>> copy_TrackedBot = robot->get_TrackedBot();
+    string sentense;
+    string point;
+
+    if(!copy_TrackedBot[0]->alive()){
+        point = "died in this match";
+    }
+    else if(copy_TrackedBot[0]->getX()== 0){
+        point = "died in this turn";
+    }
+    else{
+        point = to_string(copy_TrackedBot[0]->getX()) + ","+ to_string(copy_TrackedBot[0]->getY());
+    }
+    sentense= robot->getName() + " tracks " + copy_TrackedBot[0]->getName() + "("+point+")";
+
+    int size = copy_TrackedBot.size();
+    for(int i=1 ; i<size; i++){
+        if(!copy_TrackedBot[i]->alive()){
+            point = "died in this match";
+            
+        }
+        else if(copy_TrackedBot[i]->getX()== 0){
+            point = "died in this turn";
+        }
+        else{
+            point = to_string(copy_TrackedBot[i]->getX()) + ","+ to_string(copy_TrackedBot[i]->getY());
+        }
+        sentense+= ", "+ copy_TrackedBot[i]->getName() + "("+point+")";
+    }
+
+    cout<<sentense<<endl;
+
 }
