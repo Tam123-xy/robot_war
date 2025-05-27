@@ -348,7 +348,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             }
             
             else{
-                gr->move(rand() % 3 - 1, rand() % 3 - 1);
+                // gr->move(rand() % 3 - 1, rand() % 3 - 1);
                 // display();
 
         }

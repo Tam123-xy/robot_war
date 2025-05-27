@@ -11,6 +11,9 @@
 #include "battlefield.h"
 #include <mutex>
 #include "battlefield.h"
+#include <random>
+// std::random_device rd;
+// std::mt19937 gen(rd());
 using namespace std;
 
 class Battlefield;  // Forward declaration
@@ -188,6 +191,7 @@ private:
     template<typename T>
     shared_ptr<T> createUpgradedBot();
     void replaceWithCombination(const vector<string>& types);
+    mt19937 gen;
 
 protected:
     int upgradeCount = 0;
@@ -264,6 +268,27 @@ public:
     int getY() const; 
     string getType() const override;
 
+    void surrouding_point_TARGET(int& targetX, int& targetY){
+        int centerX = getX() ;
+        int centerY = getY() ;
+        vector<pair<int, int>> surrounding_points;
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int pointX = centerX + dx;
+                int pointY = centerY + dy;       
+
+                if (dx == 0 && dy == 0) continue; // Robot itself
+                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+                else{ surrounding_points.push_back({pointX, pointY});} // Enemy + empty points
+            }
+        }
+
+        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
+        int num = dis(gen);
+        targetX = surrounding_points[num].first;
+        targetY = surrounding_points[num].second;
+    }
 };
 
 class HideBot : virtual public GenericRobot {

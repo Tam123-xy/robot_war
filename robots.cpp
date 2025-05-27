@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <mutex>
+#include <random>
 using namespace std;
 random_device rd;
 mt19937 gen(rd());
@@ -16,7 +17,8 @@ GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battl
       ThinkingRobot(name, x, y, w, h, bf),
       battlefield(bf),
       shells(10),
-      selfDestructed(false) {
+      selfDestructed(false),
+      gen(random_device{}()) {
         //cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
 }
 
@@ -122,25 +124,27 @@ void GenericRobot::move(int dx, int dy) {
 
     // move -> look, surrounding POINTS --> (is occupied/ move)
     if (!hasLooked && useScout == false) {
-        int centerX = getX();
-        int centerY = getY();
-        vector<pair<int, int>> surrounding_points_move; // Enemy + empty points
+        // int centerX = getX();
+        // int centerY = getY();
+        // vector<pair<int, int>> surrounding_points_move; // Enemy + empty points
 
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                int pointX = centerX + dx;
-                int pointY = centerY + dy;
+        // for (int dy = -1; dy <= 1; ++dy) {
+        //     for (int dx = -1; dx <= 1; ++dx) {
+        //         int pointX = centerX + dx;
+        //         int pointY = centerY + dy;
 
-                if (dx == 0 && dy == 0) continue; // Robot itself
-                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else{ surrounding_points_move.push_back({pointX, pointY});} // Enemy + empty points
-            }
-        }
+        //         if (dx == 0 && dy == 0) continue; // Robot itself
+        //         else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+        //         else{ surrounding_points_move.push_back({pointX, pointY});} // Enemy + empty points
+        //     }
+        // }
 
-        uniform_int_distribution<> dis(0, surrounding_points_move.size() - 1);
-        int num = dis(gen);
-        newX = surrounding_points_move[num].first;
-        newY = surrounding_points_move[num].second;
+        // uniform_int_distribution<> dis(0, surrounding_points_move.size() - 1);
+        // int num = dis(gen);
+        // newX = surrounding_points_move[num].first;
+        // newY = surrounding_points_move[num].second;
+
+        surrouding_point_TARGET(newX, newY);
 
         if (battlefield->isRobotAt(newX, newY)) {
             auto enemy = battlefield->findRobotAt(newX, newY);
@@ -202,25 +206,27 @@ void GenericRobot::fire(int dx, int dy) {
     // fire --> look, surrounding POINTS --> (shot no enemy/ shot enemy)
     if(hasLooked == false && useScout == false){
 
-        int centerX = getX() ;
-        int centerY = getY() ;
-        vector<pair<int, int>> surrounding_points_fire;
+        // int centerX = getX() ;
+        // int centerY = getY() ;
+        // vector<pair<int, int>> surrounding_points_fire;
         
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                int pointX = centerX + dx;
-                int pointY = centerY + dy;       
+        // for (int dy = -1; dy <= 1; ++dy) {
+        //     for (int dx = -1; dx <= 1; ++dx) {
+        //         int pointX = centerX + dx;
+        //         int pointY = centerY + dy;       
 
-                if (dx == 0 && dy == 0) continue; // Robot itself
-                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else{ surrounding_points_fire.push_back({pointX, pointY});} // Enemy + empty points
-            }
-        }
+        //         if (dx == 0 && dy == 0) continue; // Robot itself
+        //         else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+        //         else{ surrounding_points_fire.push_back({pointX, pointY});} // Enemy + empty points
+        //     }
+        // }
 
-        uniform_int_distribution<> dis(0, surrounding_points_fire.size() - 1);
-        int num = dis(gen);
-        targetX = surrounding_points_fire[num].first;
-        targetY = surrounding_points_fire[num].second;
+        // uniform_int_distribution<> dis(0, surrounding_points_fire.size() - 1);
+        // int num = dis(gen);
+        // targetX = surrounding_points_fire[num].first;
+        // targetY = surrounding_points_fire[num].second;
+
+        surrouding_point_TARGET(targetX, targetY);
     }
         
     // look --> fire, enemy POINTS --> (NO shot no enemy/ shot enemy)
