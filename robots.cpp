@@ -383,13 +383,16 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             {
-                int choice = rand() % 2;
+                int choice = rand() % 3;
                 if (choice == 0) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
-                } else {
+                } else if (choice == 1) {
                     upgradeName = "JumpBot";
                     newBot = createUpgradedBot<JumpBot>();
+                } else if (choice == 2) {
+                    upgradeName = "GlideBot";
+                    newBot = createUpgradedBot<GlideBot>();
                 }
                 cout << name << " upgraded movement: " << upgradeName << endl;
             }
@@ -498,6 +501,18 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
         } else if (hasType("JumpBot") && hasType("LandmineBot")) {
             newBot = createUpgradedBot<JumpLandmineBot>();
             combinationName = "JumpLandmineBot";
+        } else if (hasType("GlideBot") && hasType("LongShotBot")) {
+            newBot = createUpgradedBot<GlideLongShotBot>();
+            combinationName = "GlideLongShotBot";
+        } else if (hasType("GlideBot") && hasType("SemiAutoBot")) {
+            newBot = createUpgradedBot<GlideSemiAutoBot>();
+            combinationName = "GlideSemiAutoBot";
+        } else if (hasType("GlideBot") && hasType("ThirtyShotBot")) {
+            newBot = createUpgradedBot<GlideThirtyShotBot>();
+            combinationName = "GlideThirtyShotBot";
+        } else if (hasType("GlideBot") && hasType("LandmineBot")) {
+            newBot = createUpgradedBot<GlideLandmineBot>();
+            combinationName = "GlideLandmineBot";
         }
         // Movement + Vision combinations
         else if (hasType("HideBot") && hasType("ScoutBot")) {
@@ -512,6 +527,12 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
         } else if (hasType("JumpBot") && hasType("TrackBot")) {
             newBot = createUpgradedBot<JumpTrackBot>();
             combinationName = "JumpTrackBot";
+        } else if (hasType("GlideBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<GlideScoutBot>();
+            combinationName = "GlideScoutBot";
+        } else if (hasType("GlideBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<GlideTrackBot>();
+            combinationName = "GlideTrackBot";
         }
         // Shooting + Vision combinations
         else if (hasType("LongShotBot") && hasType("ScoutBot")) {
@@ -589,6 +610,30 @@ void GenericRobot::replaceWithCombination(const vector<string>& types) {
         } else if (hasType("JumpBot") && hasType("LandmineBot") && hasType("TrackBot")) {
             newBot = createUpgradedBot<JumpLandmineTrackBot>();
             combinationName = "JumpLandmineTrackBot";
+        } else if (hasType("GlideBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<GlideLongShotScoutBot>();
+            combinationName = "GlideLongShotScoutBot";
+        } else if (hasType("GlideBot") && hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<GlideLongShotTrackBot>();
+            combinationName = "GlideLongShotTrackBot";
+        } else if (hasType("GlideBot") && hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<GlideSemiAutoScoutBot>();
+            combinationName = "GlideSemiAutoScoutBot";
+        } else if (hasType("GlideBot") && hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<GlideSemiAutoTrackBot>();
+            combinationName = "GlideSemiAutoTrackBot";
+        } else if (hasType("GlideBot") && hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<GlideThirtyShotScoutBot>();
+            combinationName = "GlideThirtyShotScoutBot";
+        } else if (hasType("GlideBot") && hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<GlideThirtyShotTrackBot>();
+            combinationName = "GlideThirtyShotTrackBot";
+        } else if (hasType("GlideBot") && hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<GlideLandmineScoutBot>();
+            combinationName = "GlideLandmineScoutBot";
+        } else if (hasType("GlideBot") && hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<GlideLandmineTrackBot>();
+            combinationName = "GlideLandmineTrackBot";
         }
     }
 

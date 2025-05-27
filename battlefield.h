@@ -66,6 +66,9 @@ public:
 //         auto it = find(robots.begin(), robots.end(), oldBot);
 //         if (it != robots.end()) *it = newBot;
 //    }
+
+    //GlideBot
+    bool isInside(int x, int y) const { return x >= 1 && x <= width && y >= 1 && y <= height; }
 };
 
 #endif
