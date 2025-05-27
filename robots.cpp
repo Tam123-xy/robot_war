@@ -124,26 +124,7 @@ void GenericRobot::move(int dx, int dy) {
 
     // move -> look, surrounding POINTS --> (is occupied/ move)
     if (!hasLooked && useScout == false) {
-        // int centerX = getX();
-        // int centerY = getY();
-        // vector<pair<int, int>> surrounding_points_move; // Enemy + empty points
-
-        // for (int dy = -1; dy <= 1; ++dy) {
-        //     for (int dx = -1; dx <= 1; ++dx) {
-        //         int pointX = centerX + dx;
-        //         int pointY = centerY + dy;
-
-        //         if (dx == 0 && dy == 0) continue; // Robot itself
-        //         else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-        //         else{ surrounding_points_move.push_back({pointX, pointY});} // Enemy + empty points
-        //     }
-        // }
-
-        // uniform_int_distribution<> dis(0, surrounding_points_move.size() - 1);
-        // int num = dis(gen);
-        // newX = surrounding_points_move[num].first;
-        // newY = surrounding_points_move[num].second;
-
+      
         surrouding_point_TARGET(newX, newY);
 
         if (battlefield->isRobotAt(newX, newY)) {
@@ -205,27 +186,6 @@ void GenericRobot::fire(int dx, int dy) {
 
     // fire --> look, surrounding POINTS --> (shot no enemy/ shot enemy)
     if(hasLooked == false && useScout == false){
-
-        // int centerX = getX() ;
-        // int centerY = getY() ;
-        // vector<pair<int, int>> surrounding_points_fire;
-        
-        // for (int dy = -1; dy <= 1; ++dy) {
-        //     for (int dx = -1; dx <= 1; ++dx) {
-        //         int pointX = centerX + dx;
-        //         int pointY = centerY + dy;       
-
-        //         if (dx == 0 && dy == 0) continue; // Robot itself
-        //         else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-        //         else{ surrounding_points_fire.push_back({pointX, pointY});} // Enemy + empty points
-        //     }
-        // }
-
-        // uniform_int_distribution<> dis(0, surrounding_points_fire.size() - 1);
-        // int num = dis(gen);
-        // targetX = surrounding_points_fire[num].first;
-        // targetY = surrounding_points_fire[num].second;
-
         surrouding_point_TARGET(targetX, targetY);
     }
         

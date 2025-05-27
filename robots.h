@@ -89,6 +89,8 @@ public:
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
     virtual const vector<string>& get_upgradeNames() const = 0;
+
+   
 };
 
 class MovingRobot : virtual public Robot {
@@ -351,6 +353,7 @@ public:
 
 class ScoutBot : virtual public GenericRobot {
     int scoutUses;
+
 public:
     ScoutBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
         :   Robot(name, x, y, w, h, bf),
@@ -374,7 +377,8 @@ public:
         }
     }
 
-    string getType() const override { return "ScoutBot"; }
+
+    // string getType() const override { return "ScoutBot"; }
 };
 
 class TrackBot : virtual public GenericRobot {
