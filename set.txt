@@ -1,9 +1,7 @@
 M by N : 5 5
 steps: 2
-robots: 6
+robots: 4
 GenericRobot A 1 1
 GenericRobot B 1 2
-GenericRobot C 3 1
-GenericRobot D 3 2
-GenericRobot E 5 1
-GenericRobot F 5 2
+GenericRobot C 5 1
+GenericRobot D 5 4

@@ -389,7 +389,6 @@ public:
     string getType() const override { return "TrackBot"; }
 };
 
-
 class LongShotBot : virtual public GenericRobot { // 修改5: 继承GenericRobot
     int fireRange = 3;
 public:
@@ -531,8 +530,6 @@ public:
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpLandmineBot"; }
 };
-
-//-----------------------------------------------
 
 class HideScoutBot : public HideBot, public ScoutBot {
 public:
@@ -729,6 +726,5 @@ public:
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpLandmineTrackBot"; }
 };
-
 
 #endif

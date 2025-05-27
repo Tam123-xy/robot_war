@@ -2,7 +2,7 @@
 #include "robots.h"
 #include <iostream>
 #include <mutex>
-#include <mutex>
+#include <climits>
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
@@ -242,9 +242,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
         // Create all possible action permutations
         const vector<vector<string>> actionOrders = {
-            {"look", "fire", "move"},
+            // {"look", "fire", "move"},
             // {"look", "move", "fire"},
-            // {"fire", "look", "move"},
+            {"fire", "look", "move"},
             // {"fire", "move", "look"},
             // {"move", "look", "fire"},
             // {"move", "fire", "look"}
@@ -292,7 +292,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
                            
                             else if (lookX <=0 ||lookY <=0 || lookX > getWidth() || lookY > getHeight()) continue;  // Out of bounds
 
-                            if (isRobotAt(lookX, lookY)) { // Enemy robot
+                            else if (isRobotAt(lookX, lookY)) { // Enemy robot
                                 robot->add_LookGotEnemyPoint({lookX, lookY}); // 1) enemy points which are surrounding the robot, 
 
                             }else{ // Empty space   
@@ -410,3 +410,38 @@ void Battlefield::display() {
 
 }
 
+void Battlefield::processBestMove(int& newX, int& newY,
+                     const vector<pair<int, int>>& empty_points,
+                     const vector<pair<int, int>>& enemy_outside_surrouding_point,
+                     Battlefield* battlefield){
+                        
+    pair<int, int> best_move = empty_points[0];
+    int min_distance = INT_MAX;
+    string final_enemy_name; 
+
+    for (auto& space : empty_points) {
+        int closest_enemy_dist = INT_MAX;
+        string closest_enemy_name; 
+
+        for (auto& enemy : enemy_outside_surrouding_point) {
+            int dist = abs(space.first - enemy.first) + abs(space.second - enemy.second);
+            auto enemyy = battlefield->findRobotAt(enemy.first, enemy.second);
+
+            if (dist < closest_enemy_dist) {
+                closest_enemy_dist = dist;
+                closest_enemy_name = enemyy->getName();
+            }
+        }
+
+        // Keep the space that gives the minimum distance to any enemy
+        if (closest_enemy_dist < min_distance) {
+            min_distance = closest_enemy_dist;
+            best_move = space;
+            final_enemy_name = closest_enemy_name;
+        }
+    }
+    cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
+        << " with closest enemy "<< final_enemy_name << endl;
+        newX = best_move.first;
+        newY = best_move.second;
+}
