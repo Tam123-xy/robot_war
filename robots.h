@@ -159,12 +159,10 @@ public:
     bool got_trackRot() const override { return trackRot; }
     int getTrackCount() const override { return trackCount; }
     void setTrackCount(int c) override { trackCount = c; }
-    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;} // init after die
-    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);} // init after die
-
-    const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const override {return gotLive_trackedBot;} //init each turn
-    void add_gotLive_trackedBot(shared_ptr<Robot> bot) override{gotLive_trackedBot.push_back(bot);} //init each turn
-
+    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;} // no need to init
+    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);} 
+    const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const override {return gotLive_trackedBot;} 
+    void add_gotLive_trackedBot(shared_ptr<Robot> bot) override{gotLive_trackedBot.push_back(bot);} 
     void add_Live_trackedBot_point(pair<int, int> pos) override{Live_trackedBot_point.push_back(pos);}
 
     // move_Enemy(!= tracked Bot) + empty points
@@ -323,6 +321,8 @@ public:
         lookGot_enemy_point.clear();
         enemy_outside_surrouding_point.clear();
         ScoutPoint.clear();
+        gotLive_trackedBot.clear();
+        Live_trackedBot_point.clear();
     }
     void think() override;
     void look(int dx, int dy) override;
@@ -371,7 +371,7 @@ public:
         targetY = surrounding_points[num].second;
     }
 
-    // shot tracked enemy is surrounding 
+    // fire --> look, shot tracked enemy is surrounding 
     void tarck_surrouding_point_TARGET_fire(int& targetX, int& targetY){
         int centerX = getX() ;
         int centerY = getY() ;
@@ -415,6 +415,8 @@ public:
         }
         else if(surrounding_traked_enemy_points.size()>=2){ // shot higher tracked enemy
             shot_higher_enemy( targetX, targetY, surrounding_traked_enemy_points,true);
+            auto enemy = battlefield->findRobotAt(targetX, targetY);
+            cout << "TrackBot -- Shot tracked enemy " << enemy->getName() <<endl;
         }
         else{
             uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
