@@ -65,6 +65,8 @@ public:
 
     void seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy);
     void trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Robot>>& copy);
+     //GlideBot
+    bool isInside(int x, int y) const { return x >= 1 && x <= width && y >= 1 && y <= height; }
 };
 
 #endif

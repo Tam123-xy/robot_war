@@ -517,6 +517,68 @@ public:
     string getType() const override { return "JumpBot"; }
 };
 
+class GlideBot : virtual public GenericRobot {
+    int glideCount;
+    int newX;
+    int newY;
+public:
+    GlideBot(const string& name, int x, int y, int w, int h, Battlefield* bf) 
+        :   Robot(name, x, y, w, h, bf),
+            GenericRobot(name, x, y, w, h, bf),
+            glideCount(3) {}
+
+    void move(int dx, int dy) override {
+        if (glideCount > 0) {
+            int maxDistance = 0;
+
+            vector<pair<int, int>> directions = {
+                {1, 0},   // Right
+                {-1, 0},  // Left
+                {0, 1},   // Down
+                {0, -1}   // Up
+            };
+
+            for (const auto& dir : directions) {
+                int stepX = dir.first;
+                int stepY = dir.second;
+                int tempX = getX();
+                int tempY = getY();
+                int distance = 0;
+
+                while (true) {
+                    int nextX = tempX + stepX;
+                    int nextY = tempY + stepY;
+
+                    if (!battlefield->isInside(nextX, nextY) || battlefield->isRobotAt(nextX, nextY)) {
+                        break;
+                    }
+
+                    tempX = nextX;
+                    tempY = nextY;
+                    distance++;
+                }
+
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    newX = tempX;
+                    newY = tempY;
+                }
+            }
+
+            if (maxDistance > 0) {
+                setPosition(newX, newY);
+                glideCount--;
+                cout << getName() << " glided to (" << newX << "," << newY << ") (" 
+                    << glideCount << " glides left)" << endl;
+            }
+        } else {
+            GenericRobot::move(dx, dy);
+        }
+    }
+
+    string getType() const override { return "GlideBot"; }
+};
+
 class ScoutBot : virtual public GenericRobot {
     int scoutUses;
 
@@ -726,6 +788,34 @@ public:
     string getType() const override { return "JumpLandmineBot"; }
 };
 
+class GlideLongShotBot : public GlideBot, public LongShotBot {
+public:
+    GlideLongShotBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLongShotBot"; }
+};
+
+class GlideSemiAutoBot : public GlideBot, public SemiAutoBot {
+public:
+    GlideSemiAutoBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n,x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideSemiAutoBot"; }
+};
+
+class GlideThirtyShotBot : public GlideBot, public ThirtyShotBot {
+public:
+    GlideThirtyShotBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideThirtyShotBot"; }
+};
+
+class GlideLandmineBot : public GlideBot, public LandmineBot {
+public:
+    GlideLandmineBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLandmineBot"; }
+};
+
 class HideScoutBot : public HideBot, public ScoutBot {
 public:
     HideScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
@@ -752,6 +842,20 @@ public:
     JumpTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpTrackBot"; }
+};
+
+class GlideScoutBot : public GlideBot, public ScoutBot {
+public:
+    GlideScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideScoutBot"; }
+};
+
+class GlideTrackBot : public GlideBot, public TrackBot {
+public:
+    GlideTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideTrackBot"; }
 };
 
 class LongShotScoutBot : public LongShotBot, public ScoutBot {
@@ -920,6 +1024,62 @@ public:
     JumpLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
         : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), JumpBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
     string getType() const override { return "JumpLandmineTrackBot"; }
+};
+
+class GlideLongShotScoutBot : public GlideBot, public LongShotBot, public ScoutBot {
+public:
+    GlideLongShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLongShotScoutBot"; }
+};
+
+class GlideLongShotTrackBot : public GlideBot, public LongShotBot, public TrackBot {
+public:
+    GlideLongShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LongShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLongShotTrackBot"; }
+};
+
+class GlideSemiAutoScoutBot : public GlideBot, public SemiAutoBot, public ScoutBot {
+public:
+    GlideSemiAutoScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideSemiAutoScoutBot"; }
+};
+
+class GlideSemiAutoTrackBot : public GlideBot, public SemiAutoBot, public TrackBot {
+public:
+    GlideSemiAutoTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), SemiAutoBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideSemiAutoTrackBot"; }
+};
+
+class GlideThirtyShotScoutBot : public GlideBot, public ThirtyShotBot, public ScoutBot {
+public:
+    GlideThirtyShotScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideThirtyShotScoutBot"; }
+};
+
+class GlideThirtyShotTrackBot : public GlideBot, public ThirtyShotBot, public TrackBot {
+public:
+    GlideThirtyShotTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), ThirtyShotBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideThirtyShotTrackBot"; }
+};
+
+class GlideLandmineScoutBot : public GlideBot, public LandmineBot, public ScoutBot {
+public:
+    GlideLandmineScoutBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), ScoutBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLandmineScoutBot"; }
+};
+
+class GlideLandmineTrackBot : public GlideBot, public LandmineBot, public TrackBot {
+public:
+    GlideLandmineTrackBot(string n, int x, int y, int w, int h, Battlefield* bf)
+        : Robot(n, x, y, w, h, bf), GenericRobot(n, x, y, w, h, bf), GlideBot(n, x, y, w, h, bf), LandmineBot(n, x, y, w, h, bf), TrackBot(n, x, y, w, h, bf) {}
+    string getType() const override { return "GlideLandmineTrackBot"; }
 };
 
 #endif
