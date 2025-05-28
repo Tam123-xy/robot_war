@@ -167,8 +167,8 @@ public:
 
     void add_Live_trackedBot_point(pair<int, int> pos) override{Live_trackedBot_point.push_back(pos);}
 
-    // Enemy(!= tracked Bot) + empty points
-    void Track_surrouding_point_TARGET(int& targetX, int& targetY, bool& track_move){
+    // move_Enemy(!= tracked Bot) + empty points
+    void Track_surrouding_point_TARGET_move(int& targetX, int& targetY, bool& track_move){
         int centerX = getX() ;
         int centerY = getY() ;
         vector<pair<int, int>> surrounding_points;
@@ -201,6 +201,8 @@ public:
             cout<< name <<" cannot move! "<< name <<" is surrounding by tracked Bot"<<endl;
             track_move = false;
         }
+
+        
 
         uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
         int num = dis(gen);
@@ -346,7 +348,7 @@ public:
     int getY() const; 
     string getType() const override;
 
-    // move
+    // fire
     void surrouding_point_TARGET(int& targetX, int& targetY){
         int centerX = getX() ;
         int centerY = getY() ;
@@ -368,14 +370,67 @@ public:
         targetX = surrounding_points[num].first;
         targetY = surrounding_points[num].second;
     }
+
+    // shot tracked enemy is surrounding 
+    void tarck_surrouding_point_TARGET_fire(int& targetX, int& targetY){
+        int centerX = getX() ;
+        int centerY = getY() ;
+        vector<pair<int, int>> surrounding_points;
+        vector<pair<int, int>> surrounding_traked_enemy_points;
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int pointX = centerX + dx;
+                int pointY = centerY + dy;       
+
+                if (dx == 0 && dy == 0) continue; // Robot itself
+                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
+                else if (battlefield->isRobotAt(pointX, pointY)){ 
+                    auto enemy = battlefield->findRobotAt(pointX, pointY);
+                    bool isTracked = false;
+                    for (auto& t : gotLive_trackedBot) {
+                        if (t == enemy) {
+                            isTracked = true;
+                            break;
+                        }
+                    }
+                    if (isTracked) { 
+                        surrounding_traked_enemy_points.emplace_back(pointX, pointY); // surrounding_traked_enemy_points
+                    }
+                    else{
+                        surrounding_points.push_back({pointX, pointY}); // enemy points
+                    }
+                }
+                else{ surrounding_points.push_back({pointX, pointY});} // empty points
+            }
+        }
+
+        if(surrounding_traked_enemy_points.size()==1){
+            uniform_int_distribution<> dis(0, surrounding_traked_enemy_points.size() - 1);
+            int num = dis(gen);
+            targetX = surrounding_traked_enemy_points[num].first;
+            targetY = surrounding_traked_enemy_points[num].second;
+            auto enemy = battlefield->findRobotAt(targetX, targetY);
+            cout << "TrackBot -- Shot tracked enemy " << enemy->getName() <<endl;
+        }
+        else if(surrounding_traked_enemy_points.size()>=2){ // shot higher tracked enemy
+            shot_higher_enemy( targetX, targetY, surrounding_traked_enemy_points,true);
+        }
+        else{
+            uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
+            int num = dis(gen);
+            targetX = surrounding_points[num].first;
+            targetY = surrounding_points[num].second;
+        }
+    }
+        
     
-    // fire
-    void shot_higher_enemy(int& targetX, int& targetY){
+    void shot_higher_enemy(int& targetX, int& targetY, const vector<pair<int, int>>& enemy_point, const bool& Track ){
         int i = 0;
         int max_i = 0;
         int max = 0;
         int count;
-        for (const auto& point : lookGot_enemy_point){
+        for (const auto& point : enemy_point){
             auto enemy = battlefield->findRobotAt(point.first, point.second);
             count = enemy -> getUpgradeCount();
             if(count> max){
@@ -385,12 +440,19 @@ public:
             i++;
         }
 
-        targetX = lookGot_enemy_point[max_i].first;
-        targetY = lookGot_enemy_point[max_i].second;
+        targetX = enemy_point[max_i].first;
+        targetY = enemy_point[max_i].second;
         auto enemy = battlefield->findRobotAt(targetX, targetY );
         if(max!=0){
-            cout << name << " found out that " << enemy->getName()
-            << " has " << max << " updates and a higher level compared to other enemies." << endl;
+            if(Track){
+                cout <<"TrackBot -- "<< name << " found out that " << enemy->getName()
+                << " has " << max << " updates and a higher level compared to other tracked enemies." << endl;
+            }
+            else{
+                cout << name << " found out that " << enemy->getName()
+                << " has " << max << " updates and a higher level compared to other enemies." << endl;
+            }
+            
         }
     }
 };
