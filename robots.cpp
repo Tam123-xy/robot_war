@@ -258,6 +258,31 @@ void GenericRobot::fire(int dx, int dy) {
         else if(cout_enemy==1){
             targetX = lookGot_enemy_point[0].first;
             targetY = lookGot_enemy_point[0].second;
+
+            int curX = getX();
+            int curY = getY();
+
+            bool isNearby = false;
+
+            for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx == 0 && dy == 0) continue;
+
+                    int nx = curX + dx;
+                    int ny = curY + dy;
+
+                    if (nx == targetX && ny == targetY) {
+                        isNearby = true;
+                        break;
+                    }
+                }
+                if (isNearby) break;
+            }
+
+            if (!isNearby) {
+                cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+                return;
+            }
         }
 
         else{
@@ -390,7 +415,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
                 } else if (choice == 1) {
                     upgradeName = "JumpBot";
                     newBot = createUpgradedBot<JumpBot>();
-                } else if (choice == 2) {
+                } else {
                     upgradeName = "GlideBot";
                     newBot = createUpgradedBot<GlideBot>();
                 }
