@@ -129,9 +129,11 @@ void GenericRobot::move(int dx, int dy) {
         if(isTrackBot){
             Track_surrouding_point_TARGET(newX, newY,track_move);
         }
-      
-        surrouding_point_TARGET(newX, newY);
-
+        
+        else{
+            surrouding_point_TARGET(newX, newY);
+        }
+        
         if(track_move){
             if (battlefield->isRobotAt(newX, newY)) {
                 auto enemy = battlefield->findRobotAt(newX, newY);
@@ -152,9 +154,14 @@ void GenericRobot::move(int dx, int dy) {
             return;
         }
 
+        // TractBot will move to an emepty point which is the closer point to an tracked enemy, condition --surrounding no enemy and got tracked enemy and at least 2 empty points"
+        if(isTrackBot && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_point.size()>=2){
+            battlefield->processBestMove( newX, newY, lookGot_enemy_point, Live_trackedBot_point, battlefield,false);
+        }
+
         // ScoutBot will move to an emepty point which is the closer point to an enemy, condition --surrounding no enemy and outside surrounding got enemy and at least 2 empty points"
-        if(useScout == true && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_point.size()>=2){
-            battlefield->processBestMove( newX, newY, lookGot_enemy_point, enemy_outside_surrouding_point, battlefield);
+        else if(useScout == true && lookGot_enemy_point.size()==0 && enemy_outside_surrouding_point.size()!=0 && empty_point.size()>=2){
+            battlefield->processBestMove( newX, newY, lookGot_enemy_point, enemy_outside_surrouding_point, battlefield,true);
         }
         
         else{
@@ -215,27 +222,28 @@ void GenericRobot::fire(int dx, int dy) {
 
         // many enemies, need to check which is the higher level enemy
         else{
-            int i = 0;
-            int max_i = 0;
-            int max = 0;
-            int count;
-            for (const auto& point : lookGot_enemy_point){
-                auto enemy = battlefield->findRobotAt(point.first, point.second);
-                count = enemy -> getUpgradeCount();
-                if(count> max){
-                    max = count;
-                    max_i = i;
-                }
-                i++;
-            }
+            // int i = 0;
+            // int max_i = 0;
+            // int max = 0;
+            // int count;
+            // for (const auto& point : lookGot_enemy_point){
+            //     auto enemy = battlefield->findRobotAt(point.first, point.second);
+            //     count = enemy -> getUpgradeCount();
+            //     if(count> max){
+            //         max = count;
+            //         max_i = i;
+            //     }
+            //     i++;
+            // }
 
-            targetX = lookGot_enemy_point[max_i].first;
-            targetY = lookGot_enemy_point[max_i].second;
-            auto enemy = battlefield->findRobotAt(targetX, targetY );
-            if(max!=0){
-                cout << name << " found out that " << enemy->getName()
-                << " has " << max << " updates and a higher level compared to other enemies." << endl;
-            }
+            // targetX = lookGot_enemy_point[max_i].first;
+            // targetY = lookGot_enemy_point[max_i].second;
+            // auto enemy = battlefield->findRobotAt(targetX, targetY );
+            // if(max!=0){
+            //     cout << name << " found out that " << enemy->getName()
+            //     << " has " << max << " updates and a higher level compared to other enemies." << endl;
+            // }
+            shot_higher_enemy(targetX, targetY);
         } 
     }
 

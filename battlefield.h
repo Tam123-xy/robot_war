@@ -61,7 +61,7 @@ public:
     void processBestMove(int& newX, int& newY,
                      const vector<pair<int, int>>& empty_points,
                      const vector<pair<int, int>>& enemy_outside_surrouding_point,
-                     Battlefield* battlefield);
+                     Battlefield* battlefield, const bool& ScoutBot);
 
     void seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy);
     void trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Robot>>& copy);

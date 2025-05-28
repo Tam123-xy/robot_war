@@ -308,7 +308,7 @@ void Battlefield::display() {
 void Battlefield::processBestMove(int& newX, int& newY,
                      const vector<pair<int, int>>& empty_points,
                      const vector<pair<int, int>>& enemy_outside_surrouding_point,
-                     Battlefield* battlefield){
+                     Battlefield* battlefield, const bool& ScoutBot){
                         
     pair<int, int> best_move = empty_points[0];
     int min_distance = INT_MAX;
@@ -335,10 +335,18 @@ void Battlefield::processBestMove(int& newX, int& newY,
             final_enemy_name = closest_enemy_name;
         }
     }
-    cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
+
+    if(ScoutBot){
+        cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
         << " with closest enemy "<< final_enemy_name << endl;
-        newX = best_move.first;
-        newY = best_move.second;
+    }
+    else{
+        cout << "TrackBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
+        << " with closest tracked enemy "<< final_enemy_name << endl;
+    }
+    
+    newX = best_move.first;
+    newY = best_move.second;
 }
 
 void Battlefield::seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy){
@@ -484,5 +492,13 @@ void Battlefield::trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Ro
     }
 
     cout<<sentense<<endl;
+
+    // Live in this turn
+    for (auto& t : robot->get_TrackedBot()){
+        if(t->getX()==0)continue;
+        robot->add_gotLive_trackedBot(t);
+    }
+
+
 
 }

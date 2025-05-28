@@ -92,12 +92,9 @@ public:
     virtual void setTrackCount(int) {}
     virtual const vector<shared_ptr<Robot>> get_TrackedBot() const =0;
     virtual void add_TrackedBot(shared_ptr<Robot> bot) =0;
-
-    virtual const vector<shared_ptr<Robot>> get_surrounding_track_robots() const =0;
-    virtual void add_surrounding_track_robots(shared_ptr<Robot> bot) =0;
-
-    virtual const vector<shared_ptr<Robot>> get_outside_surrounding_track_robots() const =0;
-    virtual void add_outside_surrounding_track_robots(shared_ptr<Robot> bot) =0;
+    virtual const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const =0;
+    virtual void add_gotLive_trackedBot(shared_ptr<Robot> bot) =0;
+    virtual void add_Live_trackedBot_point(pair<int, int> pos) = 0;
     
     // Update
     virtual int getUpgradeCount() const { return 0; }
@@ -137,8 +134,8 @@ protected:
     // TarckBot
     int trackCount = 0;
     vector<shared_ptr<Robot>> tracked_robots; 
-    vector<shared_ptr<Robot>> surrounding_track_robots; 
-    vector<shared_ptr<Robot>> outside_surrounding_track_robots;
+    vector<shared_ptr<Robot>> gotLive_trackedBot;
+    vector<pair<int, int>> Live_trackedBot_point ;
 
 public:
     using Robot::Robot;
@@ -162,25 +159,20 @@ public:
     bool got_trackRot() const override { return trackRot; }
     int getTrackCount() const override { return trackCount; }
     void setTrackCount(int c) override { trackCount = c; }
-    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;}
-    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);}
-    const vector<shared_ptr<Robot>> get_surrounding_track_robots() const override {return surrounding_track_robots;}
-    void add_surrounding_track_robots(shared_ptr<Robot> bot) override{surrounding_track_robots.push_back(bot);}
-    const vector<shared_ptr<Robot>> get_outside_surrounding_track_robots() const override {return outside_surrounding_track_robots;}
-    void add_outside_surrounding_track_robots(shared_ptr<Robot> bot) override{outside_surrounding_track_robots.push_back(bot);}
+    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;} // init after die
+    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);} // init after die
+
+    const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const override {return gotLive_trackedBot;} //init each turn
+    void add_gotLive_trackedBot(shared_ptr<Robot> bot) override{gotLive_trackedBot.push_back(bot);} //init each turn
+
+    void add_Live_trackedBot_point(pair<int, int> pos) override{Live_trackedBot_point.push_back(pos);}
 
     // Enemy(!= tracked Bot) + empty points
     void Track_surrouding_point_TARGET(int& targetX, int& targetY, bool& track_move){
         int centerX = getX() ;
         int centerY = getY() ;
         vector<pair<int, int>> surrounding_points;
-        vector<shared_ptr<Robot>> gotLive_trackedBot;
 
-        for (auto& t : get_TrackedBot()) {
-            if(t->getX()==0)continue;
-            gotLive_trackedBot.push_back(t);
-        }
-        
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
                 int pointX = centerX + dx;
@@ -188,7 +180,7 @@ public:
 
                 if (dx == 0 && dy == 0) continue; // Robot itself
                 else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else if (battlefield->isRobotAt(pointX, pointY)){
+                else if (battlefield->isRobotAt(pointX, pointY)){ // Enemy(!= tracked Bot)
                     auto enemy = battlefield->findRobotAt(pointX, pointY);
                     bool isTracked = false;
                     for (auto& t : gotLive_trackedBot) {
@@ -197,7 +189,7 @@ public:
                             break;
                         }
                     }
-                    if (!isTracked) { // 是敌人，不是 trackedBot，加入
+                    if (!isTracked) { 
                         surrounding_points.emplace_back(pointX, pointY);
                     }
                 }
@@ -354,6 +346,7 @@ public:
     int getY() const; 
     string getType() const override;
 
+    // move
     void surrouding_point_TARGET(int& targetX, int& targetY){
         int centerX = getX() ;
         int centerY = getY() ;
@@ -374,6 +367,31 @@ public:
         int num = dis(gen);
         targetX = surrounding_points[num].first;
         targetY = surrounding_points[num].second;
+    }
+    
+    // fire
+    void shot_higher_enemy(int& targetX, int& targetY){
+        int i = 0;
+        int max_i = 0;
+        int max = 0;
+        int count;
+        for (const auto& point : lookGot_enemy_point){
+            auto enemy = battlefield->findRobotAt(point.first, point.second);
+            count = enemy -> getUpgradeCount();
+            if(count> max){
+                max = count;
+                max_i = i;
+            }
+            i++;
+        }
+
+        targetX = lookGot_enemy_point[max_i].first;
+        targetY = lookGot_enemy_point[max_i].second;
+        auto enemy = battlefield->findRobotAt(targetX, targetY );
+        if(max!=0){
+            cout << name << " found out that " << enemy->getName()
+            << " has " << max << " updates and a higher level compared to other enemies." << endl;
+        }
     }
 };
 
