@@ -12,7 +12,7 @@
 using namespace std;
 
 
-class Battlefield;
+// class Battlefield;
 
 class Robot : public std::enable_shared_from_this<Robot>{
 protected:

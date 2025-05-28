@@ -9,6 +9,858 @@
 #include "battlefield.h"
 using namespace std;
 
+GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battlefield* bf)
+    : Robot(name, x, y, w, h, bf),
+      MovingRobot(name, x, y, w, h, bf),
+      ShootingRobot(name, x, y, w, h, bf),
+      SeeingRobot(name, x, y, w, h, bf),
+      ThinkingRobot(name, x, y, w, h, bf),
+      battlefield(bf),
+      shells(10),
+      selfDestructed(false) {
+        //cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
+}
+
+template<typename T>
+shared_ptr<T> GenericRobot::createUpgradedBot() {
+        auto newBot = make_shared<T>(
+            name, 
+            getX(), 
+            getY(),
+            getWidth(),
+            getHeight(),
+            battlefield
+        );
+
+        // newBot->upgradedAreas = this->upgradedAreas;
+        // newBot->upgradeNames = this->upgradeNames;
+        // newBot->upgradeCount = this->upgradeCount;
+        return newBot;
+    }
+
+Battlefield::Battlefield(int w, int h)
+    : width(w), height(h), gen(rd()), xDist(1, w), yDist(1, h) {}
+
+shared_ptr<Robot> Battlefield::findRobotAt(int x, int y) {
+    for (auto& robot : robots) {
+        if (robot->getX() == x && robot->getY() == y && robot->alive()) {
+            return robot;
+        }
+    }
+    return nullptr;
+}
+
+void GenericRobot::think() {
+    cout << name << " is thinking...\n";
+}
+
+void GenericRobot::look(int dx, int dy) {
+    hasLooked = true;
+
+    int centerX = getX() ;
+    int centerY = getY() ;
+
+    cout << name << " now at (" << centerX << "," << centerY << ")" <<endl; 
+
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+
+            int lookX = centerX + dx;
+            int lookY = centerY + dy;
+
+            string status;           
+
+            // Robot itself point
+            if (dx == 0 && dy == 0 ){
+                // status = "Sendiri";
+                continue;
+            }
+            
+            // Out of bounds
+            else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                // status = "Out of bounds";
+                continue;
+            }
+
+            // Enemy robot
+            else if (battlefield->isRobotAt(lookX, lookY)) {
+                status = "Enemy robot";
+                lookGot_enemy_point.push_back({lookX, lookY}); 
+                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                
+            }
+            else {
+                status = "Empty space";
+                empty_point.push_back({lookX, lookY}); 
+                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+            }
+        }
+    }
+}
+
+void Robot::destroy() {
+    if (isAlive) {
+        lives--;
+
+        isAlive = false;
+        setPosition(0, 0); // Move to outside battle field
+
+        if (lives > 0) {
+            cout << name << " is waiting to respawn (" << lives << " lives remaining)" << endl;
+            battlefield->addToRespawn(shared_from_this());
+        } else {
+            cout << name << " has no lives remaining!" << endl << endl;
+        }
+    }
+}
+
+void Robot::respawn(int x, int y) {
+    if (lives > 0) {
+        positionX = x;
+        positionY = y;
+        isAlive = true; 
+    }
+}
+
+bool Robot::shouldRespawn() const {
+    return !isAlive && lives > 0;
+}
+
+
+string GenericRobot::getType() const {
+    return "GenericRobot";
+}
+
+
+
+void GenericRobot::move(int dx, int dy) {
+    hasMoved = true;
+    int centerX = getX();
+    int centerY = getY();
+  
+    int newX, newY;
+
+    vector<pair<int, int>> empty_points;
+    vector<pair<int, int>> surrounding_points;
+
+    for (int dy_ = -1; dy_ <= 1; ++dy_) {
+        for (int dx_ = -1; dx_ <= 1; ++dx_) {
+            int pointX = centerX + dx_;
+            int pointY = centerY + dy_;
+
+            if (dx_ == 0 && dy_ == 0)
+                continue;
+
+            // Out of bounds
+            if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight())
+                continue;
+
+            // Enemy or empty
+            surrounding_points.push_back({pointX, pointY});
+            if (!battlefield->isRobotAt(pointX, pointY)) {
+                empty_points.push_back({pointX, pointY});
+            }
+        }
+    }
+
+    srand(time(0));
+
+    // move -> look
+    if (!hasLooked) {
+        if (surrounding_points.empty()) {
+            cout << name << " has no space to move!" << endl;
+            return;
+        }
+
+        int num = rand() % surrounding_points.size();
+        newX = surrounding_points[num].first;
+        newY = surrounding_points[num].second;
+
+        if (battlefield->isRobotAt(newX, newY)) {
+            auto enemy = battlefield->findRobotAt(newX, newY);
+            cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+        } else {
+            setPosition(newX, newY);
+            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+        }
+    }
+
+    // look -> move
+    else {
+        if (empty_points.empty()) {
+            cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
+            return;
+        }
+
+        int num = rand() % empty_points.size();
+        newX = empty_points[num].first;
+        newY = empty_points[num].second;
+
+        setPosition(newX, newY);
+        cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+    }
+
+    if (battlefield->checkLandmine(newX, newY)) {
+        if (rand() % 100 < 50) {
+            cout << name << " triggered a landmine at (" 
+                 << newX << "," << newY << ")!\n";
+            destroy();
+        } else {
+            cout << name << " narrowly avoided a landmine at ("
+                 << newX << "," << newY << ")!\n";
+        }
+    }
+}
+
+void GenericRobot::fire(int dx, int dy) {
+    
+    if (shells == 0) {
+        cout << name << " has no shells left! Self-destructing..." << endl;
+        selfDestructed = true;
+        destroy();
+        return;
+    }
+    
+    int targetX ;
+    int targetY ;
+
+    // fire --> look
+    if(hasLooked == false){
+        vector<pair<int, int>> surrounding_point;
+        int centerX = getX() ;
+        int centerY = getY() ;
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+
+                int lookX = centerX + dx;
+                int lookY = centerY + dy;       
+
+                // Robot itself point
+                if (dx == 0 && dy == 0){
+                    continue;
+                }
+                
+                // Out of bounds
+                else if (lookX <=0 ||lookY <=0 || lookX > battlefield->getWidth() || lookY > battlefield->getHeight()){
+                    continue;
+                }
+
+                else{
+                    surrounding_point.push_back({lookX, lookY});
+                }
+            }
+        }
+
+        int size = surrounding_point.size();
+        srand(time(0));            
+        int num = rand() % size ;
+        targetX = surrounding_point[num].first;
+        targetY = surrounding_point[num].second;
+    }
+        
+    // look --> fire
+    else{
+        hasFired = true;
+        int cout_enemy = lookGot_enemy_point.size();
+
+        if(cout_enemy==0){
+          cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells:" << shells << ")" << endl;
+          return;
+        }
+
+        else if(cout_enemy==1){
+            targetX = lookGot_enemy_point[0].first;
+            targetY = lookGot_enemy_point[0].second;
+        }
+
+        else{
+           return;
+            // more enemy, need to check which is the higher enemy
+        } 
+    }
+
+    if (battlefield->findRobotAt(targetX, targetY)) {
+        auto enemy = battlefield->findRobotAt(targetX, targetY);
+        std::random_device rd;
+        std::mt19937 gen(rd()); // Mersenne Twister
+        std::uniform_int_distribution<> dis(0, 99);
+
+        shells--;
+        cout << name << " fires at " << enemy->getName() 
+             << " at (" << targetX << "," << targetY << ")\n";
+        if (enemy->isHidden()) {
+            cout << "Attack missed! Target is hidden" << endl;
+            return;
+        }
+            
+        if (dis(gen) < 70) {  // 70% hit chance
+            cout << "Target hit! " << enemy->getName() << " has been destroyed!" << endl;
+            enemy->destroy();
+            chooseUpgrade();
+        } else {
+            cout << " - MISS!" << endl;
+        }
+        
+    }   
+
+    else{
+        shells--;
+        cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
+        cout << " left shells: " << shells << endl;
+    }
+    
+    lookGot_enemy_point.clear();
+}
+
+
+void GenericRobot::respawn(int x, int y) {
+    Robot::respawn(x, y);  
+    if (alive()) {
+        shells = 10;
+        selfDestructed = false;
+        resetTurn();
+    }
+}
+
+void GenericRobot::destroy() {
+    if (!selfDestructed) {
+        selfDestructed = true;
+        Robot::destroy();  
+        upgradedAreas.clear();
+        upgradeNames.clear();
+    }
+}
+
+bool GenericRobot::shouldRespawn() const {
+    return !isAlive && lives > 0;
+}
+int GenericRobot::getX() const {
+    return positionX;
+}
+
+int GenericRobot::getY() const {
+    return positionY;
+}
+
+void GenericRobot::chooseUpgrade() {
+    if (upgradeCount >= 3) {
+        cout << name << " now is ";
+        for(auto s: upgradeNames){
+            cout << s << ' ';
+        }
+        cout << endl;
+        cout << "Cannot Upgrade Anymore" << endl;
+        return;
+    }
+
+    vector<int> availableOptions;
+    if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
+    if (upgradedAreas.find("shoot") == upgradedAreas.end()) availableOptions.push_back(1);
+    if (upgradedAreas.find("see") == upgradedAreas.end()) availableOptions.push_back(2);
+
+    if (availableOptions.empty()) {
+        cout << name << " has no more areas to upgrade!" << endl;
+        return;
+    }
+
+    int randomIndex = rand() % availableOptions.size();
+    int chosenOption = availableOptions[randomIndex];
+    chooseUpgrade(chosenOption);
+}
+
+void GenericRobot::chooseUpgrade(int upgradeOption) {
+    if (upgradeCount >= 3) {
+        cout << name << " cannot upgrade anymore (max 3 upgrades reached)" << endl;
+        return;
+    }
+
+    const char* area = "";
+    switch (upgradeOption) {
+        case 0: area = "move"; break;
+        case 1: area = "shoot"; break;
+        case 2: area = "see"; break;
+        default: 
+            cout << "Invalid upgrade option: " << upgradeOption << endl;
+            return;
+    }
+    
+    if (upgradedAreas.find(area) != upgradedAreas.end()) {
+        cout << name << " already upgraded " << area << " area!" << endl;
+        return;
+    }
+
+    auto self = shared_from_this();
+    shared_ptr<GenericRobot> newBot;
+    string upgradeName = "";
+    
+    switch (upgradeOption) {
+        case 0: // Moving upgrade
+            {
+                int choice = rand() % 2;
+                if (choice == 0) {
+                    upgradeName = "HideBot";
+                    newBot = createUpgradedBot<HideBot>();
+                    cout << name << " can now hide 3 times per match!\n";
+                } else {
+                    upgradeName = "JumpBot";
+                    newBot = createUpgradedBot<JumpBot>();
+                    cout << name << " can now jump 3 times per match!\n";
+                }
+                cout << name << " upgraded movement: " << upgradeName << endl;
+            }
+            break;
+
+        case 1: // Shooting upgrade
+            {
+                int choice = rand() % 4;
+                if (choice == 0) {
+                    upgradeName = "LongShotBot";
+                    newBot = createUpgradedBot<LongShotBot>();
+                } else if (choice == 1) {
+                    upgradeName = "SemiAutoBot";
+                    newBot = createUpgradedBot<SemiAutoBot>();
+                } else if (choice == 2) {
+                    upgradeName = "ThirtyShotBot";
+                    newBot = createUpgradedBot<ThirtyShotBot>();
+                } else {
+                    upgradeName = "LandmineBot";
+                    newBot = createUpgradedBot<LandmineBot>();
+                }
+                cout << name << " upgraded shooting: " << upgradeName << endl;
+            }
+            break;
+
+        case 2: // Seeing upgrade
+            {
+                int choice = rand() % 2;
+                if (choice == 0) {
+                    upgradeName = "ScoutBot";
+                    newBot = createUpgradedBot<ScoutBot>();
+                } else {
+                    upgradeName = "TrackBot";
+                    newBot = createUpgradedBot<TrackBot>();
+                }
+                cout << name << " upgraded vision: " << upgradeName << endl;
+            }
+            break;
+    }
+
+    if (newBot) {
+        upgradeNames.push_back(upgradeName);
+        upgradedAreas.insert(area);
+        upgradeCount++;
+        
+        newBot->upgradeNames = this->upgradeNames;
+        newBot->upgradedAreas = this->upgradedAreas;
+        newBot->upgradeCount = this->upgradeCount;
+        newBot->name = this->name;  
+        
+        battlefield->replaceRobot(self, newBot);
+        
+        cout << name << " now has upgrades: ";
+        for(const auto& s: upgradeNames){
+            cout << s << ' ';
+        }
+        cout << " (Total: " << upgradeCount << "/3)" << endl;
+        
+
+        if(upgradeCount >= 2) {
+            newBot->replaceWithCombination(newBot->upgradeNames);
+        }
+    } else {
+        cout << "Failed to create upgraded robot for " << upgradeName << endl;
+    }
+}
+
+void GenericRobot::replaceWithCombination(const vector<string>& types) {
+    if (types.size() < 2) return; 
+    
+    auto self = shared_from_this();
+    shared_ptr<GenericRobot> newBot;
+    string combinationName = "";
+    
+    auto hasType = [&](const string& type) {
+        return find(types.begin(), types.end(), type) != types.end();
+    };
+
+    cout << "Attempting combination with " << types.size() << " upgrades: ";
+    for (const auto& t : types) cout << t << " ";
+    cout << endl;
+
+    if (types.size() == 2) {
+        // Movement + Shooting combinations
+        if (hasType("HideBot") && hasType("LongShotBot")) {
+            newBot = createUpgradedBot<HideLongShotBot>();
+            combinationName = "HideLongShotBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot")) {
+            newBot = createUpgradedBot<HideSemiAutoBot>();
+            combinationName = "HideSemiAutoBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot")) {
+            newBot = createUpgradedBot<HideThirtyShotBot>();
+            combinationName = "HideThirtyShotBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot")) {
+            newBot = createUpgradedBot<HideLandmineBot>();
+            combinationName = "HideLandmineBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot")) {
+            newBot = createUpgradedBot<JumpLongShotBot>();
+            combinationName = "JumpLongShotBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoBot>();
+            combinationName = "JumpSemiAutoBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotBot>();
+            combinationName = "JumpThirtyShotBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot")) {
+            newBot = createUpgradedBot<JumpLandmineBot>();
+            combinationName = "JumpLandmineBot";
+        }
+        // Movement + Vision combinations
+        else if (hasType("HideBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideScoutBot>();
+            combinationName = "HideScoutBot";
+        } else if (hasType("HideBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideTrackBot>();
+            combinationName = "HideTrackBot";
+        } else if (hasType("JumpBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpScoutBot>();
+            combinationName = "JumpScoutBot";
+        } else if (hasType("JumpBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpTrackBot>();
+            combinationName = "JumpTrackBot";
+        }
+        // Shooting + Vision combinations
+        else if (hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<LongShotScoutBot>();
+            combinationName = "LongShotScoutBot";
+        } else if (hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<LongShotTrackBot>();
+            combinationName = "LongShotTrackBot";
+        } else if (hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<SemiAutoScoutBot>();
+            combinationName = "SemiAutoScoutBot";
+        } else if (hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<SemiAutoTrackBot>();
+            combinationName = "SemiAutoTrackBot";
+        } else if (hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<ThirtyShotScoutBot>();
+            combinationName = "ThirtyShotScoutBot";
+        } else if (hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<ThirtyShotTrackBot>();
+            combinationName = "ThirtyShotTrackBot";
+        } else if (hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<LandmineScoutBot>();
+            combinationName = "LandmineScoutBot";
+        } else if (hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<LandmineTrackBot>();
+            combinationName = "LandmineTrackBot";
+        }
+    } 
+    else if (types.size() == 3) {
+        if (hasType("HideBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideLongShotScoutBot>();
+            combinationName = "HideLongShotScoutBot";
+        } else if (hasType("HideBot") && hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideLongShotTrackBot>();
+            combinationName = "HideLongShotTrackBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideSemiAutoScoutBot>();
+            combinationName = "HideSemiAutoScoutBot";
+        } else if (hasType("HideBot") && hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideSemiAutoTrackBot>();
+            combinationName = "HideSemiAutoTrackBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideThirtyShotScoutBot>();
+            combinationName = "HideThirtyShotScoutBot";
+        } else if (hasType("HideBot") && hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideThirtyShotTrackBot>();
+            combinationName = "HideThirtyShotTrackBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<HideLandmineScoutBot>();
+            combinationName = "HideLandmineScoutBot";
+        } else if (hasType("HideBot") && hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<HideLandmineTrackBot>();
+            combinationName = "HideLandmineTrackBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpLongShotScoutBot>();
+            combinationName = "JumpLongShotScoutBot";
+        } else if (hasType("JumpBot") && hasType("LongShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpLongShotTrackBot>();
+            combinationName = "JumpLongShotTrackBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoScoutBot>();
+            combinationName = "JumpSemiAutoScoutBot";
+        } else if (hasType("JumpBot") && hasType("SemiAutoBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpSemiAutoTrackBot>();
+            combinationName = "JumpSemiAutoTrackBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotScoutBot>();
+            combinationName = "JumpThirtyShotScoutBot";
+        } else if (hasType("JumpBot") && hasType("ThirtyShotBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpThirtyShotTrackBot>();
+            combinationName = "JumpThirtyShotTrackBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot") && hasType("ScoutBot")) {
+            newBot = createUpgradedBot<JumpLandmineScoutBot>();
+            combinationName = "JumpLandmineScoutBot";
+        } else if (hasType("JumpBot") && hasType("LandmineBot") && hasType("TrackBot")) {
+            newBot = createUpgradedBot<JumpLandmineTrackBot>();
+            combinationName = "JumpLandmineTrackBot";
+        }
+    }
+
+    if (newBot && !combinationName.empty()) {
+        
+        newBot->upgradeNames = this->upgradeNames;
+        newBot->upgradedAreas = this->upgradedAreas;
+        newBot->upgradeCount = this->upgradeCount;
+        newBot->name = this->name;
+        
+        battlefield->replaceRobot(self, newBot);
+        cout << "Successfully combined " << name << " into " << combinationName << "!" << endl;
+    } else {
+        cout << name << " upgrade combination not found for: ";
+        for (const auto& s : types) cout << s << ' ';
+        cout << "\nUsing individual upgrades instead." << endl;
+    }
+}
+
+int Battlefield::getWidth() const {
+    return width;
+}
+
+int Battlefield::getHeight() const {
+    return height;
+}
+
+bool Battlefield::isRobotAt(int x, int y) const {
+    for (const auto& robot : robots) {
+        if (robot->getX() == x && robot->getY() == y) {
+            return true;  // Robot found at the position
+        }
+    }
+    return false;  // No robot at the position
+}
+
+void Battlefield::addRobot(shared_ptr<Robot> robot) {
+    robots.push_back(robot);
+}
+
+bool Battlefield::isEnemyAt(int x, int y) const {
+    for (const auto& robot : robots) {
+        if (robot->getX() == x && robot->getY() == y && robot->alive()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Battlefield::isEmpty() const {
+    return robots.empty() && respawnQueue.empty();
+}
+
+int Battlefield::countAliveRobots() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (robot->alive()) count++;
+    }
+    return count;
+}
+
+Robot* Battlefield::getAliveRobot() const {
+    for (const auto& robot : robots) {
+        if (robot->alive()) return robot.get();
+    }
+    return nullptr;
+}
+
+int Battlefield::countLiveRobot() const {
+    int count = 0;
+    for (const auto& robot : robots) {
+        if (!robot->alive()){
+            count+= robot->getLives();
+        }
+    }
+    return count;
+}
+
+void Battlefield::addToRespawn(shared_ptr<Robot> robot) {
+        lock_guard<mutex> lock(respawnMutex);
+        respawnQueue.push(robot);
+}
+
+
+bool Battlefield::checkAttackHit(shared_ptr<Robot> attacker, 
+                               shared_ptr<Robot> target) {
+    if (auto hideBot = dynamic_cast<HideBot*>(target.get())) {
+        return !hideBot->isHidden();
+    }
+    return true;
+}
+
+void Battlefield::addLandmine(int x, int y) {
+        landmines.emplace(x, y);
+    }
+
+
+bool Battlefield::checkLandmine(int x, int y) {
+    auto it = landmines.find({x, y});
+    if (it != landmines.end()) {
+        landmines.erase(it); 
+        if (rand() % 100 < 50) { 
+            cout << "Landmine triggered at (" << x << "," << y << ")!\n";
+            return true;
+        }
+    }
+    return false;
+}
+
+void Battlefield::simulateTurn() {
+    processRespawn();
+    bool simulation = true;
+    
+    // Shuffle robots for random turn order
+    shuffle(robots.begin(), robots.end(), gen);
+
+    
+    for (auto& robot : robots) {
+        if (robot->alive()) {
+            executeRobotTurn(robot);
+        }
+        // else if (robot->shouldRespawn()) {
+        //     respawnQueue.push(robot);
+        // }
+    }
+    
+    // Remove dead robots with no lives left
+    robots.erase(
+        remove_if(robots.begin(), robots.end(),
+            [](const shared_ptr<Robot>& r) { 
+                return !r->alive() && r->getLives() <= 0;
+            }),
+        robots.end()
+    );
+}
+
+void Battlefield::processRespawn() {
+    lock_guard<mutex> lock(respawnMutex);
+    // Respon the first queue robot
+    if (!respawnQueue.empty()) {
+        auto robot = respawnQueue.front();
+        respawnQueue.pop();
+
+        int remainingLives = robot->getLives();
+        if (remainingLives <= 0) return; 
+        
+        // check robot has live
+        if (robot->getLives() > 0) {
+            int newX, newY;
+            int attempts = 0;
+            do {
+                newX = 1 + rand() % width;  
+                newY = 1 + rand() % height;  
+                if (++attempts > 100) {
+                    cout << "Couldn't find empty spot for " << robot->getName() << endl;
+                    respawnQueue.push(robot);  // Retry next turn
+                    return;
+                }
+            } while (findRobotAt(newX,newY));
+            
+            auto gr = make_shared<GenericRobot>(
+                robot->getName(), newX, newY, width, height, this
+            );
+            gr->setLives(remainingLives);
+            
+            replaceRobot(robot, gr);
+            gr->respawn(newX, newY);
+            cout << robot->getName() << " respawned at (" << newX << "," << newY << ") " << remainingLives << " lives remaining." << endl;
+            
+            display();
+        }
+    }
+}
+
+void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
+    if (!robot->alive()) return;  // Skip dead robots
+    if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
+        trackBot->displayTracked();
+    }
+
+    robot->resetTurn();
+    robot->think();
+
+    // Create all possible action permutations
+    const vector<vector<string>> actionOrders = {
+        {"look", "fire", "move"},
+        {"look", "move", "fire"},
+        //{"fire", "look", "move"},
+        //{"fire", "move", "look"},
+        {"move", "look", "fire"},
+        //{"move", "fire", "look"}
+    };
+
+    // Select random order
+    auto& order = actionOrders[rand() % actionOrders.size()];
+    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+
+    for (const auto& action : order){
+        int dx,dy;
+        if (action == "look") {
+            robot->look(dx, dy);
+        }
+
+        else if (action == "fire"){
+            robot->fire(dx, dy);
+        }
+        
+        else{
+            robot->move(rand() % 3 - 1, rand() % 3 - 1);
+            cout << robot->getName() << " moved to (" << robot->getX() << "," << robot->getY() << ")." << endl;
+            display();
+
+        }
+    }
+
+    cout<<endl;
+
+    // Handle destruction if out of shells
+    if (robot->getShells() <= 0 && !robot->hasSelfDestructed()) {
+        robot->destroy();
+        if (robot->shouldRespawn()) {
+            respawnQueue.push(shared_ptr<Robot>(robot));
+        }
+    }
+}
+
+
+void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
+    newBot->setPosition(oldBot->getX(), oldBot->getY());
+    newBot->setLives(oldBot->getLives()); 
+    newBot->setShells(oldBot->getShells());
+    
+    auto it = find(robots.begin(), robots.end(), oldBot);
+    if (it != robots.end()) {
+        *it = newBot; 
+    }
+}
+
+void Battlefield::display() {
+    vector<vector<char>> grid(height, vector<char>(width, '.')); 
+
+    for (const auto& robot : robots) {
+        if (robot->alive()) {
+            grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];
+        }
+    }
+
+    cout << "--- Battlefield Status ---\n";
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            cout << grid[i][j] << ' ';
+        }
+        cout << endl;
+    }
+}
+
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
 void One_Spaces_only(string& line); // Leave only one space between each word.
 string extractWord(const string& line, const int& substr, int& i);
