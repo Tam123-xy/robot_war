@@ -416,7 +416,7 @@ switch (upgradeOption) {
         
         battlefield->replaceRobot(self, newBot);
 
-        string sentence = name + "  now has upgrades: " + upgradeNames[0];
+        string sentence = name + " now has upgrades: " + upgradeNames[0];
         int size = upgradeNames.size();
         for(size_t i =1; i<size ;i++){
             sentence+= ", " + upgradeNames[i];

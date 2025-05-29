@@ -118,7 +118,7 @@ void Battlefield::simulateTurn() {
     bool simulation = true;
 
     // Shuffle robots for random turn order
-    // shuffle(robots.begin(), robots.end(), gen);
+    shuffle(robots.begin(), robots.end(), gen);
 
     // Print order robot
     vector<shared_ptr<Robot>> copy = robots;  
@@ -225,13 +225,12 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        // {"look", "fire", "move"},
-        // {"look", "move", "fire"},
-        // {"fire", "look", "move"},
-        {"fire", "move", "move"},
-        // {"fire", "move", "look"},
-        // {"move", "look", "fire"},
-        // {"move", "fire", "look"}
+        {"look", "fire", "move"},
+        {"look", "move", "fire"},
+        {"fire", "look", "move"},
+        {"fire", "move", "look"},
+        {"move", "look", "fire"},
+        {"move", "fire", "look"}
     };
 
     // Cout order action
@@ -258,7 +257,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             
             else{
                 robot->move(rand() % 3 - 1, rand() % 3 - 1);
-                // display();
+                display();
         }
     
         cout<<endl;
