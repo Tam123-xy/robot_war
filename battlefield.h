@@ -23,7 +23,6 @@ private:
     uniform_int_distribution<> yDist;
     mutex respawnMutex;
     set<pair<int, int>> landmines;
-    // void processRespawn();
     
 public:
     Battlefield(int w, int h);
@@ -44,28 +43,13 @@ public:
 
     // Action sequence methods
     void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy);
-    // void executeAttack(GenericRobot* gr);
-    // void executeConserve(GenericRobot* gr);
-    // void executeExplore(GenericRobot* gr);
-
     void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
     void addLandmine(int x, int y);
     bool checkLandmine(int x, int y) ;
+    bool isLandmine(int x, int y) ;
 
-    // set<pair<int, int>> mines;
-    // void placeMineAt(int x, int y);
-    // bool checkMineAt(int x, int y) const;
-    // void triggerMineIfAny(Robot* robot, int x, int y);
-
-    void processBestMove(int& newX, int& newY,
-                     const vector<pair<int, int>>& empty_points,
-                     const vector<pair<int, int>>& enemy_outside_surrouding_point,
-                     Battlefield* battlefield);
-
-    void seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy);
-
-    //GlideBot
+     //GlideBot
     bool isInside(int x, int y) const { return x >= 1 && x <= width && y >= 1 && y <= height; }
 };
 
