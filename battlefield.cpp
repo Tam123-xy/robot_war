@@ -105,6 +105,14 @@ bool Battlefield::checkLandmine(int x, int y) {
     return false;
 }
 
+bool Battlefield::isLandmine(int x, int y) {
+    auto it = landmines.find({x, y});
+    if (it != landmines.end()) {
+            return true;
+    }
+    return false;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;

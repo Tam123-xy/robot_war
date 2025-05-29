@@ -52,6 +52,7 @@ public:
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
     void addLandmine(int x, int y);
     bool checkLandmine(int x, int y) ;
+    bool isLandmine(int x, int y) ;
 
     // set<pair<int, int>> mines;
     // void placeMineAt(int x, int y);

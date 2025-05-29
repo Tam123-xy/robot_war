@@ -251,8 +251,7 @@ void GenericRobot::fire(int dx, int dy) {
             return;
         }
 
-        if (true) {
-        // if (dis(gen) < 70) {
+        if (dis(gen) < 70) {
             cout << "Target hit! " << enemy->getName() << " has been destroyed! ";
             enemy->destroy();
             chooseUpgrade(); // Upgrade
@@ -315,17 +314,6 @@ void GenericRobot::chooseUpgrade() {
         cout << sentence<< endl;
         return;
     }
-
-    // isTrackBot = true;
-    // upgradeNames.push_back("TrackBot");
-    // upgradeCount++;
-
-    // string sentence = name + " now is " + upgradeNames[0];
-    // int size = upgradeNames.size();
-    // for(size_t i =1; i<size ;i++){
-    //     sentence+= ", " + upgradeNames[i];
-    // }
-    // cout << sentence<< endl;
 
     vector<int> availableOptions;
     if (upgradedAreas.find("move") == upgradedAreas.end()) availableOptions.push_back(0);
