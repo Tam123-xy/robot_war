@@ -286,8 +286,6 @@ void GenericRobot::destroy() {
         Robot::destroy();  
         upgradedAreas.clear();
         upgradeNames.clear();
-        // upgradeCount =0 ;   有bug，这里init不到。我在复活的时候init。我已经修好了，这里跟你们说一声
-        // isScoutBot = false; 这里init不到，你们去robots.h --> init_Upgrade()加你们要init的东西
     }
 }
 
@@ -390,13 +388,16 @@ switch (upgradeOption) {
 
         case 2: // Seeing upgrade
             {
-                int choice = rand() % 2;
+                int choice = rand() % 3;
                 if (choice == 0) {
                     upgradeName = "ScoutBot";
                     newBot = createUpgradedBot<ScoutBot>();
-                } else {
+                } else if (choice == 1){
                     upgradeName = "TrackBot";
                     newBot = createUpgradedBot<TrackBot>();
+                } else{
+                    upgradeName = "RevealBot";
+                    newBot = createUpgradedBot<RevealBot>();
                 }
                 cout << name << " upgraded vision: " << upgradeName << endl;
             }
