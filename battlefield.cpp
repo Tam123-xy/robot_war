@@ -136,31 +136,19 @@ void Battlefield::simulateTurn() {
     }
     cout << r_order<< endl; 
     cout << endl;
-    
-    for (auto& robot : robots) {
-        if (robot->alive()) {
 
-            // Cout robot upgrade name
-            if(robot->getUpgradeCount()>=1){
-                vector<string> copy_upgradeNames = robot->get_upgradeNames();
-                string sentence = robot->getName() + " is " + copy_upgradeNames[0];
-                int size = copy_upgradeNames.size();
-                for(size_t i =1; size<i ;i++){
-                    sentence+= "," + copy_upgradeNames[i];
-                }
-                cout<< sentence <<endl;
-            }
-            
+    for(auto& robot : copy){
+        if(robot->alive()){
             executeRobotTurn(robot,copy);
         }
 
-        else if (robot->shouldRespawn()) {
+        else if(robot->shouldRespawn()){
             auto it = find(copy.begin(), copy.end(), robot);
             if (it != copy.end()) {
                 cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
                 cout<<endl;
             }
-        }      
+        }
     }
 
     // Remove dead robots with no lives left
@@ -213,6 +201,58 @@ void Battlefield::processRespawn() {
             // display();
         }
     }
+
+    // lock_guard<mutex> lock(respawnMutex);
+    
+    // // Got robot that needs to respawn
+    // if (!respawnQueue.empty()) {
+
+    //     // Print respawn order
+    //     queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
+    //     auto copy_robot = tempQueue.front();
+    //     tempQueue.pop(); 
+    //     string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
+    //     while (!tempQueue.empty()) {
+    //         shared_ptr<Robot> robot = tempQueue.front();
+    //         respawn_order+= "--> " + robot->getName();
+    //         tempQueue.pop();
+    //     }
+    //     cout << respawn_order<< endl; 
+
+    //     // ProcessRespawn
+    //     auto robot = respawnQueue.front();
+    //     respawnQueue.pop();
+
+    //     int remainingLives = robot->getLives();
+    //     if (remainingLives <= 0) return; 
+        
+    //     // check robot has live
+    //     if (robot->getLives() > 0) {
+    //         int newX, newY;
+    //         int attempts = 0;
+    //         do {
+    //             newX = 1 + rand() % width;  
+    //             newY = 1 + rand() % height;  
+    //             newX = 1 + rand() % width;  
+    //             newY = 1 + rand() % height;  
+    //             if (++attempts > 100) {
+    //                 cout << "Couldn't find empty spot for " << robot->getName() << endl;
+    //                 respawnQueue.push(robot);  // Retry next turn
+    //                 return;
+    //             }
+    //         } while (findRobotAt(newX,newY));
+            
+    //         auto gr = make_shared<GenericRobot>(
+    //             robot->getName(), newX, newY, width, height, this
+    //         );
+    //         gr->setLives(remainingLives);
+            
+    //         replaceRobot(robot, gr);
+    //         gr->respawn(newX, newY);
+            
+    //         // display();
+    //     }
+    // }
 }
 
 void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
@@ -237,14 +277,6 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
     auto& order = actionOrders[rand() % actionOrders.size()];
     cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
 
-    // ScoutBot
-    seeBattlefield(robot, order, copy);
-
-    // TrackBot
-    if(robot->isTrack()){
-        trackRobot(robot,copy);
-    }
-
     for (const auto& action : order){
         int dx,dy;
         if (action == "look") {
@@ -261,14 +293,6 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
         }
     
         cout<<endl;
-    }
-
-    // useScout = false;
-    for (auto& copy_robot : copy){
-        if(copy_robot->getUseScout()){
-            robot->setUseScout(false); 
-        }
-        else continue; 
     }
 
     // Handle destruction if out of shells
@@ -309,203 +333,5 @@ void Battlefield::display() {
         }
         cout << endl;
     }
-
-}
-
-void Battlefield::processBestMove(int& newX, int& newY,
-                     const vector<pair<int, int>>& empty_points,
-                     const vector<pair<int, int>>& enemy_outside_surrouding_point,
-                     Battlefield* battlefield, const bool& ScoutBot){
-                        
-    pair<int, int> best_move = empty_points[0];
-    int min_distance = INT_MAX;
-    string final_enemy_name; 
-
-    for (auto& space : empty_points) {
-        int closest_enemy_dist = INT_MAX;
-        string closest_enemy_name; 
-
-        for (auto& enemy : enemy_outside_surrouding_point) {
-            int dist = abs(space.first - enemy.first) + abs(space.second - enemy.second);
-            auto enemyy = battlefield->findRobotAt(enemy.first, enemy.second);
-
-            if (dist < closest_enemy_dist) {
-                closest_enemy_dist = dist;
-                closest_enemy_name = enemyy->getName();
-            }
-        }
-
-        // Keep the space that gives the minimum distance to any enemy
-        if (closest_enemy_dist < min_distance) {
-            min_distance = closest_enemy_dist;
-            best_move = space;
-            final_enemy_name = closest_enemy_name;
-        }
-    }
-
-    if(ScoutBot){
-        cout << "ScoutBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
-        << " with closest enemy "<< final_enemy_name << endl;
-    }
-    else{
-        cout << "TrackBot -- Best move is to (" << best_move.first << "," << best_move.second << ")"
-        << " with closest tracked enemy "<< final_enemy_name << endl;
-    }
-    
-    newX = best_move.first;
-    newY = best_move.second;
-}
-
-void Battlefield::seeBattlefield(shared_ptr<Robot> robot, const vector<string> &order, const vector<shared_ptr<Robot>>& copy){
-
-    if (robot->isScout()) {
-        int count = robot->getScoutCount(); // Check how many times power has been used  
-        if(count == 3){
-            cout << "Cannot see the entire battlefield — the ability has already been used 3 times." << endl;
-        }
-        else{
-            // move/fire --> look, use power. 
-            // Push values to vectors 
-            // 1) enemy points which are surrounding the robot, 
-            // 2) enemy points which are NOT surrounding the robot, 
-            // 3) empty points which are surrounding the robot
-            if(order[0]!="look"){ 
-
-                // All enemies point
-                for (auto& copy_robot : copy){
-                    if(copy_robot->getName()!= robot->getName() && copy_robot->alive()){
-                        robot->addScoutPoint({copy_robot->getX(), copy_robot->getY()}); 
-                    }else continue; 
-                }
-
-                robot->setUseScout(true);
-                robot->setScoutCount(count + 1);
-                vector<string> ordinal_numbers ={"1","2","3"};
-                cout << "ScoutBot -- See the entire battlefield (Total: " << ordinal_numbers[count] << "/3)." << endl;
-
-                int x = robot->getX();
-                int y = robot->getY();
-
-                for (int dy = -1; dy <= 1; ++dy) {
-                    for (int dx = -1; dx <= 1; ++dx) {
-
-                        int lookX = x + dx;
-                        int lookY = y + dy;         
-
-                        if (dx == 0 && dy == 0) continue; // Robot itself point
-                    
-                        else if (lookX <=0 ||lookY <=0 || lookX > getWidth() || lookY > getHeight()) continue;  // Out of bounds
-
-                        else if (isRobotAt(lookX, lookY)) { // Enemy robot
-                            robot->add_LookGotEnemyPoint({lookX, lookY}); // 1) enemy points which are surrounding the robot, 
-
-                        }else{ // Empty space   
-                            robot->add_EmptyPoint({lookX, lookY}); // 2) enemy points which are NOT surrounding the robot, 
-                        }
-                    }
-                }
-
-                // 3) empty points which are surrounding the robot
-                for (const auto& point : robot->getScoutPoints()) {
-                    bool isSurrounding = false;
-                    for (const auto& s : robot->get_LookGotEnemyPoint()) {
-                        if (point == s) {
-                            isSurrounding = true;
-                            break;
-                        }
-                    }
-                    if (!isSurrounding) {
-                        robot->add_enemy_Outside_surrouding_point(point);
-                    }
-                }
-
-                vector<pair<int, int>> copy_scoutPoints = robot->getScoutPoints();
-                int size = copy_scoutPoints.size();
-                if (size == 0){
-                    cout << "No enemy found on the battlefield." << endl;
-                }else{
-                    auto enemy = findRobotAt(copy_scoutPoints[0].first, copy_scoutPoints[0].second);
-                    string sentence = "ScoutBot -- All enemies' points: " + enemy->getName() +"(" + to_string(copy_scoutPoints[0].first) + "," +to_string(copy_scoutPoints[0].second)+")";
-                    for(size_t i =1;i<size; i++ ){
-                        enemy = findRobotAt(copy_scoutPoints[i].first, copy_scoutPoints[i].second);
-                        sentence+= ", "+ enemy->getName()+"(" + to_string(copy_scoutPoints[i].first) + "," +to_string(copy_scoutPoints[i].second)+")";
-                    }
-                    cout<< sentence <<endl;
-                    }
-                    
-            }
-            else{
-                cout << "ScoutBot -- Since the order of actions starts with LOOK," <<endl;
-                cout<<"the power to see the entire battlefield will be preserved for next time." << endl;
-            }
-        }
-    }
-}
-
-void Battlefield::trackRobot(shared_ptr<Robot> robot, const vector<shared_ptr<Robot>>& copy){
-
-    vector<shared_ptr<Robot>> copy_robots = copy; 
-    shuffle(copy_robots.begin(), copy_robots.end(), gen); // Shuffle
-
-    // Track 3 robots which are alive, can die in this turn. 
-    // Condition -- dosen't track robot before and tracked robot less than 3
-    if (!robot->got_trackRot() || robot->getTrackCount() < 3) {
-       for (auto& copy : copy_robots) {
-            if (robot->getTrackCount() == 3) break;
-            if (copy == robot) continue;
-
-            bool alreadyTracked = false;
-            for (auto& t : robot->get_TrackedBot()) {
-                if (t == copy) {
-                    alreadyTracked = true;
-                    break;
-                }
-            }
-            if (alreadyTracked) continue;
-
-            robot->add_TrackedBot(copy);
-            robot->setTrackCount(robot->getTrackCount() + 1);
-        }
-    }
-
-    vector<shared_ptr<Robot>> copy_TrackedBot = robot->get_TrackedBot();
-    string sentense;
-    string point;
-
-    if(!copy_TrackedBot[0]->alive()){
-        point = "died in this match";
-    }
-    else if(copy_TrackedBot[0]->getX()== 0){
-        point = "died in this turn";
-    }
-    else{
-        point = to_string(copy_TrackedBot[0]->getX()) + ","+ to_string(copy_TrackedBot[0]->getY());
-    }
-    sentense= "TrackBot -- "+robot->getName() + " tracks " + copy_TrackedBot[0]->getName() + "("+point+")";
-
-    int size = copy_TrackedBot.size();
-    for(int i=1 ; i<size; i++){
-        if(!copy_TrackedBot[i]->alive()){
-            point = "died in this match";
-            
-        }
-        else if(copy_TrackedBot[i]->getX()== 0){
-            point = "died in this turn";
-        }
-        else{
-            point = to_string(copy_TrackedBot[i]->getX()) + ","+ to_string(copy_TrackedBot[i]->getY());
-        }
-        sentense+= ", "+ copy_TrackedBot[i]->getName() + "("+point+")";
-    }
-
-    cout<<sentense<<endl;
-
-    // Live in this turn
-    for (auto& t : robot->get_TrackedBot()){
-        if(t->getX()==0)continue;
-        robot->add_gotLive_trackedBot(t);
-    }
-
-
 
 }

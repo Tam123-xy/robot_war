@@ -9,17 +9,12 @@
 #include <set>
 #include <mutex>
 #include "battlefield.h"
-#include <mutex>
-#include "battlefield.h"
 #include <random>
-// std::random_device rd;
-// std::mt19937 gen(rd());
 using namespace std;
 
 class Battlefield;  // Forward declaration
 
 class Robot : public std::enable_shared_from_this<Robot>{
-// class Robot {
 protected:
     Battlefield* battlefield;
     string name;
@@ -70,31 +65,10 @@ public:
     // virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
     // virtual bool hide() { return false; } // Base implementation - no defense
 
-    // ScoutBot
-    virtual const vector<pair<int, int>>& getScoutPoints() const = 0;
-    virtual bool isScout() const { return false; } 
-    virtual int getScoutCount() const { return 0; }
-    virtual void setScoutCount(int) {}
-    virtual bool getUseScout() const {return false;}
-    virtual void setUseScout(bool) {}
-    virtual void addScoutPoint(pair<int, int> pos) = 0;
     virtual void add_EmptyPoint(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_EmptyPoint() const =0;
     virtual void add_LookGotEnemyPoint(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_LookGotEnemyPoint() const =0;
-    virtual void add_enemy_Outside_surrouding_point(pair<int, int> pos) =0;
-    virtual const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const =0;
-
-    // TarckBot
-    virtual bool isTrack() const { return false; } 
-    virtual bool got_trackRot() const { return false; } 
-    virtual int getTrackCount() const { return 0; }
-    virtual void setTrackCount(int) {}
-    virtual const vector<shared_ptr<Robot>> get_TrackedBot() const =0;
-    virtual void add_TrackedBot(shared_ptr<Robot> bot) =0;
-    virtual const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const =0;
-    virtual void add_gotLive_trackedBot(shared_ptr<Robot> bot) =0;
-    virtual void add_Live_trackedBot_point(pair<int, int> pos) = 0;
     
     // Update
     virtual int getUpgradeCount() const { return 0; }
@@ -124,93 +98,13 @@ public:
 };
 
 class SeeingRobot : virtual public Robot {
-private:
-    mt19937 gen;
-protected:
-    // ScoutBot
-    int scoutCount = 0;
-    vector<pair<int, int>> ScoutPoint;
-
-    // TarckBot
-    int trackCount = 0;
-    vector<shared_ptr<Robot>> tracked_robots; 
-    vector<shared_ptr<Robot>> gotLive_trackedBot;
-    vector<pair<int, int>> Live_trackedBot_point ;
-
 public:
+    SeeingRobot(string name, int x, int y, int w, int h, Battlefield* bf) 
+            : Robot(name, x, y, w, h, bf) {}
+    virtual ~SeeingRobot() = default;
+
     using Robot::Robot;
     virtual void look(int dx, int dy) = 0;
-
-    // ScoutBot
-    bool isScoutBot = false;
-    bool isScout() const override { return isScoutBot; }
-    bool useScout = false;
-    int getScoutCount() const override { return useScout; }
-    void setScoutCount(int c) override { scoutCount = c; }
-    void setUseScout(bool c) override { useScout = c; }
-    bool getUseScout() const override {return false;}
-    void addScoutPoint(pair<int, int> pos) override{ScoutPoint.push_back(pos);}
-    const vector<pair<int, int>>& getScoutPoints() const override{return ScoutPoint;}
-
-    // TrackBot
-    bool isTrackBot = false;
-    bool isTrack() const override { return isTrackBot; }
-    bool trackRot = false;
-    bool got_trackRot() const override { return trackRot; }
-    int getTrackCount() const override { return trackCount; }
-    void setTrackCount(int c) override { trackCount = c; }
-    const vector<shared_ptr<Robot>> get_TrackedBot() const override {return tracked_robots;} // no need to init
-    void add_TrackedBot(shared_ptr<Robot> bot) override{tracked_robots.push_back(bot);} 
-    const vector<shared_ptr<Robot>> get_gotLive_trackedBot() const override {return gotLive_trackedBot;} 
-    void add_gotLive_trackedBot(shared_ptr<Robot> bot) override{gotLive_trackedBot.push_back(bot);} 
-    void add_Live_trackedBot_point(pair<int, int> pos) override{Live_trackedBot_point.push_back(pos);}
-
-    // move_Enemy(!= tracked Bot) + empty points
-    void Track_surrouding_point_TARGET_move(int& targetX, int& targetY, bool& track_move){
-        int centerX = getX() ;
-        int centerY = getY() ;
-        vector<pair<int, int>> surrounding_points;
-
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                int pointX = centerX + dx;
-                int pointY = centerY + dy;       
-
-                if (dx == 0 && dy == 0) continue; // Robot itself
-                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else if (battlefield->isRobotAt(pointX, pointY)){ // Enemy(!= tracked Bot)
-                    auto enemy = battlefield->findRobotAt(pointX, pointY);
-                    bool isTracked = false;
-                    for (auto& t : gotLive_trackedBot) {
-                        if (t == enemy) {
-                            isTracked = true;
-                            break;
-                        }
-                    }
-                    if (!isTracked) { 
-                        surrounding_points.emplace_back(pointX, pointY);
-                    }
-                }
-                else{ surrounding_points.push_back({pointX, pointY});} // empty points
-            }
-        }
-
-        if(surrounding_points.size()==0){
-            cout<< name <<" cannot move! "<< name <<" is surrounding by tracked Bot"<<endl;
-            track_move = false;
-        }
-
-        
-
-        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
-        int num = dis(gen);
-        targetX = surrounding_points[num].first;
-        targetY = surrounding_points[num].second;
-    }
-    
-    // PredictBot
-    bool isPredictBot = false;
-    bool getPredictBot() const { return isPredictBot; }
 
 };
 
@@ -272,7 +166,6 @@ protected:
     bool hasMoved = false;
     vector<pair<int, int>> empty_point;
     vector<pair<int, int>> lookGot_enemy_point;
-    vector<pair<int, int>> enemy_outside_surrouding_point;
 
     Battlefield* battlefield;
     int shells;
@@ -293,36 +186,23 @@ public:
     int getUpgradeCount() const override { return upgradeCount; }
     void init_Upgrade() override { 
         upgradeCount = 0; 
-        isScoutBot = false;
         upgradedAreas.clear();
         upgradeNames.clear();
-
-        //TrackBot
-        isTrackBot = false;
-        trackRot = false;
-        tracked_robots.clear();
-        trackCount = 0;
 
     }
     const vector<string>& get_upgradeNames() const override{return upgradeNames;}
 
-    // ScoutBot
+    // Look
     void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}
     const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;}
     void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}
     const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}
-    void add_enemy_Outside_surrouding_point(pair<int, int> pos) override{ enemy_outside_surrouding_point.push_back(pos);}
-    const vector<pair<int, int>>& get_enemy_Outside_surrouding_point() const override{  return enemy_outside_surrouding_point;}
     
     // Action methods
     void resetTurn() {
         hasLooked = hasFired = hasMoved = false;
         empty_point.clear();
         lookGot_enemy_point.clear();
-        enemy_outside_surrouding_point.clear();
-        ScoutPoint.clear();
-        gotLive_trackedBot.clear();
-        Live_trackedBot_point.clear();
     }
     void think() override;
     void look(int dx, int dy) override;
@@ -370,64 +250,8 @@ public:
         targetX = surrounding_points[num].first;
         targetY = surrounding_points[num].second;
     }
-
-    // fire --> look, shot tracked enemy is surrounding 
-    void tarck_surrouding_point_TARGET_fire(int& targetX, int& targetY){
-        int centerX = getX() ;
-        int centerY = getY() ;
-        vector<pair<int, int>> surrounding_points;
-        vector<pair<int, int>> surrounding_traked_enemy_points;
-        
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                int pointX = centerX + dx;
-                int pointY = centerY + dy;       
-
-                if (dx == 0 && dy == 0) continue; // Robot itself
-                else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else if (battlefield->isRobotAt(pointX, pointY)){ 
-                    auto enemy = battlefield->findRobotAt(pointX, pointY);
-                    bool isTracked = false;
-                    for (auto& t : gotLive_trackedBot) {
-                        if (t == enemy) {
-                            isTracked = true;
-                            break;
-                        }
-                    }
-                    if (isTracked) { 
-                        surrounding_traked_enemy_points.emplace_back(pointX, pointY); // surrounding_traked_enemy_points
-                    }
-                    else{
-                        surrounding_points.push_back({pointX, pointY}); // enemy points
-                    }
-                }
-                else{ surrounding_points.push_back({pointX, pointY});} // empty points
-            }
-        }
-
-        if(surrounding_traked_enemy_points.size()==1){
-            uniform_int_distribution<> dis(0, surrounding_traked_enemy_points.size() - 1);
-            int num = dis(gen);
-            targetX = surrounding_traked_enemy_points[num].first;
-            targetY = surrounding_traked_enemy_points[num].second;
-            auto enemy = battlefield->findRobotAt(targetX, targetY);
-            cout << "TrackBot -- Shot tracked enemy " << enemy->getName() <<endl;
-        }
-        else if(surrounding_traked_enemy_points.size()>=2){ // shot higher tracked enemy
-            shot_higher_enemy( targetX, targetY, surrounding_traked_enemy_points,true);
-            auto enemy = battlefield->findRobotAt(targetX, targetY);
-            cout << "TrackBot -- Shot tracked enemy " << enemy->getName() <<endl;
-        }
-        else{
-            uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
-            int num = dis(gen);
-            targetX = surrounding_points[num].first;
-            targetY = surrounding_points[num].second;
-        }
-    }
-        
     
-    void shot_higher_enemy(int& targetX, int& targetY, const vector<pair<int, int>>& enemy_point, const bool& Track ){
+    void shot_higher_enemy(int& targetX, int& targetY, const vector<pair<int, int>>& enemy_point ){
         int i = 0;
         int max_i = 0;
         int max = 0;
@@ -446,15 +270,8 @@ public:
         targetY = enemy_point[max_i].second;
         auto enemy = battlefield->findRobotAt(targetX, targetY );
         if(max!=0){
-            if(Track){
-                cout <<"TrackBot -- "<< name << " found out that " << enemy->getName()
-                << " has " << max << " updates and a higher level compared to other tracked enemies." << endl;
-            }
-            else{
-                cout << name << " found out that " << enemy->getName()
-                << " has " << max << " updates and a higher level compared to other enemies." << endl;
-            }
-            
+            cout << name << " found out that " << enemy->getName()
+            << " has " << max << " updates and a higher level compared to other enemies." << endl;
         }
     }
 };
@@ -586,7 +403,7 @@ public:
             GenericRobot(name, x, y, w, h, bf) {}
 
     string getType() const override { return "RevealBot"; }
-    void look(int dx, int dy) {
+    void look(int dx, int dy) override{
         hasLooked = true;
 
         int centerX = getX() ;
@@ -661,9 +478,7 @@ public:
             GenericRobot::look(dx, dy);
         }
     }
-
-
-    // string getType() const override { return "ScoutBot"; }
+    string getType() const override { return "ScoutBot"; }
 };
 
 class TrackBot : virtual public GenericRobot {
