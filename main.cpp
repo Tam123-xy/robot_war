@@ -1,3 +1,15 @@
+/**********|**********|**********|
+Program: main.cpp / robots.h / battlefield.h
+Course: OOPDS
+Trimester: 2520
+Name: TAY SHI XIANG | YIAP WEI SHANZ | TAM XIN YI
+ID: 243UC247GE | 243UC247CV | 243UC247G6
+Lecture Section: TC1L
+Tutorial Section: TT2L
+Email: TAY.SHI.XIANG@student.mmu.edu.my | YIAP.WEI.SHANZ@student.mmu.edu.my | TAM.XIN.YI@student.mmu.edu.my
+Phone: 019-3285968 | 011-59964357 | 011-11026051
+**********|**********|**********/
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
