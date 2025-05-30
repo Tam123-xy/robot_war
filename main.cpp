@@ -31,10 +31,6 @@ shared_ptr<T> GenericRobot::createUpgradedBot() {
             getHeight(),
             battlefield
         );
-
-        // newBot->upgradedAreas = this->upgradedAreas;
-        // newBot->upgradeNames = this->upgradeNames;
-        // newBot->upgradeCount = this->upgradeCount;
         return newBot;
     }
 
@@ -60,7 +56,7 @@ void GenericRobot::look(int dx, int dy) {
     int centerX = getX() ;
     int centerY = getY() ;
 
-    cout << name << " now at (" << centerX << "," << centerY << ")" <<endl; 
+    cout << name << " now at (" << centerX << "," << centerY << "). " << name << " is looking" <<endl; 
 
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
@@ -163,8 +159,6 @@ void GenericRobot::move(int dx, int dy) {
         }
     }
 
-    srand(time(0));
-
     // move -> look
     if (!hasLooked) {
         if (surrounding_points.empty()) {
@@ -181,7 +175,7 @@ void GenericRobot::move(int dx, int dy) {
             cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
         } else {
             setPosition(newX, newY);
-            cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            //cout << name << " moved to (" << newX << "," << newY << ")." << endl;
         }
     }
 
@@ -224,11 +218,12 @@ void GenericRobot::fire(int dx, int dy) {
     int targetX ;
     int targetY ;
 
+    int centerX = getX() ;
+    int centerY = getY() ;
+
     // fire --> look
     if(hasLooked == false){
         vector<pair<int, int>> surrounding_point;
-        int centerX = getX() ;
-        int centerY = getY() ;
         
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
@@ -252,8 +247,7 @@ void GenericRobot::fire(int dx, int dy) {
             }
         }
 
-        int size = surrounding_point.size();
-        srand(time(0));            
+        int size = surrounding_point.size();       
         int num = rand() % size ;
         targetX = surrounding_point[num].first;
         targetY = surrounding_point[num].second;
@@ -272,6 +266,33 @@ void GenericRobot::fire(int dx, int dy) {
         else if(cout_enemy==1){
             targetX = lookGot_enemy_point[0].first;
             targetY = lookGot_enemy_point[0].second;
+
+
+                int curX = getX();
+                int curY = getY();
+
+                bool isNearby = false;
+
+                for (int dy = -1; dy <= 1; ++dy) {
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        if (dx == 0 && dy == 0) continue;
+
+                        int nx = curX + dx;
+                        int ny = curY + dy;
+
+                        if (nx == targetX && ny == targetY) {
+                            isNearby = true;
+                            break;
+                        }
+                    }
+                    if (isNearby) break;
+                }
+
+                if (!isNearby) {
+                    cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+                    return;
+                }
+            
         }
 
         else{
@@ -397,7 +418,8 @@ void GenericRobot::chooseUpgrade(int upgradeOption) {
     switch (upgradeOption) {
         case 0: // Moving upgrade
             {
-                int choice = rand() % 2;
+                //int choice = rand() % 2;
+                int choice = 1;
                 if (choice == 0) {
                     upgradeName = "HideBot";
                     newBot = createUpgradedBot<HideBot>();
@@ -786,21 +808,35 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     }
 
     robot->resetTurn();
-    robot->think();
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        {"look", "fire", "move"},
-        {"look", "move", "fire"},
-        //{"fire", "look", "move"},
-        //{"fire", "move", "look"},
-        {"move", "look", "fire"},
-        //{"move", "fire", "look"}
+        {"look", "fire", "move", "think"},
+        {"look", "fire", "think", "move"},
+        {"look", "move", "fire", "think"},
+        {"look", "move", "think", "fire"},
+        {"look", "think", "fire", "move"},
+        {"look", "think", "move", "fire"},
+
+        {"fire", "look", "move", "think"},
+        {"fire", "look", "think", "move"},
+        {"fire", "move", "look", "think"},
+        {"fire", "move", "think", "look"},
+        {"fire", "think", "look", "move"},
+        {"fire", "think", "move", "look"},
+
+        {"move", "look", "fire", "think"},
+        {"move", "look", "think", "fire"},
+        {"move", "fire", "look", "think"},
+        {"move", "fire", "think", "look"},
+        {"move", "think", "look", "fire"},
+        {"move", "think", "fire", "look"},
+
     };
 
     // Select random order
     auto& order = actionOrders[rand() % actionOrders.size()];
-    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] <<  "--> "<< order[3]<< endl;
 
     for (const auto& action : order){
         int dx,dy;
@@ -812,11 +848,14 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             robot->fire(dx, dy);
         }
         
-        else{
+        else if (action == "move"){
             robot->move(rand() % 3 - 1, rand() % 3 - 1);
             cout << robot->getName() << " moved to (" << robot->getX() << "," << robot->getY() << ")." << endl;
             display();
 
+        }
+        else{
+            robot->think();
         }
     }
 

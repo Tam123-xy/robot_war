@@ -61,6 +61,7 @@ public:
     void setShells(int s) { shells = s; }
     virtual bool hasSelfDestructed() const = 0;
     virtual int getShells() const = 0;
+
 };
 
 class MovingRobot : virtual public Robot {
@@ -345,12 +346,10 @@ public:
             GenericRobot(name, x, y, w, h, bf) {}
 
     void fire(int dx, int dy) override {
-        fireDx = dx;
-        fireDy = dy;
-
+        
         for (int i = 0; i < 3 && canFire(); ++i) {
-            int targetX, targetY;
-            getFireTarget(targetX, targetY);
+            int targetX = lookGot_enemy_point[0].first;
+            int targetY = lookGot_enemy_point[0].second;
 
             if (battlefield->isRobotAt(targetX, targetY)) {
                 auto target = battlefield->findRobotAt(targetX, targetY);
@@ -360,7 +359,11 @@ public:
                          << " at (" << targetX << "," << targetY << ")!" << endl;
                 }
             } else {
-                cout << name << " fires at empty space (" << targetX << "," << targetY << ")." << endl;
+                break;
+            }
+
+            if (shells == 0){
+                break;
             }
 
             useShell();  // consume a shell
