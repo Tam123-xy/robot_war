@@ -12,7 +12,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
-
+#pragma once
 #include <queue>
 #include <random>
 #include <algorithm>
@@ -22,10 +22,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include <iostream>
 #include <mutex>
 using namespace std;
-
 class Robot;
-class HideBot;
-class JumpBot;
 
 class Battlefield {
 private:
@@ -36,11 +33,8 @@ private:
     mt19937 gen;
     uniform_int_distribution<> xDist;
     uniform_int_distribution<> yDist;
-
     mutex respawnMutex;
-
     set<pair<int, int>> landmines;
-    
     
 public:
     Battlefield(int w, int h);
@@ -59,27 +53,15 @@ public:
     void processRespawn();
     void addToRespawn(shared_ptr<Robot> robot);
 
-
-
     // Action sequence methods
-    void executeRobotTurn(shared_ptr<Robot> robot);
-    // void executeAttack(GenericRobot* gr);
-    // void executeConserve(GenericRobot* gr);
-    // void executeExplore(GenericRobot* gr);
-
+    void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy);
     void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
-
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
-
     void addLandmine(int x, int y);
     bool checkLandmine(int x, int y) ;
+    bool isLandmine(int x, int y) ;
 
-//    void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
-//         auto it = find(robots.begin(), robots.end(), oldBot);
-//         if (it != robots.end()) *it = newBot;
-//    }
-
-    //GlideBot
+     //GlideBot
     bool isInside(int x, int y) const { return x >= 1 && x <= width && y >= 1 && y <= height; }
 };
 

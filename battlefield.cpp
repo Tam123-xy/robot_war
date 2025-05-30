@@ -2,6 +2,7 @@
 #include "robots.h"
 #include <iostream>
 #include <mutex>
+#include <climits>
 using namespace std;
 
 Battlefield::Battlefield(int w, int h)
@@ -80,7 +81,6 @@ void Battlefield::addToRespawn(shared_ptr<Robot> robot) {
         respawnQueue.push(robot);
 }
 
-
 bool Battlefield::checkAttackHit(shared_ptr<Robot> attacker, 
                                shared_ptr<Robot> target) {
     if (auto hideBot = dynamic_cast<HideBot*>(target.get())) {
@@ -91,8 +91,7 @@ bool Battlefield::checkAttackHit(shared_ptr<Robot> attacker,
 
 void Battlefield::addLandmine(int x, int y) {
         landmines.emplace(x, y);
-    }
-
+}
 
 bool Battlefield::checkLandmine(int x, int y) {
     auto it = landmines.find({x, y});
@@ -106,23 +105,54 @@ bool Battlefield::checkLandmine(int x, int y) {
     return false;
 }
 
+bool Battlefield::isLandmine(int x, int y) {
+    auto it = landmines.find({x, y});
+    if (it != landmines.end()) {
+            return true;
+    }
+    return false;
+}
+
 void Battlefield::simulateTurn() {
     processRespawn();
     bool simulation = true;
-    
+
     // Shuffle robots for random turn order
     shuffle(robots.begin(), robots.end(), gen);
 
-    
-    for (auto& robot : robots) {
-        if (robot->alive()) {
-            executeRobotTurn(robot);
-        }
-        // else if (robot->shouldRespawn()) {
-        //     respawnQueue.push(robot);
-        // }
+    // Print order robot
+    vector<shared_ptr<Robot>> copy = robots;  
+    copy.erase( // Store the robot which are alive in this turn
+        remove_if(copy.begin(), copy.end(),
+            [](const shared_ptr<Robot>& r) { 
+                return !r->alive();
+            }),
+        copy.end()
+    );
+
+    string r_order = "\nRobot's order: " + copy[0] -> getName();
+
+    int size = copy.size();
+    for(int i=1; i<size; i++){
+        r_order+= " --> " + copy[i]-> getName();
     }
-    
+    cout << r_order << endl; 
+    // cout << endl;
+
+    for(auto& robot : copy){
+        if(robot->alive()){
+            executeRobotTurn(robot,copy);
+        }
+
+        else if(robot->shouldRespawn()){
+            auto it = find(copy.begin(), copy.end(), robot);
+            if (it != copy.end()) {
+                cout << "\nSkipping " << robot->getName() << " because it died in this turn." << endl;
+                cout<<endl;
+            }
+        }
+    }
+
     // Remove dead robots with no lives left
     robots.erase(
         remove_if(robots.begin(), robots.end(),
@@ -134,49 +164,104 @@ void Battlefield::simulateTurn() {
 }
 
 void Battlefield::processRespawn() {
-    lock_guard<mutex> lock(respawnMutex);
-    // Respon the first queue robot
+
+    // Got robot that needs to respawn
     if (!respawnQueue.empty()) {
+
+        // Print respawn order
+        queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
+        auto copy_robot = tempQueue.front();
+        tempQueue.pop(); 
+        string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
+        while (!tempQueue.empty()) {
+            shared_ptr<Robot> robot = tempQueue.front();
+            respawn_order+= " --> " + robot->getName();
+            tempQueue.pop();
+        }
+        cout << respawn_order << endl; 
+        // cout << endl;
+
+        // ProcessRespawn
         auto robot = respawnQueue.front();
         respawnQueue.pop();
-
-        int remainingLives = robot->getLives();
-        if (remainingLives <= 0) return; 
         
         // check robot has live
         if (robot->getLives() > 0) {
-            int newX, newY;
+            int x, y;
             int attempts = 0;
             do {
-                newX = 1 + rand() % width;  
-                newY = 1 + rand() % height;  
+                x = xDist(gen); // Generate random point x
+                y = yDist(gen); // Generate random point x
                 if (++attempts > 100) {
                     cout << "Couldn't find empty spot for " << robot->getName() << endl;
                     respawnQueue.push(robot);  // Retry next turn
                     return;
                 }
-            } while (findRobotAt(newX,newY));
+            } while (findRobotAt(x, y));
             
-            auto gr = make_shared<GenericRobot>(
-                robot->getName(), newX, newY, width, height, this
-            );
-            gr->setLives(remainingLives);
-            
-            replaceRobot(robot, gr);
-            gr->respawn(newX, newY);
-            cout << robot->getName() << " respawned at (" << newX << "," << newY << ") " << remainingLives << " lives remaining." << endl;
-            
-            display();
+            robot->respawn(x, y);
+            // display();
         }
     }
+
+    // lock_guard<mutex> lock(respawnMutex);
+    
+    // // Got robot that needs to respawn
+    // if (!respawnQueue.empty()) {
+
+    //     // Print respawn order
+    //     queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
+    //     auto copy_robot = tempQueue.front();
+    //     tempQueue.pop(); 
+    //     string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
+    //     while (!tempQueue.empty()) {
+    //         shared_ptr<Robot> robot = tempQueue.front();
+    //         respawn_order+= "--> " + robot->getName();
+    //         tempQueue.pop();
+    //     }
+    //     cout << respawn_order<< endl; 
+
+    //     // ProcessRespawn
+    //     auto robot = respawnQueue.front();
+    //     respawnQueue.pop();
+
+    //     int remainingLives = robot->getLives();
+    //     if (remainingLives <= 0) return; 
+        
+    //     // check robot has live
+    //     if (robot->getLives() > 0) {
+    //         int newX, newY;
+    //         int attempts = 0;
+    //         do {
+    //             newX = 1 + rand() % width;  
+    //             newY = 1 + rand() % height;  
+    //             newX = 1 + rand() % width;  
+    //             newY = 1 + rand() % height;  
+    //             if (++attempts > 100) {
+    //                 cout << "Couldn't find empty spot for " << robot->getName() << endl;
+    //                 respawnQueue.push(robot);  // Retry next turn
+    //                 return;
+    //             }
+    //         } while (findRobotAt(newX,newY));
+            
+    //         auto gr = make_shared<GenericRobot>(
+    //             robot->getName(), newX, newY, width, height, this
+    //         );
+    //         gr->setLives(remainingLives);
+            
+    //         replaceRobot(robot, gr);
+    //         gr->respawn(newX, newY);
+            
+    //         // display();
+    //     }
+    // }
 }
 
-void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
+void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
     if (!robot->alive()) return;  // Skip dead robots
     if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
         trackBot->displayTracked();
     }
-
     robot->resetTurn();
 
     // Create all possible action permutations
@@ -204,9 +289,9 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
 
     };
 
-    // Select random order
+    // Cout order action
     auto& order = actionOrders[rand() % actionOrders.size()];
-    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> " << order[2] << "--> " << order[3] << endl;
+    cout << endl << robot->getName() << "'s action order is " << order[0] << " --> "<< order[1] << " --> " << order[2] << " --> " << order[3] << endl;
 
     for (const auto& action : order){
         int dx,dy;
@@ -228,8 +313,6 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
         }
     }
 
-    cout<<endl;
-
     // Handle destruction if out of shells
     if (robot->getShells() <= 0 && !robot->hasSelfDestructed()) {
         robot->destroy();
@@ -239,7 +322,6 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     }
 }
 
-
 void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot) {
     newBot->setPosition(oldBot->getX(), oldBot->getY());
     newBot->setLives(oldBot->getLives()); 
@@ -248,11 +330,13 @@ void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBo
     auto it = find(robots.begin(), robots.end(), oldBot);
     if (it != robots.end()) {
         *it = newBot; 
+        robots.erase(it);
     }
+
 }
 
 void Battlefield::display() {
-    vector<vector<char>> grid(height, vector<char>(width, '.')); 
+    vector<vector<char>> grid(height, vector<char>(height, '.')); 
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
@@ -261,10 +345,11 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i = 0; i < height; i++) {
+    for (int i = 0 ; i < height; i++) {
         for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
         }
         cout << endl;
     }
+
 }

@@ -21,6 +21,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include "battlefield.h"
 using namespace std;
 
+
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
 void One_Spaces_only(string& line); // Leave only one space between each word.
 string extractWord(const string& line, const int& substr, int& i);
