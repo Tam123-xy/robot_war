@@ -1133,7 +1133,7 @@ public:
 
 
 
-
+// robots.cpp
 GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battlefield* bf)
     : Robot(name, x, y, w, h, bf),
       MovingRobot(name, x, y, w, h, bf),
@@ -1517,10 +1517,10 @@ void GenericRobot::chooseUpgrade()
     vector<int> availableOptions;
     if (upgradedAreas.find("move") == upgradedAreas.end())
         availableOptions.push_back(0);
-    if (upgradedAreas.find("shoot") == upgradedAreas.end())
-        availableOptions.push_back(1);
-    if (upgradedAreas.find("see") == upgradedAreas.end())
-        availableOptions.push_back(2);
+    // if (upgradedAreas.find("shoot") == upgradedAreas.end())
+    //     availableOptions.push_back(1);
+    // if (upgradedAreas.find("see") == upgradedAreas.end())
+    //     availableOptions.push_back(2);
 
     if (availableOptions.empty())
     {
@@ -2255,7 +2255,7 @@ void Battlefield::processRespawn() {
             } while (findRobotAt(x, y));
             
             robot->respawn(x, y);
-            // display();
+            display();
         }
     }
 
@@ -2321,26 +2321,26 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        {"look", "fire", "move", "think"},
-        {"look", "fire", "think", "move"},
+        // {"look", "fire", "move", "think"},
+        // {"look", "fire", "think", "move"},
         {"look", "move", "fire", "think"},
-        {"look", "move", "think", "fire"},
-        {"look", "think", "fire", "move"},
-        {"look", "think", "move", "fire"},
+        // {"look", "move", "think", "fire"},
+        // {"look", "think", "fire", "move"},
+        // {"look", "think", "move", "fire"},
 
-        {"fire", "look", "move", "think"},
-        {"fire", "look", "think", "move"},
-        {"fire", "move", "look", "think"},
-        {"fire", "move", "think", "look"},
-        {"fire", "think", "look", "move"},
-        {"fire", "think", "move", "look"},
+        // {"fire", "look", "move", "think"},
+        // {"fire", "look", "think", "move"},
+        // {"fire", "move", "look", "think"},
+        // {"fire", "move", "think", "look"},
+        // {"fire", "think", "look", "move"},
+        // {"fire", "think", "move", "look"},
 
-        {"move", "look", "fire", "think"},
-        {"move", "look", "think", "fire"},
-        {"move", "fire", "look", "think"},
-        {"move", "fire", "think", "look"},
-        {"move", "think", "look", "fire"},
-        {"move", "think", "fire", "look"},
+        // {"move", "look", "fire", "think"},
+        // {"move", "look", "think", "fire"},
+        // {"move", "fire", "look", "think"},
+        // {"move", "fire", "think", "look"},
+        // {"move", "think", "look", "fire"},
+        // {"move", "think", "fire", "look"},
 
     };
 
@@ -2389,7 +2389,6 @@ void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBo
         *it = newBot;  // Replace the robot
         // Don't erase it after replacing! This was the bug
         // robots.erase(it);  // Remove this line
-        cout << "Robot successfully replaced in battlefield" << endl;
     } else {
         cout << "Warning: Could not find robot to replace in battlefield" << endl;
     }
