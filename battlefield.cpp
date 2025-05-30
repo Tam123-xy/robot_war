@@ -129,13 +129,15 @@ void Battlefield::simulateTurn() {
             }),
         copy.end()
     );
-    string r_order = "Robots order: " + copy[0] -> getName();
+
+    string r_order = "\nRobot's order: " + copy[0] -> getName();
+
     int size = copy.size();
     for(int i=1; i<size; i++){
-        r_order+= "--> " + copy[i]-> getName();
+        r_order+= " --> " + copy[i]-> getName();
     }
-    cout << r_order<< endl; 
-    cout << endl;
+    cout << r_order << endl; 
+    // cout << endl;
 
     for(auto& robot : copy){
         if(robot->alive()){
@@ -145,7 +147,7 @@ void Battlefield::simulateTurn() {
         else if(robot->shouldRespawn()){
             auto it = find(copy.begin(), copy.end(), robot);
             if (it != copy.end()) {
-                cout << "Skipping " << robot->getName() << " because it died in this turn." << endl;
+                cout << "\nSkipping " << robot->getName() << " because it died in this turn." << endl;
                 cout<<endl;
             }
         }
@@ -173,11 +175,11 @@ void Battlefield::processRespawn() {
         string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
         while (!tempQueue.empty()) {
             shared_ptr<Robot> robot = tempQueue.front();
-            respawn_order+= "--> " + robot->getName();
+            respawn_order+= " --> " + robot->getName();
             tempQueue.pop();
         }
-        cout << respawn_order<< endl; 
-        cout << endl;
+        cout << respawn_order << endl; 
+        // cout << endl;
 
         // ProcessRespawn
         auto robot = respawnQueue.front();
@@ -261,21 +263,35 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
         trackBot->displayTracked();
     }
     robot->resetTurn();
-    robot->think(); 
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        {"look", "fire", "move"},
-        {"look", "move", "fire"},
-        {"fire", "look", "move"},
-        {"fire", "move", "look"},
-        {"move", "look", "fire"},
-        {"move", "fire", "look"}
+        {"look", "fire", "move", "think"},
+        {"look", "fire", "think", "move"},
+        {"look", "move", "fire", "think"},
+        {"look", "move", "think", "fire"},
+        {"look", "think", "fire", "move"},
+        {"look", "think", "move", "fire"},
+
+        {"fire", "look", "move", "think"},
+        {"fire", "look", "think", "move"},
+        {"fire", "move", "look", "think"},
+        {"fire", "move", "think", "look"},
+        {"fire", "think", "look", "move"},
+        {"fire", "think", "move", "look"},
+
+        {"move", "look", "fire", "think"},
+        {"move", "look", "think", "fire"},
+        {"move", "fire", "look", "think"},
+        {"move", "fire", "think", "look"},
+        {"move", "think", "look", "fire"},
+        {"move", "think", "fire", "look"},
+
     };
 
     // Cout order action
     auto& order = actionOrders[rand() % actionOrders.size()];
-    cout << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+    cout << endl << robot->getName() << "'s action order is " << order[0] << " --> "<< order[1] << " --> " << order[2] << " --> " << order[3] << endl;
 
     for (const auto& action : order){
         int dx,dy;
@@ -283,16 +299,18 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             robot->look(dx, dy);
         }
 
-            else if (action == "fire"){
-                robot->fire(dx, dy);
-            }
-            
-            else{
-                robot->move(rand() % 3 - 1, rand() % 3 - 1);
-                display();
+        else if (action == "fire"){
+            robot->fire(dx, dy);
         }
-    
-        cout<<endl;
+        
+        else if (action == "move"){
+            robot->move(rand() % 3 - 1, rand() % 3 - 1);
+            display();
+
+        }
+        else{
+            robot->think();
+        }
     }
 
     // Handle destruction if out of shells
@@ -327,7 +345,7 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
-    for (int i =0 ; i < height; i++) {
+    for (int i = 0 ; i < height; i++) {
         for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
         }

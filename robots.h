@@ -1,3 +1,15 @@
+/**********|**********|**********|
+Program: main.cpp / robots.h / battlefield.h
+Course: OOPDS
+Trimester: 2520
+Name: TAY SHI XIANG | YIAP WEI SHANZ | TAM XIN YI
+ID: 243UC247GE | 243UC247CV | 243UC247G6
+Lecture Section: TC1L
+Tutorial Section: TT2L
+Email: TAY.SHI.XIANG@student.mmu.edu.my | YIAP.WEI.SHANZ@student.mmu.edu.my | TAM.XIN.YI@student.mmu.edu.my
+Phone: 019-3285968 | 011-59964357 | 011-11026051
+**********|**********|**********/
+
 #ifndef ROBOTS_H
 #define ROBOTS_H
 
@@ -79,16 +91,14 @@ public:
 };
 
 class MovingRobot : virtual public Robot {
-protected:
-
 public:
     MovingRobot(string name, int x, int y, int w, int h, Battlefield* bf) 
         : Robot(name, x, y, w, h, bf) {}
     virtual ~MovingRobot() = default;
 
     //Basic Movement
-    virtual void move(int dx, int dy) =0;
-
+    virtual void move(int dx, int dy) = 0;
+    
     //Movement validation
     bool isValidMove(int dx, int dy) const {
         int newX = positionX + dx;
@@ -319,18 +329,20 @@ public:
                 newX = 1 + rand() % battlefield->getWidth();
                 newY = 1 + rand() % battlefield->getHeight();
                 
-                if (!battlefield->isRobotAt(newX, newY) && (abs(newX - getX()) > 1 || abs(newY - getY()) > 1)) {
+                if (!battlefield->isRobotAt(newX, newY) && 
+                    (abs(newX - getX()) > 1 || abs(newY - getY()) > 1)) {
                     break;  // Valid jump found
                 }
             }
             setPosition(newX, newY);
             jumpCount--;
-            cout << name << " jumps to (" << newX << "," << newY << ") "
-                << "(" << jumpCount << " jumps left)" << endl;
+            cout << name << " jumped to (" << newX << "," << newY << ") (" 
+                << jumpCount << " jumps left)" << endl;
         } else {
             GenericRobot::move(dx, dy);
         }
     }
+
     string getType() const override { return "JumpBot"; }
 };
 
@@ -543,12 +555,10 @@ public:
             GenericRobot(name, x, y, w, h, bf) {}
 
     void fire(int dx, int dy) override {
-        fireDx = dx;
-        fireDy = dy;
-
+        
         for (int i = 0; i < 3 && canFire(); ++i) {
-            int targetX, targetY;
-            getFireTarget(targetX, targetY);
+            int targetX = lookGot_enemy_point[0].first;
+            int targetY = lookGot_enemy_point[0].second;
 
             if (battlefield->isRobotAt(targetX, targetY)) {
                 auto target = battlefield->findRobotAt(targetX, targetY);
@@ -558,7 +568,11 @@ public:
                          << " at (" << targetX << "," << targetY << ")!" << endl;
                 }
             } else {
-                std:: cout << name << " fires at empty space (" << targetX << "," << targetY << ")." << endl;
+                break;
+            }
+
+            if (shells == 0){
+                break;
             }
 
             useShell();  // consume a shell
@@ -569,6 +583,7 @@ public:
 
     string getType() const override { return "SemiAutoBot"; }
 };
+
 
 class ThirtyShotBot : virtual public GenericRobot {
 public:

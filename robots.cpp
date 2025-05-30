@@ -42,7 +42,7 @@ shared_ptr<T> GenericRobot::createUpgradedBot()
 
 void GenericRobot::think()
 {
-    cout << name << " is thinking... ";
+    cout << name << " is thinking... " << endl;
 }
 
 void GenericRobot::look(int dx, int dy)
@@ -52,7 +52,7 @@ void GenericRobot::look(int dx, int dy)
     int centerX = getX();
     int centerY = getY();
 
-    cout << name << " at (" << centerX << "," << centerY << "), LOOK around ..." << endl;
+    cout << name << " is now at (" << centerX << "," << centerY << "), looking around ..." << endl;
 
     for (int dy = -1; dy <= 1; ++dy)
     {
@@ -121,7 +121,7 @@ void Robot::respawn(int x, int y)
         positionY = y;
         isAlive = true;
         init_Upgrade();
-        cout << name << " respawned at (" << x << "," << y << "), (Lives remaining: " << lives << "/3)" << endl;
+        cout << name << " respawned at (" << x << "," << y << ") (Lives remaining: " << lives << "/3)" << endl;
     }
 }
 
@@ -234,6 +234,31 @@ void GenericRobot::fire(int dx, int dy)
         {
             targetX = lookGot_enemy_point[0].first;
             targetY = lookGot_enemy_point[0].second;
+
+            int curX = getX();
+            int curY = getY();
+
+            bool isNearby = false;
+
+            for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx == 0 && dy == 0) continue;
+
+                    int nx = curX + dx;
+                    int ny = curY + dy;
+
+                    if (nx == targetX && ny == targetY) {
+                        isNearby = true;
+                        break;
+                    }
+                }
+                if (isNearby) break;
+            }
+
+            if (!isNearby) {
+                cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+                return;
+            }
         }
 
         // many enemies, need to check which is the higher level enemy
@@ -355,6 +380,11 @@ void GenericRobot::chooseUpgrade()
 
 void GenericRobot::chooseUpgrade(int upgradeOption)
 {
+    if (upgradeCount >= 3) {
+        cout << name << " cannot upgrade anymore (max 3 upgrades reached)" << endl;
+        return;
+    }
+
     const char *area = "";
     switch (upgradeOption)
     {
@@ -381,7 +411,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
     auto self = shared_from_this();
     shared_ptr<GenericRobot> newBot;
     string upgradeName = "";
-
+    
     switch (upgradeOption)
     {
     case 0: // Moving upgrade
