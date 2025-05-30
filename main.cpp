@@ -110,6 +110,7 @@ public:
 
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
+    bool isNearby;
     void destroy();
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
@@ -636,10 +637,8 @@ public:
         int targetX = getX() + dx;
         int targetY = getY() + dy;
 
-        // 调用基类开火逻辑
         GenericRobot::fire(dx, dy);
-
-        // 如果没有击中目标
+        
         if (!battlefield->isRobotAt(targetX, targetY)) {
             battlefield->addLandmine(targetX, targetY);
             std:: cout << name << " placed landmine at (" << targetX << "," << targetY << ")\n";
@@ -1404,9 +1403,32 @@ void GenericRobot::fire(int dx, int dy)
     // shot robot
     if (battlefield->findRobotAt(targetX, targetY))
     {
+        int curX = getX();
+        int curY = getY();
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx == 0 && dy == 0) continue;
+
+                    int nx = curX + dx;
+                    int ny = curY + dy;
+
+                    if (nx == targetX && ny == targetY) {
+                        isNearby = true;
+                        break;
+                    }
+                }
+                if (isNearby) break;
+            }
+
+        if(!isNearby){
+            cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+            return;
+        }
         auto enemy = battlefield->findRobotAt(targetX, targetY);
         uniform_int_distribution<> dis(0, 99);
         shells--;
+
 
         cout << name << " fires " << enemy->getName() << " at (" << targetX << "," << targetY << ")";
         cout << " (Left shells: " << shells << "/" << max_shells << ")" << endl;
