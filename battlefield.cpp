@@ -178,21 +178,35 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
     }
 
     robot->resetTurn();
-    robot->think();
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        {"look", "fire", "move"},
-        {"look", "move", "fire"},
-        {"fire", "look", "move"},
-        {"fire", "move", "look"},
-        {"move", "look", "fire"},
-        {"move", "fire", "look"}
+        {"look", "fire", "move", "think"},
+        {"look", "fire", "think", "move"},
+        {"look", "move", "fire", "think"},
+        {"look", "move", "think", "fire"},
+        {"look", "think", "fire", "move"},
+        {"look", "think", "move", "fire"},
+
+        {"fire", "look", "move", "think"},
+        {"fire", "look", "think", "move"},
+        {"fire", "move", "look", "think"},
+        {"fire", "move", "think", "look"},
+        {"fire", "think", "look", "move"},
+        {"fire", "think", "move", "look"},
+
+        {"move", "look", "fire", "think"},
+        {"move", "look", "think", "fire"},
+        {"move", "fire", "look", "think"},
+        {"move", "fire", "think", "look"},
+        {"move", "think", "look", "fire"},
+        {"move", "think", "fire", "look"},
+
     };
 
     // Select random order
     auto& order = actionOrders[rand() % actionOrders.size()];
-    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> "<< order[2] << endl;
+    cout << robot->getName() << "'s action order is " << order[0] << "--> "<< order[1] << "--> " << order[2] << "--> " << order[3] << endl;
 
     for (const auto& action : order){
         int dx,dy;
@@ -204,10 +218,13 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot) {
             robot->fire(dx, dy);
         }
         
-        else{
+        else if (action == "move"){
             robot->move(rand() % 3 - 1, rand() % 3 - 1);
             display();
 
+        }
+        else{
+            robot->think();
         }
     }
 
