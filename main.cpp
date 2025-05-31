@@ -121,8 +121,6 @@ public:
     void setShells(int s) { shells = s; }
     virtual bool hasSelfDestructed() const = 0;
     virtual int getShells() const = 0;
-    // virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
-    // virtual bool hide() { return false; } // Base implementation - no defense
 
     virtual void add_EmptyPoint(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_EmptyPoint() const =0;
@@ -206,10 +204,6 @@ public:
 class GenericRobot : public MovingRobot, public ShootingRobot, 
                     public SeeingRobot, public ThinkingRobot {
 private:
-    // Battlefield* battlefield;
-    // int shells;
-    // bool selfDestructed;
-    // int upgradeCount = 0;
     set<string> upgradedAreas;
     vector<string> upgradeNames;
     template<typename T>
@@ -1348,7 +1342,6 @@ void GenericRobot::fire(int dx, int dy)
     }
 
     // look --> fire, enemy POINTS --> (NO shot no enemy/ shot enemy)
-    // ScoutBot
     else if (hasLooked == true)
     {
         hasFired = true;
@@ -1396,7 +1389,6 @@ void GenericRobot::fire(int dx, int dy)
         else
         {
             shot_higher_enemy(targetX, targetY, lookGot_enemy_point);
-            // shot_higher_enemy(targetX, targetY,lookGot_enemy_point,false);
         }
     }
 
@@ -1517,10 +1509,10 @@ void GenericRobot::chooseUpgrade()
     vector<int> availableOptions;
     if (upgradedAreas.find("move") == upgradedAreas.end())
         availableOptions.push_back(0);
-    // if (upgradedAreas.find("shoot") == upgradedAreas.end())
-    //     availableOptions.push_back(1);
-    // if (upgradedAreas.find("see") == upgradedAreas.end())
-    //     availableOptions.push_back(2);
+    if (upgradedAreas.find("shoot") == upgradedAreas.end())
+        availableOptions.push_back(1);
+    if (upgradedAreas.find("see") == upgradedAreas.end())
+        availableOptions.push_back(2);
 
     if (availableOptions.empty())
     {
@@ -2258,58 +2250,6 @@ void Battlefield::processRespawn() {
             display();
         }
     }
-
-    // lock_guard<mutex> lock(respawnMutex);
-    
-    // // Got robot that needs to respawn
-    // if (!respawnQueue.empty()) {
-
-    //     // Print respawn order
-    //     queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
-    //     auto copy_robot = tempQueue.front();
-    //     tempQueue.pop(); 
-    //     string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
-    //     while (!tempQueue.empty()) {
-    //         shared_ptr<Robot> robot = tempQueue.front();
-    //         respawn_order+= "--> " + robot->getName();
-    //         tempQueue.pop();
-    //     }
-    //     cout << respawn_order<< endl; 
-
-    //     // ProcessRespawn
-    //     auto robot = respawnQueue.front();
-    //     respawnQueue.pop();
-
-    //     int remainingLives = robot->getLives();
-    //     if (remainingLives <= 0) return; 
-        
-    //     // check robot has live
-    //     if (robot->getLives() > 0) {
-    //         int newX, newY;
-    //         int attempts = 0;
-    //         do {
-    //             newX = 1 + rand() % width;  
-    //             newY = 1 + rand() % height;  
-    //             newX = 1 + rand() % width;  
-    //             newY = 1 + rand() % height;  
-    //             if (++attempts > 100) {
-    //                 cout << "Couldn't find empty spot for " << robot->getName() << endl;
-    //                 respawnQueue.push(robot);  // Retry next turn
-    //                 return;
-    //             }
-    //         } while (findRobotAt(newX,newY));
-            
-    //         auto gr = make_shared<GenericRobot>(
-    //             robot->getName(), newX, newY, width, height, this
-    //         );
-    //         gr->setLives(remainingLives);
-            
-    //         replaceRobot(robot, gr);
-    //         gr->respawn(newX, newY);
-            
-    //         // display();
-    //     }
-    // }
 }
 
 void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
@@ -2321,26 +2261,26 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        // {"look", "fire", "move", "think"},
-        // {"look", "fire", "think", "move"},
+        {"look", "fire", "move", "think"},
+        {"look", "fire", "think", "move"},
         {"look", "move", "fire", "think"},
-        // {"look", "move", "think", "fire"},
-        // {"look", "think", "fire", "move"},
-        // {"look", "think", "move", "fire"},
+        {"look", "move", "think", "fire"},
+        {"look", "think", "fire", "move"},
+        {"look", "think", "move", "fire"},
 
-        // {"fire", "look", "move", "think"},
-        // {"fire", "look", "think", "move"},
-        // {"fire", "move", "look", "think"},
-        // {"fire", "move", "think", "look"},
-        // {"fire", "think", "look", "move"},
-        // {"fire", "think", "move", "look"},
+        {"fire", "look", "move", "think"},
+        {"fire", "look", "think", "move"},
+        {"fire", "move", "look", "think"},
+        {"fire", "move", "think", "look"},
+        {"fire", "think", "look", "move"},
+        {"fire", "think", "move", "look"},
 
-        // {"move", "look", "fire", "think"},
-        // {"move", "look", "think", "fire"},
-        // {"move", "fire", "look", "think"},
-        // {"move", "fire", "think", "look"},
-        // {"move", "think", "look", "fire"},
-        // {"move", "think", "fire", "look"},
+        {"move", "look", "fire", "think"},
+        {"move", "look", "think", "fire"},
+        {"move", "fire", "look", "think"},
+        {"move", "fire", "think", "look"},
+        {"move", "think", "look", "fire"},
+        {"move", "think", "fire", "look"}
 
     };
 
