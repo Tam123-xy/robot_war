@@ -3,5 +3,5 @@ steps: 100
 robots: 3
 GenericRobot A 1 1
 GenericRobot B 2 1
-GenericRobot C 3 3
+GenericRobot C 3 2
 GenericRobot D 4 4
