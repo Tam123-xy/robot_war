@@ -131,8 +131,6 @@ public:
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
     virtual const vector<string>& get_upgradeNames() const = 0;
-
-   
 };
 
 class MovingRobot : virtual public Robot {
@@ -468,7 +466,6 @@ public:
         :   Robot(name, x, y, w, h, bf),
             GenericRobot(name, x, y, w, h, bf) {}
 
-    string getType() const override { return "RevealBot"; }
     void look(int dx, int dy) override{
         hasLooked = true;
 
@@ -476,7 +473,7 @@ public:
         int centerY = getY() ;
 
         cout << name << " is now at (" << centerX << "," << centerY << "), looking around ..." <<endl; 
-        logFile << name << " is now at (" << centerX << "," << centerY << "), looking around ..."<<endl;
+        logFile << name << " is now at (" << centerX << "," << centerY << "), looking around ..." <<endl;
 
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
@@ -520,6 +517,7 @@ public:
             }
         }
     }
+    string getType() const override { return "RevealBot"; }
 };
 
 class ScoutBot : virtual public GenericRobot {
