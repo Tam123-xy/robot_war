@@ -240,7 +240,6 @@ void GenericRobot::fire(int dx, int dy)
         else
         {
             shot_higher_enemy(targetX, targetY, lookGot_enemy_point);
-            // shot_higher_enemy(targetX, targetY,lookGot_enemy_point,false);
         }
     }
 

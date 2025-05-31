@@ -17,6 +17,7 @@ shared_ptr<Robot> Battlefield::findRobotAt(int x, int y) {
     return nullptr;
 }
 
+
 int Battlefield::getWidth() const {
     return width;
 }
@@ -118,7 +119,7 @@ void Battlefield::simulateTurn() {
     bool simulation = true;
 
     // Shuffle robots for random turn order
-    shuffle(robots.begin(), robots.end(), gen);
+    // shuffle(robots.begin(), robots.end(), gen);
 
     // Print order robot
     vector<shared_ptr<Robot>> copy = robots;  
@@ -202,6 +203,7 @@ void Battlefield::processRespawn() {
         }
     }
 
+ 
     // lock_guard<mutex> lock(respawnMutex);
     
     // // Got robot that needs to respawn
