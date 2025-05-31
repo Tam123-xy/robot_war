@@ -120,8 +120,6 @@ public:
     void setShells(int s) { shells = s; }
     virtual bool hasSelfDestructed() const = 0;
     virtual int getShells() const = 0;
-    // virtual bool canBeHit() const { return true; }  // Default implementation - can always be hit
-    // virtual bool hide() { return false; } // Base implementation - no defense
 
     virtual void add_EmptyPoint(pair<int, int> pos) =0;
     virtual const vector<pair<int, int>>& get_EmptyPoint() const =0;
@@ -132,8 +130,6 @@ public:
     virtual int getUpgradeCount() const { return 0; }
     virtual void init_Upgrade() {}
     virtual const vector<string>& get_upgradeNames() const = 0;
-
-   
 };
 
 class MovingRobot : virtual public Robot {
@@ -462,7 +458,6 @@ public:
         :   Robot(name, x, y, w, h, bf),
             GenericRobot(name, x, y, w, h, bf) {}
 
-    string getType() const override { return "RevealBot"; }
     void look(int dx, int dy) override{
         hasLooked = true;
 
@@ -511,6 +506,7 @@ public:
             }
         }
     }
+    string getType() const override { return "RevealBot"; }
 };
 
 class ScoutBot : virtual public GenericRobot {
@@ -1495,10 +1491,10 @@ void GenericRobot::chooseUpgrade()
     vector<int> availableOptions;
     if (upgradedAreas.find("move") == upgradedAreas.end())
         availableOptions.push_back(0);
-    // if (upgradedAreas.find("shoot") == upgradedAreas.end())
-    //     availableOptions.push_back(1);
-    // if (upgradedAreas.find("see") == upgradedAreas.end())
-    //     availableOptions.push_back(2);
+    if (upgradedAreas.find("shoot") == upgradedAreas.end())
+        availableOptions.push_back(1);
+    if (upgradedAreas.find("see") == upgradedAreas.end())
+        availableOptions.push_back(2);
 
     if (availableOptions.empty())
     {
