@@ -26,7 +26,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include <queue>
 #include <algorithm>
 using namespace std;
-
+ofstream logFile("output_log.txt");
 
 class Battlefield; 
 class Robot;
@@ -110,6 +110,7 @@ public:
 
     void setPosition(int x, int y) { positionX = x; positionY = y; }
     bool alive() const { return isAlive; }
+    bool isNearby;
     void destroy();
     virtual void respawn(int x, int y);
     bool shouldRespawn() const;
@@ -188,6 +189,7 @@ public:
     virtual void selfDestruct() {
         isAlive = false;
         std::cout << name << " self-destructed!\n";
+        logFile << name << " self-destructed!\n";
     }
 };
 
@@ -201,10 +203,6 @@ public:
 class GenericRobot : public MovingRobot, public ShootingRobot, 
                     public SeeingRobot, public ThinkingRobot {
 private:
-    // Battlefield* battlefield;
-    // int shells;
-    // bool selfDestructed;
-    // int upgradeCount = 0;
     set<string> upgradedAreas;
     vector<string> upgradeNames;
     template<typename T>
@@ -326,6 +324,9 @@ public:
         if(max!=0){
             cout << name << " found out that " << enemy->getName()
             << " has " << max << " updates and a higher level compared to other enemies." << endl;
+
+            logFile << name << " found out that " << enemy->getName()
+            << " has " << max << " updates and a higher level compared to other enemies." << endl;
         }
     }
 };
@@ -348,6 +349,7 @@ public:
             hideCount--;
             setHidden(true);
             cout << name << " is now hidden! (" << hideCount << " hides left)" << endl;
+            logFile << name << " is now hidden! (" << hideCount << " hides left)" << endl;
         } else {
             GenericRobot::move(dx, dy);
             setHidden(false);
@@ -381,6 +383,9 @@ public:
             setPosition(newX, newY);
             jumpCount--;
             cout << name << " jumped to (" << newX << "," << newY << ") (" 
+                << jumpCount << " jumps left)" << endl;
+
+            logFile << name << " jumped to (" << newX << "," << newY << ") (" 
                 << jumpCount << " jumps left)" << endl;
         } else {
             GenericRobot::move(dx, dy);
@@ -443,6 +448,9 @@ public:
                 glideCount--;
                 cout << getName() << " glided to (" << newX << "," << newY << ") (" 
                     << glideCount << " glides left)" << endl;
+                
+                logFile << getName() << " glided to (" << newX << "," << newY << ") (" 
+                    << glideCount << " glides left)" << endl;
             }
         } else {
             GenericRobot::move(dx, dy);
@@ -465,6 +473,7 @@ public:
         int centerY = getY() ;
 
         cout << name << " at (" << centerX << "," << centerY << "), LOOK around ..." <<endl; 
+        logFile << name << " at (" << centerX << "," << centerY << "), LOOK around ..." <<endl;
 
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
@@ -491,6 +500,7 @@ public:
                         lookGot_enemy_point.push_back({lookX, lookY}); 
                     }
                     cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                    logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
                 }
 
                 else if(battlefield->isLandmine(lookX, lookY)){
@@ -502,6 +512,7 @@ public:
                     status = "Empty space";
                     empty_point.push_back({lookX, lookY}); 
                     cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                    logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
                 }
             }
         }
@@ -520,12 +531,13 @@ public:
     void look(int dx, int dy) override {
         if (scoutUses > 0) {
             cout << name << " sees entire battlefield:" << endl;
+            logFile << name << " sees entire battlefield:" << endl;
             for (int y = 1; y <= battlefield->getHeight(); ++y) {
                 for (int x = 1; x <= battlefield->getWidth(); ++x) {
                     if (battlefield->isRobotAt(x, y)) {
                         auto robot = battlefield->findRobotAt(x, y);
-                        cout << "  (" << x << "," << y << "): " 
-                             << robot->getName() << endl;
+                        cout << "  (" << x << "," << y << "): " << robot->getName() << endl;
+                        logFile << "  (" << x << "," << y << "): " << robot->getName() << endl;
                     }
                 }
             }
@@ -556,6 +568,9 @@ public:
                 trackers--;
                 std:: cout << name << " tracks " << target->getName() 
                      << " (" << trackers << " trackers left)" << endl;
+
+                logFile << name << " tracks " << target->getName() 
+                     << " (" << trackers << " trackers left)" << endl;
             }
         }
         GenericRobot::look(dx, dy);
@@ -565,6 +580,8 @@ public:
         for (auto& robot : trackedRobots) {
             if (robot->alive()) {
                 std:: cout << "  Tracking " << robot->getName()
+                     << " at (" << robot->getX() << "," << robot->getY() << ")" << endl;
+                logFile << "  Tracking " << robot->getName()
                      << " at (" << robot->getX() << "," << robot->getY() << ")" << endl;
             }
         }
@@ -583,6 +600,7 @@ public:
     void fire(int dx, int dy) override {
         if (abs(dx) + abs(dy) > fireRange) {
             std:: cout << name << " can't fire that far! (Max " << fireRange << ")" << endl;
+            logFile << name << " can't fire that far! (Max " << fireRange << ")" << endl;
             return;
         }
         GenericRobot::fire(dx, dy); 
@@ -618,6 +636,7 @@ public:
         max_shells = 30;
         shells = 30;
         std:: cout << name << " loaded 30 shells!" << endl;
+        logFile << name << " loaded 30 shells!" << endl;
     }
     string getType() const override { return "ThirtyShotBot"; }
 };
@@ -632,13 +651,12 @@ public:
         int targetX = getX() + dx;
         int targetY = getY() + dy;
 
-        // 调用基类开火逻辑
         GenericRobot::fire(dx, dy);
-
-        // 如果没有击中目标
+        
         if (!battlefield->isRobotAt(targetX, targetY)) {
             battlefield->addLandmine(targetX, targetY);
             std:: cout << name << " placed landmine at (" << targetX << "," << targetY << ")\n";
+            logFile << name << " placed landmine at (" << targetX << "," << targetY << ")\n";
         }
     }
 
@@ -1171,6 +1189,7 @@ shared_ptr<Robot> Battlefield::findRobotAt(int x, int y) {
 void GenericRobot::think()
 {
     cout << name << " is thinking... " << endl;
+    logFile << name << " is thinking... " << endl;
 }
 
 void GenericRobot::look(int dx, int dy)
@@ -1181,6 +1200,7 @@ void GenericRobot::look(int dx, int dy)
     int centerY = getY();
 
     cout << name << " is now at (" << centerX << "," << centerY << "), looking around ..." << endl;
+    logFile << name << " is now at (" << centerX << "," << centerY << "), looking around ..." << endl;
 
     for (int dy = -1; dy <= 1; ++dy)
     {
@@ -1207,6 +1227,7 @@ void GenericRobot::look(int dx, int dy)
                 status = enemy->getName();
                 lookGot_enemy_point.push_back({lookX, lookY});
                 cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
             }
 
             // Empty space
@@ -1215,6 +1236,7 @@ void GenericRobot::look(int dx, int dy)
                 status = "Empty space";
                 empty_point.push_back({lookX, lookY});
                 cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
             }
         }
     }
@@ -1232,11 +1254,13 @@ void Robot::destroy()
         if (lives > 0)
         {
             cout << name << " is waiting to respawn (Lives remaining: " << lives << "/3)" << endl;
+            logFile << name << " is waiting to respawn (Lives remaining: " << lives << "/3)" << endl;
             battlefield->addToRespawn(shared_from_this());
         }
         else
         {
             cout << name << " has no lives remaining! (Lives remaining: " << lives << "/3)" << endl;
+            logFile << name << " has no lives remaining! (Lives remaining: " << lives << "/3)" << endl;
         }
     }
 }
@@ -1250,6 +1274,7 @@ void Robot::respawn(int x, int y)
         isAlive = true;
         init_Upgrade();
         cout << name << " respawned at (" << x << "," << y << ") (Lives remaining: " << lives << "/3)" << endl;
+        logFile << name << " respawned at (" << x << "," << y << ") (Lives remaining: " << lives << "/3)" << endl;
     }
 }
 
@@ -1279,11 +1304,13 @@ void GenericRobot::move(int dx, int dy)
         {
             auto enemy = battlefield->findRobotAt(newX, newY);
             cout << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
+            logFile << name << " cannot move to (" << newX << "," << newY << "). This point is occupied by " << enemy->getName() << "." << endl;
         }
         else
         {
             setPosition(newX, newY);
             cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+            logFile<< name << " moved to (" << newX << "," << newY << ")." << endl;
         }
     }
 
@@ -1294,6 +1321,7 @@ void GenericRobot::move(int dx, int dy)
         if (empty_point.empty())
         {
             cout << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
+            logFile << name << " didn't find any empty point to move! " << name << " may be surrounded!" << endl;
             return;
         }
 
@@ -1307,6 +1335,7 @@ void GenericRobot::move(int dx, int dy)
 
         setPosition(newX, newY);
         cout << name << " moved to (" << newX << "," << newY << ")." << endl;
+        logFile << name << " moved to (" << newX << "," << newY << ")." << endl;
     }
 
     if (battlefield->checkLandmine(newX, newY))
@@ -1315,11 +1344,15 @@ void GenericRobot::move(int dx, int dy)
         {
             cout << name << " triggered a landmine at ("
                  << newX << "," << newY << ")!\n";
+            logFile << name << " triggered a landmine at ("
+                 << newX << "," << newY << ")!\n";
             destroy();
         }
         else
         {
             cout << name << " narrowly avoided a landmine at ("
+                 << newX << "," << newY << ")!\n";
+            logFile << name << " narrowly avoided a landmine at ("
                  << newX << "," << newY << ")!\n";
         }
     }
@@ -1330,6 +1363,7 @@ void GenericRobot::fire(int dx, int dy)
     if (shells == 0)
     {
         cout << name << " has no shells left! Self-destructing..." << endl;
+        logFile << name << " has no shells left! Self-destructing..." << endl;
         selfDestructed = true;
         destroy();
         return;
@@ -1345,7 +1379,6 @@ void GenericRobot::fire(int dx, int dy)
     }
 
     // look --> fire, enemy POINTS --> (NO shot no enemy/ shot enemy)
-    // ScoutBot
     else if (hasLooked == true)
     {
         hasFired = true;
@@ -1355,6 +1388,7 @@ void GenericRobot::fire(int dx, int dy)
         if (cout_enemy == 0)
         {
             cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
+            logFile << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
             return;
         }
 
@@ -1385,6 +1419,7 @@ void GenericRobot::fire(int dx, int dy)
 
             if (!isNearby) {
                 cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+                logFile << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
                 return;
             }
         }
@@ -1393,30 +1428,58 @@ void GenericRobot::fire(int dx, int dy)
         else
         {
             shot_higher_enemy(targetX, targetY, lookGot_enemy_point);
-            // shot_higher_enemy(targetX, targetY,lookGot_enemy_point,false);
         }
     }
 
     // shot robot
     if (battlefield->findRobotAt(targetX, targetY))
     {
+        int curX = getX();
+        int curY = getY();
+        
+        for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx == 0 && dy == 0) continue;
+
+                    int nx = curX + dx;
+                    int ny = curY + dy;
+
+                    if (nx == targetX && ny == targetY) {
+                        isNearby = true;
+                        break;
+                    }
+                }
+                if (isNearby) break;
+            }
+
+        if(!isNearby){
+            cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+            logFile << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+            return;
+        }
         auto enemy = battlefield->findRobotAt(targetX, targetY);
         uniform_int_distribution<> dis(0, 99);
         shells--;
 
+
         cout << name << " fires " << enemy->getName() << " at (" << targetX << "," << targetY << ")";
         cout << " (Left shells: " << shells << "/" << max_shells << ")" << endl;
+
+        logFile << name << " fires " << enemy->getName() << " at (" << targetX << "," << targetY << ")";
+        logFile << " (Left shells: " << shells << "/" << max_shells << ")" << endl;
 
 
         if (enemy->isHidden())
         {
             cout << "Attack missed! " << enemy->getName() << " is hidden!" << endl;
+            logFile << "Attack missed! " << enemy->getName() << " is hidden!" << endl;
             return;
         }
 
         if (dis(gen) < 70)
         {
             cout << "Target hit! " << enemy->getName() << " has been destroyed! ";
+            logFile << "Target hit! " << enemy->getName() << " has been destroyed! ";
             enemy->destroy();
             chooseUpgrade(); // Upgrade
         }
@@ -1424,6 +1487,7 @@ void GenericRobot::fire(int dx, int dy)
         else
         {
             cout << " - MISS!" << endl;
+            logFile << " - MISS!" << endl;
         }
     }
 
@@ -1433,6 +1497,9 @@ void GenericRobot::fire(int dx, int dy)
         shells--;
         cout << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
         cout << " (Left shells: " << shells << "/10)" << endl;
+
+        logFile << name << " fires at (" << targetX << "," << targetY << "). But it is an empty space!";
+        logFile << " (Left shells: " << shells << "/10)" << endl;
     }
 }
 
@@ -1485,6 +1552,7 @@ void GenericRobot::chooseUpgrade()
         }
         sentence += ". Cannot upgrade anymore, max upgrade 3 times";
         cout << sentence << endl;
+        logFile << sentence << endl;
         return;
     }
 
@@ -1499,6 +1567,7 @@ void GenericRobot::chooseUpgrade()
     if (availableOptions.empty())
     {
         cout << name << " has no more areas to upgrade!" << endl;
+        logFile << name << " has no more areas to upgrade!" << endl;
         return;
     }
 
@@ -1511,6 +1580,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
 {
     if (upgradeCount >= 3) {
         cout << name << " cannot upgrade anymore (max 3 upgrades reached)" << endl;
+        logFile << name << " cannot upgrade anymore (max 3 upgrades reached)" << endl;
         return;
     }
 
@@ -1528,12 +1598,14 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
         break;
     default:
         cout << "Invalid upgrade option: " << upgradeOption << endl;
+        logFile << "Invalid upgrade option: " << upgradeOption << endl;
         return;
     }
 
     if (upgradedAreas.find(area) != upgradedAreas.end())
     {
         cout << name << " already upgraded " << area << " area!" << endl;
+        logFile << name << " already upgraded " << area << " area!" << endl;
         return;
     }
 
@@ -1563,6 +1635,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
             newBot = createUpgradedBot<GlideBot>();
         }
         cout << name << " upgraded movement: " << upgradeName << endl;
+        logFile << name << " upgraded movement: " << upgradeName << endl;
     }
     break;
 
@@ -1591,6 +1664,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
             newBot = createUpgradedBot<LandmineBot>();
         }
         cout << name << " upgraded shooting: " << upgradeName << endl;
+        logFile << name << " upgraded shooting: " << upgradeName << endl;
     }
     break;
 
@@ -1613,6 +1687,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
             newBot = createUpgradedBot<RevealBot>();
         }
         cout << name << " upgraded vision: " << upgradeName << endl;
+        logFile << name << " upgraded vision: " << upgradeName << endl;
     }
     break;
     }
@@ -1639,6 +1714,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
         }
 
         cout << sentence << " (Total: " << upgradeCount << "/3)" << endl;
+        logFile << sentence << " (Total: " << upgradeCount << "/3)" << endl;
 
         if (upgradeCount >= 2)
         {
@@ -1648,6 +1724,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
     else
     {
         cout << "Failed to create upgraded robot for " << upgradeName << endl;
+        logFile << "Failed to create upgraded robot for " << upgradeName << endl;
     }
 }
 
@@ -1666,10 +1743,14 @@ void GenericRobot::replaceWithCombination(const vector<string> &types)
     };
 
     cout << "Attempting combination with " << types.size() << " upgrades: ";
-    for (const auto &t : types)
+    logFile << "Attempting combination with " << types.size() << " upgrades: ";
+    for (const auto &t : types){
         cout << t << " ";
-    cout << endl;
-
+        logFile << t << " ";
+        cout << endl;    
+        logFile << endl;
+    }
+        
     if (types.size() == 2)
     {
         // Movement + Shooting combinations
@@ -2035,13 +2116,19 @@ void GenericRobot::replaceWithCombination(const vector<string> &types)
 
         battlefield->replaceRobot(self, newBot);
         cout << "Successfully combined " << name << " into " << combinationName << "!" << endl;
+        logFile << "Successfully combined " << name << " into " << combinationName << "!" << endl;
     }
     else
     {
         cout << name << " upgrade combination not found for: ";
-        for (const auto &s : types)
+        logFile << name << " upgrade combination not found for: ";
+        for (const auto &s : types){    
             cout << s << ' ';
-        cout << "\nUsing individual upgrades instead." << endl;
+            cout << "\nUsing individual upgrades instead." << endl;
+            logFile << s << ' ';
+            logFile << "\nUsing individual upgrades instead." << endl;
+        }
+           
     }
     
 }
@@ -2128,6 +2215,7 @@ bool Battlefield::checkLandmine(int x, int y) {
         landmines.erase(it); 
         if (rand() % 100 < 50) { 
             cout << "Landmine triggered at (" << x << "," << y << ")!\n";
+            logFile << "Landmine triggered at (" << x << "," << y << ")!\n";
             return true;
         }
     }
@@ -2166,7 +2254,7 @@ void Battlefield::simulateTurn() {
         r_order+= " --> " + copy[i]-> getName();
     }
     cout << r_order << endl; 
-    // cout << endl;
+    logFile << r_order << endl; 
 
     for(auto& robot : copy){
         if(robot->alive()){
@@ -2178,6 +2266,9 @@ void Battlefield::simulateTurn() {
             if (it != copy.end()) {
                 cout << "\nSkipping " << robot->getName() << " because it died in this turn." << endl;
                 cout<<endl;
+
+                logFile << "\nSkipping " << robot->getName() << " because it died in this turn." << endl;
+                logFile<<endl;
             }
         }
     }
@@ -2208,7 +2299,8 @@ void Battlefield::processRespawn() {
             tempQueue.pop();
         }
         cout << respawn_order << endl; 
-        // cout << endl;
+        logFile << respawn_order << endl; 
+
 
         // ProcessRespawn
         auto robot = respawnQueue.front();
@@ -2223,6 +2315,7 @@ void Battlefield::processRespawn() {
                 y = yDist(gen); // Generate random point x
                 if (++attempts > 100) {
                     cout << "Couldn't find empty spot for " << robot->getName() << endl;
+                    logFile << "Couldn't find empty spot for " << robot->getName() << endl;
                     respawnQueue.push(robot);  // Retry next turn
                     return;
                 }
@@ -2232,58 +2325,6 @@ void Battlefield::processRespawn() {
             display();
         }
     }
-
-    // lock_guard<mutex> lock(respawnMutex);
-    
-    // // Got robot that needs to respawn
-    // if (!respawnQueue.empty()) {
-
-    //     // Print respawn order
-    //     queue<shared_ptr<Robot>> tempQueue = respawnQueue; // Copy queue respawnQueue
-    //     auto copy_robot = tempQueue.front();
-    //     tempQueue.pop(); 
-    //     string respawn_order = "Respawn robots queue: " + copy_robot -> getName();
-    //     while (!tempQueue.empty()) {
-    //         shared_ptr<Robot> robot = tempQueue.front();
-    //         respawn_order+= "--> " + robot->getName();
-    //         tempQueue.pop();
-    //     }
-    //     cout << respawn_order<< endl; 
-
-    //     // ProcessRespawn
-    //     auto robot = respawnQueue.front();
-    //     respawnQueue.pop();
-
-    //     int remainingLives = robot->getLives();
-    //     if (remainingLives <= 0) return; 
-        
-    //     // check robot has live
-    //     if (robot->getLives() > 0) {
-    //         int newX, newY;
-    //         int attempts = 0;
-    //         do {
-    //             newX = 1 + rand() % width;  
-    //             newY = 1 + rand() % height;  
-    //             newX = 1 + rand() % width;  
-    //             newY = 1 + rand() % height;  
-    //             if (++attempts > 100) {
-    //                 cout << "Couldn't find empty spot for " << robot->getName() << endl;
-    //                 respawnQueue.push(robot);  // Retry next turn
-    //                 return;
-    //             }
-    //         } while (findRobotAt(newX,newY));
-            
-    //         auto gr = make_shared<GenericRobot>(
-    //             robot->getName(), newX, newY, width, height, this
-    //         );
-    //         gr->setLives(remainingLives);
-            
-    //         replaceRobot(robot, gr);
-    //         gr->respawn(newX, newY);
-            
-    //         // display();
-    //     }
-    // }
 }
 
 void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
@@ -2295,32 +2336,33 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
 
     // Create all possible action permutations
     const vector<vector<string>> actionOrders = {
-        // {"look", "fire", "move", "think"},
-        // {"look", "fire", "think", "move"},
+        {"look", "fire", "move", "think"},
+        {"look", "fire", "think", "move"},
         {"look", "move", "fire", "think"},
-        // {"look", "move", "think", "fire"},
-        // {"look", "think", "fire", "move"},
-        // {"look", "think", "move", "fire"},
+        {"look", "move", "think", "fire"},
+        {"look", "think", "fire", "move"},
+        {"look", "think", "move", "fire"},
 
-        // {"fire", "look", "move", "think"},
-        // {"fire", "look", "think", "move"},
-        // {"fire", "move", "look", "think"},
-        // {"fire", "move", "think", "look"},
-        // {"fire", "think", "look", "move"},
-        // {"fire", "think", "move", "look"},
+        {"fire", "look", "move", "think"},
+        {"fire", "look", "think", "move"},
+        {"fire", "move", "look", "think"},
+        {"fire", "move", "think", "look"},
+        {"fire", "think", "look", "move"},
+        {"fire", "think", "move", "look"},
 
-        // {"move", "look", "fire", "think"},
-        // {"move", "look", "think", "fire"},
-        // {"move", "fire", "look", "think"},
-        // {"move", "fire", "think", "look"},
-        // {"move", "think", "look", "fire"},
-        // {"move", "think", "fire", "look"},
+        {"move", "look", "fire", "think"},
+        {"move", "look", "think", "fire"},
+        {"move", "fire", "look", "think"},
+        {"move", "fire", "think", "look"},
+        {"move", "think", "look", "fire"},
+        {"move", "think", "fire", "look"}
 
     };
 
     // Cout order action
     auto& order = actionOrders[rand() % actionOrders.size()];
     cout << endl << robot->getName() << "'s action order is " << order[0] << " --> "<< order[1] << " --> " << order[2] << " --> " << order[3] << endl;
+    logFile << endl << robot->getName() << "'s action order is " << order[0] << " --> "<< order[1] << " --> " << order[2] << " --> " << order[3] << endl;
 
     for (const auto& action : order){
         int dx,dy;
@@ -2365,6 +2407,7 @@ void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBo
         // robots.erase(it);  // Remove this line
     } else {
         cout << "Warning: Could not find robot to replace in battlefield" << endl;
+        logFile << "Warning: Could not find robot to replace in battlefield" << endl;
     }
 }
 
@@ -2378,11 +2421,14 @@ void Battlefield::display() {
     }
 
     cout << "--- Battlefield Status ---\n";
+    logFile << "--- Battlefield Status ---\n";
     for (int i = 0 ; i < height; i++) {
         for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
+            logFile << grid[i][j] << ' ';
         }
         cout << endl;
+        logFile << endl;
     }
 
 }
@@ -2394,6 +2440,7 @@ void parse_or_random(const string& value, int max, vector<int>& result); // chec
 
 int main() {
     ifstream file("set.txt");
+    // ofstream logFile("output_log.txt");
     string line;
     vector<string> names;
     vector<int> initial_x;
@@ -2428,6 +2475,7 @@ int main() {
     // Check if the number of robot is not equal to the number of setting robot
     if (num_robots != names.size()) {
         cout << "Robot count mismatch! Check your set.txt.\n";
+        logFile << "Robot count mismatch! Check your set.txt.\n";
         return -1;
     }
 
@@ -2435,6 +2483,7 @@ int main() {
     int x_OutOfBound = check_point(initial_x,M);
     if(x_OutOfBound != -1){
         cout << "You have assigned robot " << names[x_OutOfBound] << " to an out-of-bounds point!";
+        logFile << "You have assigned robot " << names[x_OutOfBound] << " to an out-of-bounds point!";
         return -1;
     }
 
@@ -2442,6 +2491,7 @@ int main() {
     int y_OutOfBound = check_point(initial_y,N);
     if(y_OutOfBound != -1){
         cout << "You have assigned robot " << names[y_OutOfBound] << " to an out-of-bounds point!";
+        logFile << "You have assigned robot " << names[y_OutOfBound] << " to an out-of-bounds point!";
         return -1;
     }
 
@@ -2455,32 +2505,32 @@ int main() {
 
     for (int i = 0; i < steps; ++i) {
         cout << "\n--- Turn " << i + 1 << " ---\n";
+        logFile << "\n--- Turn " << i + 1 << " ---\n";
         field.display();
         field.simulateTurn();
         
         // Field got 0 alive robot && the total live of dead robots is 0
         if (field.isEmpty() && field.countLiveRobot() == 0) {
             cout << "All robots are destroyed. Simulation ends.\n";
+            logFile << "All robots are destroyed. Simulation ends.\n";
             break;
         }
 
         field.display();
         cout << "\n--- Turn " << i + 1 << " END---\n";
+        logFile << "\n--- Turn " << i + 1 << " END---\n";
+
 
         // Field got 1 alive robot && the total live of dead robots is 0
         if (field.countAliveRobots() == 1 && field.countLiveRobot() ==0) {
             cout << "Simulation ends! ";
+            logFile << "Simulation ends! ";
             auto winner = field.getAliveRobot();
             cout << "Winner: " << winner->getName() << endl;
-            // if (winner) {
-            //     cout << "Winner: " << winner->getName() << endl;
-            // } else {
-            //     cout << "No robot survived." << endl;
-            // }
             break;
         }
     }
-
+    logFile.close();
     return 0;
 }
 
