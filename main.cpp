@@ -19,7 +19,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include <ctime> 
 
 #include <string>
-#include <memory>
+#include <memory>k
 #include <utility>
 #include <set>
 #include <mutex>
@@ -475,8 +475,8 @@ public:
         int centerX = getX() ;
         int centerY = getY() ;
 
-        cout << name << " at (" << centerX << "," << centerY << "), LOOK around ..." <<endl; 
-        logFile << name << " at (" << centerX << "," << centerY << "), LOOK around ..." <<endl;
+        cout << name << " is now at (" << centerX << "," << centerY << "), looking around ..." <<endl; 
+        logFile << name << " is now at (" << centerX << "," << centerY << "), looking around ..."<<endl;
 
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
