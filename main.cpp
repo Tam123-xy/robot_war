@@ -1744,12 +1744,16 @@ void GenericRobot::replaceWithCombination(const vector<string> &types)
 
     cout << "Attempting combination with " << types.size() << " upgrades: ";
     logFile << "Attempting combination with " << types.size() << " upgrades: ";
-    for (const auto &t : types){
-        cout << t << " ";
-        logFile << t << " ";
-        cout << endl;    
-        logFile << endl;
+    for (size_t i = 0; i < types.size(); ++i) {
+        cout << types[i];
+        logFile << types[i];
+        if (i != types.size() - 1) {
+            cout << ", ";
+            logFile << ", ";
+        }
     }
+    cout << endl;
+    logFile << endl;
         
     if (types.size() == 2)
     {
