@@ -1,5 +1,5 @@
 /**********|**********|**********|
-Program: main.cpp / robots.h / battlefield.h
+Program: main.cpp
 Course: OOPDS
 Trimester: 2520
 Name: TAY SHI XIANG | YIAP WEI SHANZ | TAM XIN YI
@@ -16,7 +16,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include <vector>
 #include <random>
 #include <cstdlib>
-#include <ctime> 
+#include <ctime>
 
 #include <string>
 #include <memory>
@@ -24,7 +24,7 @@ Phone: 019-3285968 | 011-59964357 | 011-11026051
 #include <set>
 #include <mutex>
 #include <queue>
-#include <algorithm>
+#include <algorithm> 
 using namespace std;
 ofstream logFile("output_log.txt");
 
@@ -40,7 +40,7 @@ private:
     mt19937 gen;
     uniform_int_distribution<> xDist;
     uniform_int_distribution<> yDist;
-    mutex respawnMutex;
+    mutex respawnMutex; // Ensures that no two threads modify respawnQueue at the same time. lock_guard<mutex>
     set<pair<int, int>> landmines;
     
 public:
@@ -61,7 +61,7 @@ public:
     void addToRespawn(shared_ptr<Robot> robot);
 
     // Action sequence methods
-    void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy);
+    void executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy); 
     void replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBot);
     bool checkAttackHit(shared_ptr<Robot> attacker, shared_ptr<Robot> target);
     void addLandmine(int x, int y);
@@ -79,7 +79,7 @@ protected:
     int lives = 3;
     bool isAlive = true;
     bool inRespawnQueue = false;
-    int positionX, positionY; // Changed from private to protected
+    int positionX, positionY;
     int width, height;
 
     int shells = 10;
@@ -99,7 +99,7 @@ public:
     virtual string getType() const = 0;
     Robot() = delete;
 
-    void setLives(int l) { lives = l; } 
+    void setLives(int l) { lives = l; }
     virtual bool isHidden() const { return false; } 
 
     virtual void resetTurn() = 0;
@@ -146,7 +146,7 @@ public:
     bool isValidMove(int dx, int dy) const {
         int newX = positionX + dx;
         int newY = positionY + dy;
-        return (newX > 0 && newX < width && newY > 0 && newY < height);
+        return (newX > 0 && newX < width && newY > 0 && newY < height); // check if new position is inside battlefield, if yes, return true, else false
     }
 };
 
@@ -156,9 +156,8 @@ public:
             : Robot(name, x, y, w, h, bf) {}
     virtual ~SeeingRobot() = default;
 
-    using Robot::Robot;
+    using Robot::Robot; // inherits the base class constructor so we don’t need to redefine it
     virtual void look(int dx, int dy) = 0;
-
 };
 
 class ShootingRobot : virtual public Robot {
@@ -178,6 +177,7 @@ public:
         shells = 30; 
         hasThirtyShots = true; 
     }
+
     void extendRange() { 
         fireRange = 3; 
     }
@@ -203,11 +203,11 @@ public:
 class GenericRobot : public MovingRobot, public ShootingRobot, 
                     public SeeingRobot, public ThinkingRobot {
 private:
-    set<string> upgradedAreas;
-    vector<string> upgradeNames;
+    set<string> upgradedAreas;  // move | shoot | see
+    vector<string> upgradeNames;    // jump | glide | hide | scout | track | longshot | semi-auto | thirty-shot | landmine
     template<typename T>
     shared_ptr<T> createUpgradedBot();
-    void replaceWithCombination(const vector<string>& types);
+    void replaceWithCombination(const vector<string>& types);   // Checks if the current robot has two or more upgrades that match a valid combination.
     mt19937 gen;
 
 protected:
@@ -239,15 +239,14 @@ public:
         upgradeCount = 0; 
         upgradedAreas.clear();
         upgradeNames.clear();
-
     }
-    const vector<string>& get_upgradeNames() const override{return upgradeNames;}
+    const vector<string>& get_upgradeNames() const override{ return upgradeNames; }
 
     // Look
-    void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}
-    const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;}
-    void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}
-    const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}
+    void add_EmptyPoint(pair<int, int> pos) override{empty_point.push_back(pos);}   // stores a new empty tile
+    const vector<pair<int, int>>& get_EmptyPoint() const override {return empty_point;} // returns the list of all empty tiles seen
+    void add_LookGotEnemyPoint(pair<int, int> pos) override{ lookGot_enemy_point.push_back(pos);}   // stores a new enemy tile
+    const vector<pair<int, int>>& get_LookGotEnemyPoint() const override{ return lookGot_enemy_point;}  // returns the list of all known enemy tiles
     
     // Action methods
     void resetTurn() {
@@ -268,36 +267,43 @@ public:
     int getShells() const { return shells; }
     int getMaxShells() const { return max_shells; }
     bool hasSelfDestructed() const { return selfDestructed;}
-    void destroy();     
+    void destroy();
     bool shouldRespawn() const;
     virtual void respawn(int x, int y);
 
     void chooseUpgrade();
     void chooseUpgrade(int upgradeOption);
-    // void showUpgrades() const;
     
-    int getX() const;   
+    int getX() const;
     int getY() const; 
     string getType() const override;
 
     // fire
-    void surrouding_point_TARGET(int& targetX, int& targetY){
+    void surrouding_point_TARGET(int& targetX, int& targetY){   // randomly selects one of the 8 surrounding points
         int centerX = getX() ;
         int centerY = getY() ;
         vector<pair<int, int>> surrounding_points;
+
+        if(lookGot_enemy_point.size()!=0){
+            uniform_int_distribution<> dis(0, lookGot_enemy_point.size() - 1);
+            int num = dis(gen);
+            targetX = lookGot_enemy_point[num].first;
+            targetY = lookGot_enemy_point[num].second;
+            return;
+        }
         
-        for (int dy = -1; dy <= 1; ++dy) {
+        for (int dy = -1; dy <= 1; ++dy) {  // 3x3 grid around the robot
             for (int dx = -1; dx <= 1; ++dx) {
                 int pointX = centerX + dx;
                 int pointY = centerY + dy;       
 
                 if (dx == 0 && dy == 0) continue; // Robot itself
                 else if (pointX <= 0 || pointY <=0 || pointX > battlefield->getWidth() || pointY > battlefield->getHeight()) continue; // Out of bounds
-                else{ surrounding_points.push_back({pointX, pointY});} // Enemy + empty points
+                else { surrounding_points.push_back({pointX, pointY});} // Enemy + empty points
             }
         }
 
-        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);
+        uniform_int_distribution<> dis(0, surrounding_points.size() - 1);   // -1 cuz vector indices start at 0 [8-1=7]
         int num = dis(gen);
         targetX = surrounding_points[num].first;
         targetY = surrounding_points[num].second;
@@ -313,7 +319,7 @@ public:
             count = enemy -> getUpgradeCount();
             if(count> max){
                 max = count;
-                max_i = i;
+                max_i = i;  // max_i stores the index of the enemy with the highest upgrade count.第几个enemy
             }
             i++;
         }
@@ -321,7 +327,7 @@ public:
         targetX = enemy_point[max_i].first;
         targetY = enemy_point[max_i].second;
         auto enemy = battlefield->findRobotAt(targetX, targetY );
-        if(max!=0){
+        if(max != 0){
             cout << name << " found out that " << enemy->getName()
             << " has " << max << " updates and a higher level compared to other enemies." << endl;
 
@@ -372,14 +378,15 @@ public:
     void move(int dx, int dy) override {
         if (jumpCount > 0) {
             while (true) {
-                newX = 1 + rand() % battlefield->getWidth();
+                newX = 1 + rand() % battlefield->getWidth();    // if no +1, then will get 0, out of bounds
                 newY = 1 + rand() % battlefield->getHeight();
                 
-                if (!battlefield->isRobotAt(newX, newY) && 
-                    (abs(newX - getX()) > 1 || abs(newY - getY()) > 1)) {
-                    break;  // Valid jump found
+                if (!battlefield->isRobotAt(newX, newY) &&  // Check if the new position is empty
+                    (abs(newX - getX()) > 1 || abs(newY - getY()) > 1)) {   // > 1 to make sure robot jump at least 2 tiles away
+                        break;  // Valid jump found
                 }
             }
+            
             setPosition(newX, newY);
             jumpCount--;
             cout << name << " jumped to (" << newX << "," << newY << ") (" 
@@ -452,7 +459,8 @@ public:
                 logFile << getName() << " glided to (" << newX << "," << newY << ") (" 
                     << glideCount << " glides left)" << endl;
             }
-        } else {
+        } 
+        else {
             GenericRobot::move(dx, dy);
         }
     }
@@ -481,7 +489,7 @@ public:
                 int lookX = centerX + dx;
                 int lookY = centerY + dy;
 
-                string status;           
+                string status;
 
                 // Robot itself point
                 if (dx == 0 && dy == 0 )  continue;
@@ -493,14 +501,17 @@ public:
                 else if (battlefield->isRobotAt(lookX, lookY)) {
                     auto enemy = battlefield->findRobotAt(lookX, lookY);
                     if(enemy->isHidden()){
-                        status = enemy->getName() + " Hidden enemy";
+                        status = enemy->getName() + " (Hidden)";
+                        cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                        logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
                     }
                     else{
                         status = enemy->getName();
-                        lookGot_enemy_point.push_back({lookX, lookY}); 
+                        lookGot_enemy_point.push_back({lookX, lookY});
+                        cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                        logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ; 
                     }
-                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
-                    logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl ;
+                    
                 }
 
                 else if(battlefield->isLandmine(lookX, lookY)){
@@ -536,6 +547,8 @@ public:
                 for (int x = 1; x <= battlefield->getWidth(); ++x) {
                     if (battlefield->isRobotAt(x, y)) {
                         auto robot = battlefield->findRobotAt(x, y);
+                        // look got enemy point
+                        lookGot_enemy_point.push_back({x, y});
                         cout << "  (" << x << "," << y << "): " << robot->getName() << endl;
                         logFile << "  (" << x << "," << y << "): " << robot->getName() << endl;
                     }
@@ -559,8 +572,8 @@ public:
 
     void look(int dx, int dy) override {
         if (trackers > 0 && !lookGot_enemy_point.empty()) {
-            int idx = rand() % lookGot_enemy_point.size();
-            auto& point = lookGot_enemy_point[idx];
+            int idx = rand() % lookGot_enemy_point.size();  // Select 1 random enemy within the lookGot_enemy_point vector.
+            auto& point = lookGot_enemy_point[idx]; // reference to the selected (x, y) coordinate pair
             int x = point.first;
             int y = point.second;
             if (auto target = battlefield->findRobotAt(x, y)) {
@@ -590,20 +603,36 @@ public:
     string getType() const override { return "TrackBot"; }
 };
 
-class LongShotBot : virtual public GenericRobot { // 修改5: 继承GenericRobot
+class LongShotBot : virtual public GenericRobot {
     int fireRange = 3;
+
 public:
     LongShotBot(const string& name, int x, int y, int w, int h, Battlefield* bf)
-        :   Robot(name, x, y, w, h, bf),
-            GenericRobot(name, x, y, w, h, bf) {}
+        : Robot(name, x, y, w, h, bf), GenericRobot(name, x, y, w, h, bf) {}
 
-    void fire(int dx, int dy) override {
-        if (abs(dx) + abs(dy) > fireRange) {
-            std:: cout << name << " can't fire that far! (Max " << fireRange << ")" << endl;
+    void fire(int targetX, int targetY) override {
+        targetX = rand() % 3;
+        targetY = rand() % 3;
+        int currentX = getX();
+        int currentY = getY();
+
+        // Use Chebyshev distance (maximum of x/y delta)
+        int distance = max(abs(targetX - currentX), abs(targetY - currentY));
+
+        if (distance > fireRange) {
+            cout << name << " can't fire at (" << targetX << "," << targetY 
+                 << ")! Max " << fireRange << " distance away only." << endl;
             logFile << name << " can't fire that far! (Max " << fireRange << ")" << endl;
             return;
         }
-        GenericRobot::fire(dx, dy); 
+
+        if (targetX == getX() && targetY == getY()) {
+            cout << name << " can't fire at itself!" << endl;
+            return;
+        }
+
+        surrouding_point_TARGET(targetX, targetY); // Presumably mark or detect
+        GenericRobot::fire(targetX, targetY); // Actual firing logic
     }
 
     string getType() const override { return "LongShotBot"; }
@@ -616,9 +645,18 @@ public:
             GenericRobot(name, x, y, w, h, bf) {}
 
     void fire(int dx, int dy) override {
+
+        int targetX = getX() + dx;
+        int targetY = getY() + dy;
+
+        surrouding_point_TARGET(targetX, targetY);
+        if (targetX == getX() && targetY == getY()) {
+            cout << name << " can't fire at itself!" << endl;
+            return;
+        }
         
         for (int i = 0; i < 3 && canFire(); ++i) {
-            GenericRobot::fire(dx, dy);
+            GenericRobot::fire(targetX, targetY); 
         }
 
         hasFired = true;  // mark as fired for the turn
@@ -644,7 +682,7 @@ public:
 class LandmineBot : virtual public GenericRobot {
 public:
     LandmineBot(const string& name, int x, int y, int w, int h, Battlefield* bf)
-        : Robot(name, x, y, w, h, bf),  // 显式初始化虚基类
+        : Robot(name, x, y, w, h, bf),  
           GenericRobot(name, x, y, w, h, bf) {}
 
     void fire(int dx, int dy) override {
@@ -652,6 +690,8 @@ public:
         int targetY = getY() + dy;
 
         GenericRobot::fire(dx, dy);
+
+        surrouding_point_TARGET(targetX, targetY);
         
         if (!battlefield->isRobotAt(targetX, targetY)) {
             battlefield->addLandmine(targetX, targetY);
@@ -1157,9 +1197,7 @@ GenericRobot::GenericRobot(const string& name, int x, int y, int w, int h, Battl
       ThinkingRobot(name, x, y, w, h, bf),
       battlefield(bf),
       shells(10),
-      selfDestructed(false) {
-        //cout << "GenericRobot " << name << " created at (" << x << "," << y << ")" << endl;
-}
+      selfDestructed(false) {}
 
 template<typename T>
 shared_ptr<T> GenericRobot::createUpgradedBot() {
@@ -1195,7 +1233,7 @@ void GenericRobot::think()
 void GenericRobot::look(int dx, int dy)
 {
     hasLooked = true;
-
+    
     int centerX = getX();
     int centerY = getY();
 
@@ -1224,10 +1262,19 @@ void GenericRobot::look(int dx, int dy)
             else if (battlefield->isRobotAt(lookX, lookY))
             {
                 auto enemy = battlefield->findRobotAt(lookX, lookY);
-                status = enemy->getName();
-                lookGot_enemy_point.push_back({lookX, lookY});
-                cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
-                logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                if (enemy->isHidden()) {
+                    status = "Empty space";
+                    empty_point.push_back({lookX, lookY});
+                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                    logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                }
+
+                else {
+                    status = enemy->getName();
+                    lookGot_enemy_point.push_back({lookX, lookY});
+                    cout << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                    logFile << "(" + to_string(lookX) + "," + to_string(lookY) + "): " + status << endl;
+                }
             }
 
             // Empty space
@@ -1296,8 +1343,6 @@ void GenericRobot::move(int dx, int dy)
     // move -> look, surrounding POINTS --> (is occupied/ move)
     if (!hasLooked)
     {
-        bool track_move = true;
-
         surrouding_point_TARGET(newX, newY);
 
         if (battlefield->isRobotAt(newX, newY))
@@ -1350,7 +1395,7 @@ void GenericRobot::move(int dx, int dy)
         }
         else
         {
-            cout << name << " narrowly avoided a landmine at ("
+            cout << name << " narrowly avoided a landmine at (" 
                  << newX << "," << newY << ")!\n";
             logFile << name << " narrowly avoided a landmine at ("
                  << newX << "," << newY << ")!\n";
@@ -1360,6 +1405,8 @@ void GenericRobot::move(int dx, int dy)
 
 void GenericRobot::fire(int dx, int dy)
 {
+    hasFired = true;
+
     if (shells == 0)
     {
         cout << name << " has no shells left! Self-destructing..." << endl;
@@ -1373,7 +1420,7 @@ void GenericRobot::fire(int dx, int dy)
     int targetY;
 
     // fire --> look, surrounding POINTS --> (shot no enemy/ shot enemy)
-    if (hasLooked == false)
+    if (hasLooked == false)     // simply shot at a nearby point if haven't looked yet
     {
         surrouding_point_TARGET(targetX, targetY);
     }
@@ -1381,23 +1428,22 @@ void GenericRobot::fire(int dx, int dy)
     // look --> fire, enemy POINTS --> (NO shot no enemy/ shot enemy)
     else if (hasLooked == true)
     {
-        hasFired = true;
         int cout_enemy = lookGot_enemy_point.size();
 
         // NO shot no enemy, return back
         if (cout_enemy == 0)
         {
-            cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
-            logFile << "Preserving shell for next turn since " << name << " didn't find any robots around. (left shells: " << shells << ")" << endl;
+            cout << "Preserving shell for next turn since " << name << " didn't find any robots around. (Left shells: " << shells << "/" << max_shells << ")" << endl;
+            logFile << "Preserving shell for next turn since " << name << " didn't find any robots around. (Left shells: " << shells << "/" << max_shells << ")" << endl;
             return;
         }
 
-        else if (cout_enemy == 1)
+        else if (cout_enemy == 1)   // enemy is exactly = 1, To check if that one enemy is still next to the robot after it has moved
         {
             targetX = lookGot_enemy_point[0].first;
             targetY = lookGot_enemy_point[0].second;
 
-            int curX = getX();
+            int curX = getX();  // Get the robot’s new position (in case it moved after looking).
             int curY = getY();
 
             bool isNearby = false;
@@ -1410,7 +1456,7 @@ void GenericRobot::fire(int dx, int dy)
                     int ny = curY + dy;
 
                     if (nx == targetX && ny == targetY) {
-                        isNearby = true;
+                        isNearby = true;    // Check if the target is still nearby after moving
                         break;
                     }
                 }
@@ -1418,9 +1464,9 @@ void GenericRobot::fire(int dx, int dy)
             }
 
             if (!isNearby) {
-                cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
-                logFile << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
-                return;
+                    cout << name << " can't find the previous target or so far after moving. Skipping fire to save shell." << endl;
+                    logFile << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+                    return;
             }
         }
 
@@ -1437,24 +1483,30 @@ void GenericRobot::fire(int dx, int dy)
         int curX = getX();
         int curY = getY();
         
+        if (targetX == curX && targetY == curY) {
+            cout << name << " cannot fire at itself!" << endl;
+            logFile << name << " cannot fire at itself!" << endl;
+            return;
+        }
+
         for (int dy = -1; dy <= 1; ++dy) {
-                for (int dx = -1; dx <= 1; ++dx) {
-                    if (dx == 0 && dy == 0) continue;
+            for (int dx = -1; dx <= 1; ++dx) {
+                if (dx == 0 && dy == 0) continue;
 
-                    int nx = curX + dx;
-                    int ny = curY + dy;
+                int nx = curX + dx;
+                int ny = curY + dy;
 
-                    if (nx == targetX && ny == targetY) {
-                        isNearby = true;
-                        break;
-                    }
+                if (nx == targetX && ny == targetY) {
+                    isNearby = true;
+                    break;
                 }
-                if (isNearby) break;
             }
+            if (isNearby) break;
+        }
 
         if(!isNearby){
-            cout << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
-            logFile << name << " can't find the previous target after moving. Skipping fire to save shell." << endl;
+            cout << name << " can't find the previous target or so far after moving. Skipping fire to save shell." << endl;
+            logFile << name << " can't find the previous target or so far after moving. Skipping fire to save shell." << endl;
             return;
         }
         auto enemy = battlefield->findRobotAt(targetX, targetY);
@@ -1476,12 +1528,12 @@ void GenericRobot::fire(int dx, int dy)
             return;
         }
 
-        if (dis(gen) < 70)
+        if (dis(gen) < 70)  // 70% chance to hit, 30% chance to miss
         {
             cout << "Target hit! " << enemy->getName() << " has been destroyed! ";
             logFile << "Target hit! " << enemy->getName() << " has been destroyed! ";
             enemy->destroy();
-            chooseUpgrade(); // Upgrade
+            chooseUpgrade();
         }
 
         else
@@ -1491,7 +1543,7 @@ void GenericRobot::fire(int dx, int dy)
         }
     }
 
-    // Shot no enemy
+    // Shot no enemy (shot at empty place)
     else
     {
         shells--;
@@ -1516,7 +1568,7 @@ void GenericRobot::respawn(int x, int y)
 
 void GenericRobot::destroy()
 {
-    if (!selfDestructed)
+    if (!selfDestructed)    // to prevent double destruction
     {
         selfDestructed = true;
         Robot::destroy();
@@ -1532,7 +1584,7 @@ bool GenericRobot::shouldRespawn() const
 
 int GenericRobot::getX() const
 {
-    return positionX;
+    return positionX;   // reads from positionX and returns it as the output of getX().
 }
 
 int GenericRobot::getY() const
@@ -1546,7 +1598,7 @@ void GenericRobot::chooseUpgrade()
     {
         string sentence = name + " is " + upgradeNames[0];
         int size = upgradeNames.size();
-        for (size_t i = 1; size < i; i++)
+        for (size_t i = 1; i < size; i++)
         {
             sentence += "," + upgradeNames[i];
         }
@@ -1584,7 +1636,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
         return;
     }
 
-    const char *area = "";
+    const char *area = "";  // a pointer to a string of characters that cannot be modified, initialize area as an empty string
     switch (upgradeOption)
     {
     case 0:
@@ -1618,7 +1670,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
     {
     case 0: // Moving upgrade
     {
-        int choice = rand() % 3;
+        int choice = rand() % 3;;
         if (choice == 0)
         {
             upgradeName = "HideBot";
@@ -1641,8 +1693,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
 
     case 1: // Shooting upgrade
     {
-        //int choice = rand() % 4;
-        int choice = 1;
+        int choice = rand() % 3;
         if (choice == 0)
         {
             upgradeName = "LongShotBot";
@@ -1692,7 +1743,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
     break;
     }
 
-    if (newBot)
+    if (newBot) // If the newBot was successfully created, stored in shared_ptr<GenericRobot> newBot;
     {       
         upgradeNames.push_back(upgradeName);
         upgradedAreas.insert(area);
@@ -1704,7 +1755,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
         newBot->upgradeCount = this->upgradeCount;
         newBot->name = this->name;
 
-        battlefield->replaceRobot(self, newBot);
+        battlefield->replaceRobot(self, newBot);    // remove self (old), insert newBot (upgraded)
 
         string sentence = name + " now has upgrades: " + upgradeNames[0];
         int size = upgradeNames.size();
@@ -1716,7 +1767,7 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
         cout << sentence << " (Total: " << upgradeCount << "/3)" << endl;
         logFile << sentence << " (Total: " << upgradeCount << "/3)" << endl;
 
-        if (upgradeCount >= 2)
+        if (upgradeCount >= 2)  // If the robot has 2 or more upgrades, it can try to combine them
         {
             newBot->replaceWithCombination(newBot->upgradeNames);
         }
@@ -1730,16 +1781,17 @@ void GenericRobot::chooseUpgrade(int upgradeOption)
 
 void GenericRobot::replaceWithCombination(const vector<string> &types)
 {
-    if (types.size() < 2)
+    if (types.size() < 2)   // If there are less than 2 types, no combination can be made
         return;
 
     auto self = shared_from_this();
     shared_ptr<GenericRobot> newBot;
     string combinationName = "";
 
-    auto hasType = [&](const string &type)
+    // [&] lambda can access and use types (a variable outside the lambda)
+    auto hasType = [&](const string &type) 
     {
-        return find(types.begin(), types.end(), type) != types.end();
+        return find(types.begin(), types.end(), type) != types.end();   // Return true if type is found in types, otherwise return false
     };
 
     cout << "Attempting combination with " << types.size() << " upgrades: ";
@@ -2112,7 +2164,7 @@ void GenericRobot::replaceWithCombination(const vector<string> &types)
 
     if (newBot && !combinationName.empty())
     {
-
+        // Transfer robot state
         newBot->upgradeNames = this->upgradeNames;
         newBot->upgradedAreas = this->upgradedAreas;
         newBot->upgradeCount = this->upgradeCount;
@@ -2126,7 +2178,7 @@ void GenericRobot::replaceWithCombination(const vector<string> &types)
     {
         cout << name << " upgrade combination not found for: ";
         logFile << name << " upgrade combination not found for: ";
-        for (const auto &s : types){    
+        for (const auto &s : types) {
             cout << s << ' ';
             cout << "\nUsing individual upgrades instead." << endl;
             logFile << s << ' ';
@@ -2179,7 +2231,7 @@ int Battlefield::countAliveRobots() const {
     return count;
 }
 
-Robot* Battlefield::getAliveRobot() const {
+Robot* Battlefield::getAliveRobot() const { 
     for (const auto& robot : robots) {
         if (robot->alive()) return robot.get();
     }
@@ -2196,14 +2248,15 @@ int Battlefield::countLiveRobot() const {
     return count;
 }
 
+// lock_guard and mutex ensures thread safety in case multiple threads interact with the respawn system at the same time
 void Battlefield::addToRespawn(shared_ptr<Robot> robot) {
-        lock_guard<mutex> lock(respawnMutex);
+        lock_guard<mutex> lock(respawnMutex);   // lock_guard automatically unlocks the mutex when it goes out of scope
         respawnQueue.push(robot);
 }
 
 bool Battlefield::checkAttackHit(shared_ptr<Robot> attacker, 
                                shared_ptr<Robot> target) {
-    if (auto hideBot = dynamic_cast<HideBot*>(target.get())) {
+    if (auto hideBot = dynamic_cast<HideBot*>(target.get())) { 
         return !hideBot->isHidden();
     }
     return true;
@@ -2216,7 +2269,7 @@ void Battlefield::addLandmine(int x, int y) {
 bool Battlefield::checkLandmine(int x, int y) {
     auto it = landmines.find({x, y});
     if (it != landmines.end()) {
-        landmines.erase(it); 
+        landmines.erase(it);    // Remove the landmine after it has been triggered
         if (rand() % 100 < 50) { 
             cout << "Landmine triggered at (" << x << "," << y << ")!\n";
             logFile << "Landmine triggered at (" << x << "," << y << ")!\n";
@@ -2227,9 +2280,9 @@ bool Battlefield::checkLandmine(int x, int y) {
 }
 
 bool Battlefield::isLandmine(int x, int y) {
-    auto it = landmines.find({x, y});
+    auto it = landmines.find({x, y});   // it is just a temporary variable that stores the result of landmines.find({x, y})
     if (it != landmines.end()) {
-            return true;
+        return true;
     }
     return false;
 }
@@ -2242,13 +2295,13 @@ void Battlefield::simulateTurn() {
     shuffle(robots.begin(), robots.end(), gen);
 
     // Print order robot
-    vector<shared_ptr<Robot>> copy = robots;  
-    copy.erase( // Store the robot which are alive in this turn
+    vector<shared_ptr<Robot>> copy = robots;  // Store the robot which are alive in this turn
+    copy.erase(
         remove_if(copy.begin(), copy.end(),
-            [](const shared_ptr<Robot>& r) { 
+            [](const shared_ptr<Robot>& r) {    // reorders the copy vector so that all dead robots go to the end.
                 return !r->alive();
             }),
-        copy.end()
+        copy.end()  // removes all the "dead" robots
     );
 
     string r_order = "\nRobot's order: " + copy[0] -> getName();
@@ -2266,8 +2319,8 @@ void Battlefield::simulateTurn() {
         }
 
         else if(robot->shouldRespawn()){
-            auto it = find(copy.begin(), copy.end(), robot);
-            if (it != copy.end()) {
+            auto it = find(copy.begin(), copy.end(), robot);    // Was this robot alive at the start of the turn?
+            if (it != copy.end()) { // If the robot was alive when the turn started, but shouldRespawn() is now true, it means it died during this turn.
                 cout << "\nSkipping " << robot->getName() << " because it died in this turn." << endl;
                 cout<<endl;
 
@@ -2288,7 +2341,6 @@ void Battlefield::simulateTurn() {
 }
 
 void Battlefield::processRespawn() {
-
     // Got robot that needs to respawn
     if (!respawnQueue.empty()) {
 
@@ -2331,7 +2383,7 @@ void Battlefield::processRespawn() {
     }
 }
 
-void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {
+void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Robot>> copy) {   // handles a single robot's actions for its turn
     if (!robot->alive()) return;  // Skip dead robots
     if (auto trackBot = dynamic_cast<TrackBot*>(robot.get())) {
         trackBot->displayTracked();
@@ -2342,24 +2394,22 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
     const vector<vector<string>> actionOrders = {
         {"look", "fire", "move", "think"},
         {"look", "fire", "think", "move"},
-        {"look", "move", "fire", "think"},
-        {"look", "move", "think", "fire"},
         {"look", "think", "fire", "move"},
-        {"look", "think", "move", "fire"},
-
+        {"fire", "look", "move", "think"},
+        {"look", "think", "fire", "move"},
         {"fire", "look", "move", "think"},
         {"fire", "look", "think", "move"},
         {"fire", "move", "look", "think"},
         {"fire", "move", "think", "look"},
         {"fire", "think", "look", "move"},
         {"fire", "think", "move", "look"},
-
         {"move", "look", "fire", "think"},
         {"move", "look", "think", "fire"},
-        {"move", "fire", "look", "think"},
-        {"move", "fire", "think", "look"},
         {"move", "think", "look", "fire"},
-        {"move", "think", "fire", "look"}
+        {"think", "look", "fire", "move"},
+        {"think", "fire", "look", "move"},
+        {"think", "fire", "move", "look"},
+        {"think", "move", "look", "fire"}
 
     };
 
@@ -2383,6 +2433,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
             display();
 
         }
+
         else{
             robot->think();
         }
@@ -2392,7 +2443,7 @@ void Battlefield::executeRobotTurn(shared_ptr<Robot> robot, vector<shared_ptr<Ro
     if (robot->getShells() <= 0 && !robot->hasSelfDestructed()) {
         robot->destroy();
         if (robot->shouldRespawn()) {
-            respawnQueue.push(shared_ptr<Robot>(robot));
+            respawnQueue.push(robot);  
         }
     }
 }
@@ -2407,8 +2458,6 @@ void Battlefield::replaceRobot(shared_ptr<Robot> oldBot, shared_ptr<Robot> newBo
     auto it = find(robots.begin(), robots.end(), oldBot);
     if (it != robots.end()) {
         *it = newBot;  // Replace the robot
-        // Don't erase it after replacing! This was the bug
-        // robots.erase(it);  // Remove this line
     } else {
         cout << "Warning: Could not find robot to replace in battlefield" << endl;
         logFile << "Warning: Could not find robot to replace in battlefield" << endl;
@@ -2420,13 +2469,28 @@ void Battlefield::display() {
 
     for (const auto& robot : robots) {
         if (robot->alive()) {
-            grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];
+            grid[robot->getY()-1][robot->getX()-1] = robot->getName()[0];   // convert from 1-based to 0-based Indexing
         }
     }
 
     cout << "--- Battlefield Status ---\n";
     logFile << "--- Battlefield Status ---\n";
-    for (int i = 0 ; i < height; i++) {
+
+    // Print column (x) labels
+    cout << "   ";
+    logFile << "   ";
+    for (int j = 1; j <= width; j++) {
+        cout << j << ' ';
+        logFile << j << ' ';
+    }
+    cout << endl;
+    logFile << endl;
+
+    // Print each row with row (y) labels
+    for (int i = 0; i < height; i++) {
+        cout << (i + 1) << "  ";  // Row label
+        logFile << (i + 1) << "  ";
+
         for (int j = 0; j < width; j++) {
             cout << grid[i][j] << ' ';
             logFile << grid[i][j] << ' ';
@@ -2434,7 +2498,6 @@ void Battlefield::display() {
         cout << endl;
         logFile << endl;
     }
-
 }
 
 int check_point(const vector<int>& point, int &max_height ); // Check if the set point is not out of bounds
@@ -2514,7 +2577,7 @@ int main() {
         field.simulateTurn();
         
         // Field got 0 alive robot && the total live of dead robots is 0
-        if (field.isEmpty() && field.countLiveRobot() == 0) {
+        if (field.isEmpty() && field.countAliveRobots() == 0) {
             cout << "All robots are destroyed. Simulation ends.\n";
             logFile << "All robots are destroyed. Simulation ends.\n";
             break;
@@ -2526,7 +2589,7 @@ int main() {
 
 
         // Field got 1 alive robot && the total live of dead robots is 0
-        if (field.countAliveRobots() == 1 && field.countLiveRobot() ==0) {
+        if (field.countAliveRobots() == 1 && field.countLiveRobot() == 0) {
             cout << "Simulation ends! ";
             logFile << "Simulation ends! ";
             auto winner = field.getAliveRobot();

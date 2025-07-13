@@ -1,60 +1,18 @@
 
 --- Turn 1 ---
 --- Battlefield Status ---
-A B . . 
-D C . . 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  A B . . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
 
-Robot's order: D --> B --> C --> A
+Robot's order: C --> B --> A
 
-D's action order is look --> move --> fire --> think
-D is now at (1,2), looking around ...
-(1,1): A
-(2,1): B
-(2,2): C
-(1,3): Empty space
-(2,3): Empty space
-D moved to (2,3).
---- Battlefield Status ---
-A B . . 
-. C . . 
-. D . . 
-. . . . 
-D can't find the previous target after moving. Skipping fire to save shell.
-D is thinking... 
-
-B's action order is look --> fire --> think --> move
-B is now at (2,1), looking around ...
-(1,1): A
-(3,1): Empty space
-(1,2): Empty space
-(2,2): C
-(3,2): Empty space
-B fires A at (1,1) (Left shells: 9/10)
- - MISS!
-B is thinking... 
-B moved to (3,1).
---- Battlefield Status ---
-A . B . 
-. C . . 
-. D . . 
-. . . . 
-
-C's action order is fire --> think --> move --> look
-C fires D at (2,3) (Left shells: 9/10)
-Target hit! D has been destroyed! D is waiting to respawn (Lives remaining: 2/3)
-C upgraded vision: ScoutBot
-C now has upgrades: ScoutBot (Total: 1/3)
+C's action order is think --> look --> fire --> move
 C is thinking... 
-C moved to (3,3).
---- Battlefield Status ---
-A . B . 
-. C . . 
-. . . . 
-. . . . 
 C is now at (3,3), looking around ...
-(2,2): C
+(2,2): Empty space
 (3,2): Empty space
 (4,2): Empty space
 (2,3): Empty space
@@ -62,362 +20,309 @@ C is now at (3,3), looking around ...
 (2,4): Empty space
 (3,4): Empty space
 (4,4): Empty space
+Preserving shell for next turn since C didn't find any robots around. (Left shells: 10/10)
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  A B . . 
+2  . . . . 
+3  . . . . 
+4  . . C . 
 
-A's action order is look --> think --> move --> fire
+B's action order is look --> think --> fire --> move
+B is now at (2,1), looking around ...
+(1,1): A
+(3,1): Empty space
+(1,2): Empty space
+(2,2): Empty space
+(3,2): Empty space
+B is thinking... 
+B fires A at (1,1) (Left shells: 9/10)
+ - MISS!
+B moved to (3,1).
+--- Battlefield Status ---
+   1 2 3 4 
+1  A . B . 
+2  . . . . 
+3  . . . . 
+4  . . C . 
+
+A's action order is look --> think --> fire --> move
 A is now at (1,1), looking around ...
 (2,1): Empty space
 (1,2): Empty space
-(2,2): C
+(2,2): Empty space
 A is thinking... 
-A moved to (1,2).
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 10/10)
+A moved to (2,2).
 --- Battlefield Status ---
-. . B . 
-A C . . 
-. . . . 
-. . . . 
-A fires C at (2,2) (Left shells: 9/10)
-Target hit! C has been destroyed! C is waiting to respawn (Lives remaining: 2/3)
-A upgraded movement: GlideBot
-A now has upgrades: GlideBot (Total: 1/3)
+   1 2 3 4 
+1  . . B . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
 --- Battlefield Status ---
-. . B . 
-A . . . 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  . . B . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
 
 --- Turn 1 END---
 
 --- Turn 2 ---
 --- Battlefield Status ---
-. . B . 
-A . . . 
-. . . . 
-. . . . 
-Respawn robots queue: D --> C
-D respawned at (2,4) (Lives remaining: 2/3)
---- Battlefield Status ---
-. . B . 
-A . . . 
-. . . . 
-. D . . 
+   1 2 3 4 
+1  . . B . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
 
-Robot's order: B --> D --> A
+Robot's order: C --> A --> B
 
-B's action order is move --> think --> look --> fire
-B moved to (4,2).
---- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. D . . 
-B is thinking... 
-B is now at (4,2), looking around ...
-(3,1): Empty space
-(4,1): Empty space
-(3,2): Empty space
-(3,3): Empty space
-(4,3): Empty space
-Preserving shell for next turn since B didn't find any robots around. (left shells: 9)
-
-D's action order is fire --> move --> think --> look
-D fires at (1,3). But it is an empty space! (Left shells: 9/10)
-D moved to (3,4).
---- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. . D . 
-D is thinking... 
-D is now at (3,4), looking around ...
+C's action order is look --> think --> fire --> move
+C is now at (3,4), looking around ...
 (2,3): Empty space
 (3,3): Empty space
 (4,3): Empty space
 (2,4): Empty space
 (4,4): Empty space
+C is thinking... 
+Preserving shell for next turn since C didn't find any robots around. (Left shells: 10/10)
+C moved to (2,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . B . 
+2  . A . . 
+3  . C . . 
+4  . . . . 
 
-A's action order is look --> fire --> move --> think
-A is now at (1,2), looking around ...
-(1,1): Empty space
-(2,1): Empty space
-(2,2): Empty space
-(1,3): Empty space
-(2,3): Empty space
-Preserving shell for next turn since A didn't find any robots around. (left shells: 10)
-A glided to (3,2) (2 glides left)
+A's action order is fire --> move --> think --> look
+A fires at (2,1). But it is an empty space! (Left shells: 9/10)
+A moved to (3,3).
 --- Battlefield Status ---
-. . . . 
-. . A B 
-. . . . 
-. . D . 
+   1 2 3 4 
+1  . . B . 
+2  . . . . 
+3  . C A . 
+4  . . . . 
 A is thinking... 
+A is now at (3,3), looking around ...
+(2,2): Empty space
+(3,2): Empty space
+(4,2): Empty space
+(2,3): C
+(4,3): Empty space
+(2,4): Empty space
+(3,4): Empty space
+(4,4): Empty space
+
+B's action order is move --> think --> look --> fire
+B moved to (4,2).
 --- Battlefield Status ---
-. . . . 
-. . A B 
-. . . . 
-. . D . 
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
+B is thinking... 
+B is now at (4,2), looking around ...
+(3,1): Empty space
+(4,1): Empty space
+(3,2): Empty space
+(3,3): A
+(4,3): Empty space
+B fires A at (3,3) (Left shells: 8/10)
+ - MISS!
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
 
 --- Turn 2 END---
 
 --- Turn 3 ---
 --- Battlefield Status ---
-. . . . 
-. . A B 
-. . . . 
-. . D . 
-Respawn robots queue: C
-C respawned at (4,3) (Lives remaining: 2/3)
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . . C 
-. . D . 
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
 
-Robot's order: B --> C --> D --> A
+Robot's order: A --> C --> B
 
-B's action order is move --> think --> fire --> look
-B cannot move to (4,3). This point is occupied by C.
+A's action order is think --> fire --> look --> move
+A is thinking... 
+A fires at (3,4). But it is an empty space! (Left shells: 8/10)
+A is now at (3,3), looking around ...
+(2,2): Empty space
+(3,2): Empty space
+(4,2): B
+(2,3): C
+(4,3): Empty space
+(2,4): Empty space
+(3,4): Empty space
+(4,4): Empty space
+A moved to (2,2).
 --- Battlefield Status ---
-. . . . 
-. . A B 
-. . . C 
-. . D . 
-B is thinking... 
-B fires at (3,1). But it is an empty space! (Left shells: 8/10)
-B is now at (4,2), looking around ...
-(3,1): Empty space
-(4,1): Empty space
-(3,2): A
-(3,3): Empty space
-(4,3): C
+   1 2 3 4 
+1  . . . . 
+2  . A . B 
+3  . C . . 
+4  . . . . 
 
-C's action order is look --> move --> think --> fire
-C sees entire battlefield:
-  (3,2): A
-  (4,2): B
-  (4,3): C
-  (3,4): D
-C moved to (4,4).
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . . . 
-. . D C 
+C's action order is think --> move --> look --> fire
 C is thinking... 
-C fires at (3,3). But it is an empty space! (Left shells: 9/10)
-
-D's action order is look --> move --> think --> fire
-D is now at (3,4), looking around ...
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . A . B 
+3  . . . . 
+4  . . C . 
+C is now at (3,4), looking around ...
 (2,3): Empty space
 (3,3): Empty space
 (4,3): Empty space
 (2,4): Empty space
-(4,4): C
-D moved to (2,4).
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . . . 
-. D . C 
-D is thinking... 
-D can't find the previous target after moving. Skipping fire to save shell.
+(4,4): Empty space
+Preserving shell for next turn since C didn't find any robots around. (Left shells: 10/10)
 
-A's action order is look --> think --> move --> fire
-A is now at (3,2), looking around ...
-(2,1): Empty space
+B's action order is think --> fire --> look --> move
+B is thinking... 
+B fires at (3,1). But it is an empty space! (Left shells: 7/10)
+B is now at (4,2), looking around ...
 (3,1): Empty space
 (4,1): Empty space
-(2,2): Empty space
-(4,2): B
-(2,3): Empty space
+(3,2): Empty space
 (3,3): Empty space
 (4,3): Empty space
-A is thinking... 
-A glided to (1,2) (1 glides left)
+B moved to (4,3).
 --- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. D . C 
-A can't find the previous target after moving. Skipping fire to save shell.
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . B 
+4  . . C . 
 --- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. D . C 
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . B 
+4  . . C . 
 
 --- Turn 3 END---
 
 --- Turn 4 ---
 --- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. D . C 
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . B 
+4  . . C . 
 
-Robot's order: C --> D --> B --> A
+Robot's order: A --> C --> B
 
-C's action order is move --> look --> think --> fire
-C moved to (3,4).
---- Battlefield Status ---
-. . . . 
-A . . B 
-. . . . 
-. D C . 
-C sees entire battlefield:
-  (1,2): A
-  (4,2): B
-  (2,4): D
-  (3,4): C
-C is thinking... 
-C fires at (4,4). But it is an empty space! (Left shells: 8/10)
-
-D's action order is move --> look --> fire --> think
-D moved to (1,3).
---- Battlefield Status ---
-. . . . 
-A . . B 
-D . . . 
-. . C . 
-D is now at (1,3), looking around ...
-(1,2): A
-(2,2): Empty space
+A's action order is look --> fire --> move --> think
+A is now at (2,2), looking around ...
+(1,1): Empty space
+(2,1): Empty space
+(3,1): Empty space
+(1,2): Empty space
+(3,2): Empty space
+(1,3): Empty space
 (2,3): Empty space
-(1,4): Empty space
-(2,4): Empty space
-D fires A at (1,2) (Left shells: 8/10)
- - MISS!
-D is thinking... 
+(3,3): Empty space
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 8/10)
+A moved to (3,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A B 
+4  . . C . 
+A is thinking... 
 
-B's action order is fire --> look --> think --> move
-B fires at (4,3). But it is an empty space! (Left shells: 7/10)
+C's action order is fire --> think --> look --> move
+C fires at (4,4). But it is an empty space! (Left shells: 9/10)
+C is thinking... 
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): A
+(4,3): B
+(2,4): Empty space
+(4,4): Empty space
+C moved to (2,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . C A B 
+4  . . . . 
+
+B's action order is fire --> think --> move --> look
+B fires at (4,4). But it is an empty space! (Left shells: 6/10)
+B is thinking... 
+B moved to (4,2).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
 B is now at (4,2), looking around ...
 (3,1): Empty space
 (4,1): Empty space
 (3,2): Empty space
-(3,3): Empty space
+(3,3): A
 (4,3): Empty space
-B is thinking... 
-B moved to (4,3).
 --- Battlefield Status ---
-. . . . 
-A . . . 
-D . . B 
-. . C . 
-
-A's action order is move --> think --> look --> fire
-A glided to (4,2) (0 glides left)
---- Battlefield Status ---
-. . . . 
-. . . A 
-D . . B 
-. . C . 
-A is thinking... 
-A is now at (4,2), looking around ...
-(3,1): Empty space
-(4,1): Empty space
-(3,2): Empty space
-(3,3): Empty space
-(4,3): B
-A fires B at (4,3) (Left shells: 9/10)
- - MISS!
---- Battlefield Status ---
-. . . . 
-. . . A 
-D . . B 
-. . C . 
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
 
 --- Turn 4 END---
 
 --- Turn 5 ---
 --- Battlefield Status ---
-. . . . 
-. . . A 
-D . . B 
-. . C . 
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
 
-Robot's order: D --> B --> A --> C
+Robot's order: B --> A --> C
 
-D's action order is move --> fire --> think --> look
-D moved to (2,4).
---- Battlefield Status ---
-. . . . 
-. . . A 
-. . . B 
-. D C . 
-D fires at (2,3). But it is an empty space! (Left shells: 7/10)
-D is thinking... 
-D is now at (2,4), looking around ...
-(1,3): Empty space
-(2,3): Empty space
-(3,3): Empty space
-(1,4): Empty space
-(3,4): C
-
-B's action order is look --> fire --> think --> move
-B is now at (4,3), looking around ...
-(3,2): Empty space
-(4,2): A
-(3,3): Empty space
-(3,4): C
-(4,4): Empty space
-B found out that A has 1 updates and a higher level compared to other enemies.
-B fires A at (4,2) (Left shells: 6/10)
-Target hit! A has been destroyed! A is waiting to respawn (Lives remaining: 2/3)
-B upgraded movement: JumpBot
-B now has upgrades: JumpBot (Total: 1/3)
+B's action order is think --> move --> look --> fire
 B is thinking... 
-B moved to (3,3).
+B cannot move to (3,3). This point is occupied by A.
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. . . B 
-. D C . 
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . C A . 
+4  . . . . 
+B is now at (4,2), looking around ...
+(3,1): Empty space
+(4,1): Empty space
+(3,2): Empty space
+(3,3): A
+(4,3): Empty space
+B fires A at (3,3) (Left shells: 5/10)
+Target hit! A has been destroyed! A is waiting to respawn (Lives remaining: 2/3)
+B upgraded shooting: LongShotBot
+B now has upgrades: LongShotBot (Total: 1/3)
 
 Skipping A because it died in this turn.
 
 
-C's action order is look --> move --> fire --> think
-C sees entire battlefield:
-  (4,3): B
-  (2,4): D
-  (3,4): C
-C moved to (2,3).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-. D . . 
-C fires at (3,4). But it is an empty space! (Left shells: 7/10)
+C's action order is think --> fire --> look --> move
 C is thinking... 
---- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-. D . . 
-
---- Turn 5 END---
-
---- Turn 6 ---
---- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-. D . . 
-Respawn robots queue: A
-A respawned at (3,4) (Lives remaining: 2/3)
---- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-. D A . 
-
-Robot's order: C --> D --> B --> A
-
-C's action order is fire --> look --> think --> move
-C fires A at (3,4) (Left shells: 6/10)
-Target hit! A has been destroyed! A is waiting to respawn (Lives remaining: 1/3)
-C upgraded vision: ScoutBot
-C now has upgrades: ScoutBot (Total: 1/3)
+C fires at (3,4). But it is an empty space! (Left shells: 8/10)
 C is now at (2,3), looking around ...
 (1,2): Empty space
 (2,2): Empty space
@@ -425,115 +330,74 @@ C is now at (2,3), looking around ...
 (1,3): Empty space
 (3,3): Empty space
 (1,4): Empty space
-(2,4): D
+(2,4): Empty space
 (3,4): Empty space
-C is thinking... 
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . . . . 
+4  . . C . 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . . . . 
+4  . . C . 
+
+--- Turn 5 END---
+
+--- Turn 6 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . B 
+3  . . . . 
+4  . . C . 
+Respawn robots queue: A
+A respawned at (4,1) (Lives remaining: 2/3)
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . A 
+2  . . . B 
+3  . . . . 
+4  . . C . 
+
+Robot's order: C --> A --> B
+
+C's action order is move --> look --> think --> fire
 C moved to (3,3).
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-. D . . 
-
-D's action order is look --> think --> move --> fire
-D is now at (2,4), looking around ...
-(1,3): Empty space
-(2,3): C
-(3,3): Empty space
-(1,4): Empty space
-(3,4): Empty space
-D is thinking... 
-D moved to (1,4).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. C . B 
-D . . . 
-D fires C at (2,3) (Left shells: 6/10)
-Target hit! C has been destroyed! C is waiting to respawn (Lives remaining: 1/3)
-D upgraded vision: ScoutBot
-D now has upgrades: ScoutBot (Total: 1/3)
-
-B's action order is move --> fire --> think --> look
-B jumped to (2,1) (2 jumps left)
---- Battlefield Status ---
-. B . . 
-. . . . 
-. . . . 
-D . . . 
-B fires at (3,2). But it is an empty space! (Left shells: 9/10)
-B is thinking... 
-B is now at (2,1), looking around ...
-(1,1): Empty space
-(3,1): Empty space
-(1,2): Empty space
+   1 2 3 4 
+1  . . . A 
+2  . . . B 
+3  . . C . 
+4  . . . . 
+C is now at (3,3), looking around ...
 (2,2): Empty space
 (3,2): Empty space
-
-Skipping A because it died in this turn.
-
---- Battlefield Status ---
-. B . . 
-. . . . 
-. . . . 
-D . . . 
-
---- Turn 6 END---
-
---- Turn 7 ---
---- Battlefield Status ---
-. B . . 
-. . . . 
-. . . . 
-D . . . 
-Respawn robots queue: A --> C
-A respawned at (3,2) (Lives remaining: 1/3)
---- Battlefield Status ---
-. B . . 
-. . A . 
-. . . . 
-D . . . 
-
-Robot's order: D --> B --> A
-
-D's action order is fire --> look --> move --> think
-D fires at (2,4). But it is an empty space! (Left shells: 9/10)
-D sees entire battlefield:
-  (2,1): B
-  (3,2): A
-  (1,4): D
-D moved to (1,3).
---- Battlefield Status ---
-. B . . 
-. . A . 
-D . . . 
-. . . . 
-D is thinking... 
-
-B's action order is fire --> move --> look --> think
-B fires at (1,1). But it is an empty space! (Left shells: 8/10)
-B jumped to (3,4) (1 jumps left)
---- Battlefield Status ---
-. . . . 
-. . A . 
-D . . . 
-. . B . 
-B is now at (3,4), looking around ...
+(4,2): B
 (2,3): Empty space
-(3,3): Empty space
 (4,3): Empty space
 (2,4): Empty space
+(3,4): Empty space
 (4,4): Empty space
-B is thinking... 
+C is thinking... 
+C fires B at (4,2) (Left shells: 7/10)
+Target hit! B has been destroyed! B is waiting to respawn (Lives remaining: 2/3)
+C upgraded vision: RevealBot
+C now has upgrades: RevealBot (Total: 1/3)
 
-A's action order is move --> fire --> look --> think
+A's action order is fire --> move --> look --> think
+A fires at (4,2). But it is an empty space! (Left shells: 9/10)
 A moved to (3,1).
 --- Battlefield Status ---
-. . A . 
-. . . . 
-D . . . 
-. . B . 
-A fires at (4,2). But it is an empty space! (Left shells: 9/10)
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
 A is now at (3,1), looking around ...
 (2,1): Empty space
 (4,1): Empty space
@@ -541,220 +405,103 @@ A is now at (3,1), looking around ...
 (3,2): Empty space
 (4,2): Empty space
 A is thinking... 
+
+Skipping B because it died in this turn.
+
 --- Battlefield Status ---
-. . A . 
-. . . . 
-D . . . 
-. . B . 
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
+
+--- Turn 6 END---
+
+--- Turn 7 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
+Respawn robots queue: B
+B respawned at (2,3) (Lives remaining: 2/3)
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . B C . 
+4  . . . . 
+
+Robot's order: C --> B --> A
+
+C's action order is move --> think --> look --> fire
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . B . . 
+4  . . C . 
+C is thinking... 
+C is now at (3,4), looking around ...
+(2,3): B
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+C fires B at (2,3) (Left shells: 9/10)
+Target hit! B has been destroyed! B is waiting to respawn (Lives remaining: 1/3)
+C upgraded shooting: LongShotBot
+C now has upgrades: RevealBot, LongShotBot (Total: 2/3)
+Attempting combination with 2 upgrades: RevealBot, LongShotBot
+Successfully combined C into LongShotRevealBot!
+
+Skipping B because it died in this turn.
+
+
+A's action order is look --> think --> fire --> move
+A is now at (3,1), looking around ...
+(2,1): Empty space
+(4,1): Empty space
+(2,2): Empty space
+(3,2): Empty space
+(4,2): Empty space
+A is thinking... 
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 9/10)
+A moved to (3,2).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . C . 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . C . 
 
 --- Turn 7 END---
 
 --- Turn 8 ---
 --- Battlefield Status ---
-. . A . 
-. . . . 
-D . . . 
-. . B . 
-Respawn robots queue: C
-C respawned at (1,1) (Lives remaining: 1/3)
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . C . 
+Respawn robots queue: B
+B respawned at (4,2) (Lives remaining: 1/3)
 --- Battlefield Status ---
-C . A . 
-. . . . 
-D . . . 
-. . B . 
+   1 2 3 4 
+1  . . . . 
+2  . . A B 
+3  . . . . 
+4  . . C . 
 
-Robot's order: B --> D --> C --> A
-
-B's action order is move --> fire --> look --> think
-B jumped to (4,1) (0 jumps left)
---- Battlefield Status ---
-C . A B 
-. . . . 
-D . . . 
-. . . . 
-B fires at (4,2). But it is an empty space! (Left shells: 7/10)
-B is now at (4,1), looking around ...
-(3,1): A
-(3,2): Empty space
-(4,2): Empty space
-B is thinking... 
-
-D's action order is move --> fire --> think --> look
-D moved to (2,4).
---- Battlefield Status ---
-C . A B 
-. . . . 
-. . . . 
-. D . . 
-D fires at (3,4). But it is an empty space! (Left shells: 8/10)
-D is thinking... 
-D sees entire battlefield:
-  (1,1): C
-  (3,1): A
-  (4,1): B
-  (2,4): D
-
-C's action order is look --> move --> think --> fire
-C sees entire battlefield:
-  (1,1): C
-  (3,1): A
-  (4,1): B
-  (2,4): D
-C moved to (2,2).
---- Battlefield Status ---
-. . A B 
-. C . . 
-. . . . 
-. D . . 
-C is thinking... 
-C fires at (2,1). But it is an empty space! (Left shells: 9/10)
-
-A's action order is look --> fire --> move --> think
-A is now at (3,1), looking around ...
-(2,1): Empty space
-(4,1): B
-(2,2): C
-(3,2): Empty space
-(4,2): Empty space
-A found out that B has 1 updates and a higher level compared to other enemies.
-A fires B at (4,1) (Left shells: 8/10)
- - MISS!
-A moved to (2,1).
---- Battlefield Status ---
-. A . B 
-. C . . 
-. . . . 
-. D . . 
-A is thinking... 
---- Battlefield Status ---
-. A . B 
-. C . . 
-. . . . 
-. D . . 
-
---- Turn 8 END---
-
---- Turn 9 ---
---- Battlefield Status ---
-. A . B 
-. C . . 
-. . . . 
-. D . . 
-
-Robot's order: A --> D --> B --> C
-
-A's action order is fire --> think --> look --> move
-A fires at (3,2). But it is an empty space! (Left shells: 7/10)
-A is thinking... 
-A is now at (2,1), looking around ...
-(1,1): Empty space
-(3,1): Empty space
-(1,2): Empty space
-(2,2): C
-(3,2): Empty space
-A moved to (3,2).
---- Battlefield Status ---
-. . . B 
-. C A . 
-. . . . 
-. D . . 
-
-D's action order is fire --> look --> move --> think
-D fires at (1,3). But it is an empty space! (Left shells: 7/10)
-D sees entire battlefield:
-  (4,1): B
-  (2,2): C
-  (3,2): A
-  (2,4): D
-D moved to (3,4).
---- Battlefield Status ---
-. . . B 
-. C A . 
-. . . . 
-. . D . 
-D is thinking... 
-
-B's action order is look --> move --> fire --> think
-B is now at (4,1), looking around ...
-(3,1): Empty space
-(3,2): A
-(4,2): Empty space
-B moved to (4,2).
---- Battlefield Status ---
-. . . . 
-. C A B 
-. . . . 
-. . D . 
-B can't find the previous target after moving. Skipping fire to save shell.
-B is thinking... 
-
-C's action order is move --> fire --> think --> look
-C moved to (3,3).
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . C . 
-. . D . 
-C fires D at (3,4) (Left shells: 8/10)
-Target hit! D has been destroyed! D is waiting to respawn (Lives remaining: 1/3)
-C upgraded shooting: SemiAutoBot
-C now has upgrades: SemiAutoBot (Total: 1/3)
-C is thinking... 
-C sees entire battlefield:
-  (3,2): A
-  (4,2): B
-  (3,3): C
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . C . 
-. . . . 
-
---- Turn 9 END---
-
---- Turn 10 ---
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . C . 
-. . . . 
-Respawn robots queue: D
-D respawned at (3,4) (Lives remaining: 1/3)
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . C . 
-. . D . 
-
-Robot's order: C --> B --> A --> D
-
-C's action order is move --> look --> think --> fire
-C cannot move to (3,4). This point is occupied by D.
---- Battlefield Status ---
-. . . . 
-. . A B 
-. . C . 
-. . D . 
-C is now at (3,3), looking around ...
-(2,2): Empty space
-(3,2): A
-(4,2): B
-(2,3): Empty space
-(4,3): Empty space
-(2,4): Empty space
-(3,4): D
-(4,4): Empty space
-C is thinking... 
-C found out that B has 1 updates and a higher level compared to other enemies.
-C fires B at (4,2) (Left shells: 9/10)
-Target hit! B has been destroyed! B is waiting to respawn (Lives remaining: 2/3)
-C upgraded vision: TrackBot
-C now has upgrades: SemiAutoBot, TrackBot (Total: 2/3)
-Attempting combination with 2 upgrades: SemiAutoBot, TrackBot
-Successfully combined C into SemiAutoTrackBot!
-
-Skipping B because it died in this turn.
-
+Robot's order: A --> C --> B
 
 A's action order is look --> fire --> think --> move
 A is now at (3,2), looking around ...
@@ -762,291 +509,508 @@ A is now at (3,2), looking around ...
 (3,1): Empty space
 (4,1): Empty space
 (2,2): Empty space
-(4,2): Empty space
+(4,2): B
 (2,3): Empty space
-(3,3): C
-(4,3): Empty space
-A fires C at (3,3) (Left shells: 6/10)
-Target hit! C has been destroyed! C has no lives remaining! (Lives remaining: 0/3)
-A upgraded shooting: SemiAutoBot
-A now has upgrades: SemiAutoBot (Total: 1/3)
-A is thinking... 
-A moved to (4,2).
---- Battlefield Status ---
-. . . . 
-. . A . 
-. . . . 
-. . D . 
-
-D's action order is fire --> think --> move --> look
-D fires at (4,4). But it is an empty space! (Left shells: 9/10)
-D is thinking... 
-D moved to (3,3).
---- Battlefield Status ---
-. . . . 
-. . A . 
-. . D . 
-. . . . 
-D is now at (3,3), looking around ...
-(2,2): Empty space
-(3,2): A
-(4,2): Empty space
-(2,3): Empty space
-(4,3): Empty space
-(2,4): Empty space
-(3,4): Empty space
-(4,4): Empty space
---- Battlefield Status ---
-. . . . 
-. . A . 
-. . D . 
-. . . . 
-
---- Turn 10 END---
-
---- Turn 11 ---
---- Battlefield Status ---
-. . . . 
-. . A . 
-. . D . 
-. . . . 
-Respawn robots queue: B
-B respawned at (1,2) (Lives remaining: 2/3)
---- Battlefield Status ---
-. . . . 
-B . A . 
-. . D . 
-. . . . 
-
-Robot's order: D --> B --> A
-
-D's action order is fire --> move --> think --> look
-D fires at (2,4). But it is an empty space! (Left shells: 8/10)
-D moved to (4,2).
---- Battlefield Status ---
-. . . . 
-B . A D 
-. . . . 
-. . . . 
-D is thinking... 
-D is now at (4,2), looking around ...
-(3,1): Empty space
-(4,1): Empty space
-(3,2): A
 (3,3): Empty space
 (4,3): Empty space
-
-B's action order is move --> fire --> think --> look
-B moved to (1,1).
+A fires B at (4,2) (Left shells: 8/10)
+Target hit! B has been destroyed! B has no lives remaining! (Lives remaining: 0/3)
+A upgraded vision: TrackBot
+A now has upgrades: TrackBot (Total: 1/3)
+A is thinking... 
+A moved to (2,1).
 --- Battlefield Status ---
-B . . . 
-. . A D 
-. . . . 
-. . . . 
-B fires at (2,2). But it is an empty space! (Left shells: 9/10)
-B is thinking... 
-B is now at (1,1), looking around ...
-(2,1): Empty space
-(1,2): Empty space
-(2,2): Empty space
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . C . 
 
-A's action order is look --> think --> fire --> move
+C's action order is think --> fire --> look --> move
+C is thinking... 
+C fires at (2,3). But it is an empty space! (Left shells: 9/10)
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+C moved to (4,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . . C 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . . C 
+
+--- Turn 8 END---
+
+--- Turn 9 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . A . 
+3  . . . . 
+4  . . . C 
+
+Robot's order: A --> C
+
+A's action order is fire --> look --> think --> move
+A fires at (3,3). But it is an empty space! (Left shells: 9/10)
 A is now at (3,2), looking around ...
 (2,1): Empty space
 (3,1): Empty space
 (4,1): Empty space
 (2,2): Empty space
-(4,2): D
+(4,2): Empty space
 (2,3): Empty space
 (3,3): Empty space
 (4,3): Empty space
 A is thinking... 
-A fires D at (4,2) (Left shells: 9/10)
- - MISS!
-A moved to (2,1).
+A moved to (3,1).
 --- Battlefield Status ---
-B A . . 
-. . . D 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+
+C's action order is move --> look --> think --> fire
+C moved to (3,4).
 --- Battlefield Status ---
-B A . . 
-. . . D 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . C . 
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+C is thinking... 
+C can't fire that far! (Max 3)
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . C . 
+
+--- Turn 9 END---
+
+--- Turn 10 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . C . 
+
+Robot's order: C --> A
+
+C's action order is look --> fire --> think --> move
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+Preserving shell for next turn since C didn't find any robots around. (Left shells: 9/10)
+C is thinking... 
+C moved to (4,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+
+A's action order is move --> think --> look --> fire
+A moved to (4,2).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  . . . C 
+A is thinking... 
+A is now at (4,2), looking around ...
+(3,1): Empty space
+(4,1): Empty space
+(3,2): Empty space
+(3,3): Empty space
+(4,3): Empty space
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 9/10)
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  . . . C 
+
+--- Turn 10 END---
+
+--- Turn 11 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  . . . C 
+
+Robot's order: A --> C
+
+A's action order is move --> look --> think --> fire
+A moved to (4,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . A 
+4  . . . C 
+A is now at (4,3), looking around ...
+(3,2): Empty space
+(4,2): Empty space
+(3,3): Empty space
+(3,4): Empty space
+(4,4): C
+A is thinking... 
+A can't find the previous target or so far after moving. Skipping fire to save shell.
+
+C's action order is look --> think --> fire --> move
+C is now at (4,4), looking around ...
+(3,3): Empty space
+(4,3): A
+(3,4): Empty space
+C is thinking... 
+C fires A at (4,3) (Left shells: 8/10)
+Target hit! A has been destroyed! A is waiting to respawn (Lives remaining: 1/3)
+C upgraded movement: JumpBot
+C now has upgrades: RevealBot, LongShotBot, JumpBot (Total: 3/3)
+Attempting combination with 3 upgrades: RevealBot, LongShotBot, JumpBot
+Successfully combined C into JumpLongShotRevealBot!
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
 
 --- Turn 11 END---
 
 --- Turn 12 ---
 --- Battlefield Status ---
-B A . . 
-. . . D 
-. . . . 
-. . . . 
-
-Robot's order: B --> D --> A
-
-B's action order is move --> think --> fire --> look
-B moved to (2,2).
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+Respawn robots queue: A
+A respawned at (3,1) (Lives remaining: 1/3)
 --- Battlefield Status ---
-. A . . 
-. B . D 
-. . . . 
-. . . . 
-B is thinking... 
-B fires A at (2,1) (Left shells: 8/10)
-Target hit! A has been destroyed! A has no lives remaining! (Lives remaining: 0/3)
-B upgraded vision: TrackBot
-B now has upgrades: TrackBot (Total: 1/3)
-B is now at (2,2), looking around ...
-(1,1): Empty space
-(2,1): Empty space
-(3,1): Empty space
-(1,2): Empty space
-(3,2): Empty space
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+
+Robot's order: C --> A
+
+C's action order is fire --> move --> look --> think
+C can't fire that far! (Max 3)
+C jumped to (1,4) (2 jumps left)
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . A . 
+2  . . . . 
+3  . . . . 
+4  C . . . 
+C is now at (1,4), looking around ...
 (1,3): Empty space
 (2,3): Empty space
-(3,3): Empty space
+(2,4): Empty space
+C is thinking... 
 
-D's action order is fire --> move --> think --> look
-D fires at (3,1). But it is an empty space! (Left shells: 7/10)
-D moved to (3,2).
---- Battlefield Status ---
-. . . . 
-. B D . 
-. . . . 
-. . . . 
-D is thinking... 
-D is now at (3,2), looking around ...
+A's action order is fire --> look --> move --> think
+A fires at (2,1). But it is an empty space! (Left shells: 9/10)
+A is now at (3,1), looking around ...
 (2,1): Empty space
-(3,1): Empty space
 (4,1): Empty space
-(2,2): B
+(2,2): Empty space
+(3,2): Empty space
 (4,2): Empty space
-(2,3): Empty space
-(3,3): Empty space
-(4,3): Empty space
+A moved to (4,2).
 --- Battlefield Status ---
-. . . . 
-. B D . 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  C . . . 
+A is thinking... 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  C . . . 
 
 --- Turn 12 END---
 
 --- Turn 13 ---
 --- Battlefield Status ---
-. . . . 
-. B D . 
-. . . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . A 
+3  . . . . 
+4  C . . . 
 
-Robot's order: B --> D
+Robot's order: A --> C
 
-B's action order is move --> think --> fire --> look
-B moved to (2,3).
---- Battlefield Status ---
-. . . . 
-. . D . 
-. B . . 
-. . . . 
-B is thinking... 
-B fires at (2,2). But it is an empty space! (Left shells: 9/10)
-B is now at (2,3), looking around ...
-(1,2): Empty space
-(2,2): Empty space
-(3,2): D
-(1,3): Empty space
-(3,3): Empty space
-(1,4): Empty space
-(2,4): Empty space
-(3,4): Empty space
-
-D's action order is fire --> look --> move --> think
-D fires at (4,1). But it is an empty space! (Left shells: 6/10)
-D is now at (3,2), looking around ...
-(2,1): Empty space
+A's action order is think --> look --> fire --> move
+A is thinking... 
+A is now at (4,2), looking around ...
 (3,1): Empty space
 (4,1): Empty space
-(2,2): Empty space
-(4,2): Empty space
-(2,3): B
+(3,2): Empty space
 (3,3): Empty space
 (4,3): Empty space
-D moved to (3,1).
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 9/10)
+A moved to (4,3).
 --- Battlefield Status ---
-. . D . 
-. . . . 
-. B . . 
-. . . . 
-D is thinking... 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . A 
+4  C . . . 
+
+C's action order is think --> fire --> look --> move
+C is thinking... 
+C fires at (1,3). But it is an empty space! (Left shells: 9/10)
+C is now at (1,4), looking around ...
+(1,3): Empty space
+(2,3): Empty space
+(2,4): Empty space
+C jumped to (4,4) (1 jumps left)
 --- Battlefield Status ---
-. . D . 
-. . . . 
-. B . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . A 
+4  . . . C 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . A 
+4  . . . C 
 
 --- Turn 13 END---
 
 --- Turn 14 ---
 --- Battlefield Status ---
-. . D . 
-. . . . 
-. B . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . A 
+4  . . . C 
 
-Robot's order: B --> D
+Robot's order: A --> C
 
-B's action order is move --> look --> fire --> think
-B moved to (3,4).
+A's action order is fire --> move --> think --> look
+A fires at (4,2). But it is an empty space! (Left shells: 8/10)
+A moved to (3,4).
 --- Battlefield Status ---
-. . D . 
-. . . . 
-. . . . 
-. . B . 
-B is now at (3,4), looking around ...
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . A C 
+A is thinking... 
+A is now at (3,4), looking around ...
 (2,3): Empty space
 (3,3): Empty space
 (4,3): Empty space
 (2,4): Empty space
-(4,4): Empty space
-Preserving shell for next turn since B didn't find any robots around. (left shells: 9)
-B is thinking... 
+(4,4): C
 
-D's action order is look --> think --> fire --> move
-D is now at (3,1), looking around ...
-(2,1): Empty space
-(4,1): Empty space
-(2,2): Empty space
-(3,2): Empty space
-(4,2): Empty space
-D is thinking... 
-Preserving shell for next turn since D didn't find any robots around. (left shells: 6)
-D moved to (2,2).
+C's action order is move --> think --> look --> fire
+C jumped to (2,4) (0 jumps left)
 --- Battlefield Status ---
-. . . . 
-. D . . 
-. . . . 
-. . B . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . C A . 
+C is thinking... 
+C is now at (2,4), looking around ...
+(1,3): Empty space
+(2,3): Empty space
+(3,3): Empty space
+(1,4): Empty space
+(3,4): A
+C fires A at (3,4) (Left shells: 8/10)
+ - MISS!
 --- Battlefield Status ---
-. . . . 
-. D . . 
-. . . . 
-. . B . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . C A . 
 
 --- Turn 14 END---
 
 --- Turn 15 ---
 --- Battlefield Status ---
-. . . . 
-. D . . 
-. . . . 
-. . B . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . C A . 
 
-Robot's order: D --> B
+Robot's order: A --> C
 
-D's action order is look --> fire --> move --> think
-D is now at (2,2), looking around ...
+A's action order is look --> think --> fire --> move
+A is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): C
+(4,4): Empty space
+A is thinking... 
+A can't find the previous target or so far after moving. Skipping fire to save shell.
+A moved to (3,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A . 
+4  . C . . 
+
+C's action order is fire --> think --> move --> look
+C fires at (3,4). But it is an empty space! (Left shells: 7/10)
+C is thinking... 
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A . 
+4  . . C . 
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): A
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A . 
+4  . . C . 
+
+--- Turn 15 END---
+
+--- Turn 16 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A . 
+4  . . C . 
+
+Robot's order: C --> A
+
+C's action order is fire --> move --> look --> think
+C fires at (2,4). But it is an empty space! (Left shells: 6/10)
+C cannot move to (3,3). This point is occupied by A.
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . A . 
+4  . . C . 
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): A
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+C is thinking... 
+
+A's action order is think --> look --> fire --> move
+A is thinking... 
+A is now at (3,3), looking around ...
+(2,2): Empty space
+(3,2): Empty space
+(4,2): Empty space
+(2,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(3,4): C
+(4,4): Empty space
+A can't find the previous target or so far after moving. Skipping fire to save shell.
+A moved to (2,2).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
+
+--- Turn 16 END---
+
+--- Turn 17 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . . . 
+4  . . C . 
+
+Robot's order: C --> A
+
+C's action order is fire --> look --> think --> move
+C fires at (4,3). But it is an empty space! (Left shells: 5/10)
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): Empty space
+C is thinking... 
+C moved to (3,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . A . . 
+3  . . C . 
+4  . . . . 
+
+A's action order is fire --> look --> move --> think
+A fires at (3,2). But it is an empty space! (Left shells: 7/10)
+A is now at (2,2), looking around ...
 (1,1): Empty space
 (2,1): Empty space
 (3,1): Empty space
@@ -1054,201 +1018,268 @@ D is now at (2,2), looking around ...
 (3,2): Empty space
 (1,3): Empty space
 (2,3): Empty space
-(3,3): Empty space
-Preserving shell for next turn since D didn't find any robots around. (left shells: 6)
-D moved to (3,3).
+(3,3): C
+A moved to (2,1).
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. . D . 
-. . B . 
-D is thinking... 
-
-B's action order is fire --> move --> look --> think
-B fires at (4,4). But it is an empty space! (Left shells: 8/10)
-B moved to (2,3).
+   1 2 3 4 
+1  . A . . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
+A is thinking... 
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. B D . 
-. . . . 
-B is now at (2,3), looking around ...
-(1,2): Empty space
-(2,2): Empty space
-(3,2): Empty space
-(1,3): Empty space
-(3,3): D
-(1,4): Empty space
-(2,4): Empty space
-(3,4): Empty space
-B is thinking... 
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B D . 
-. . . . 
-
---- Turn 15 END---
-
---- Turn 16 ---
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B D . 
-. . . . 
-
-Robot's order: D --> B
-
-D's action order is look --> move --> think --> fire
-D is now at (3,3), looking around ...
-(2,2): Empty space
-(3,2): Empty space
-(4,2): Empty space
-(2,3): B
-(4,3): Empty space
-(2,4): Empty space
-(3,4): Empty space
-(4,4): Empty space
-D moved to (4,4).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . D 
-D is thinking... 
-D can't find the previous target after moving. Skipping fire to save shell.
-
-B's action order is look --> move --> fire --> think
-B is now at (2,3), looking around ...
-(1,2): Empty space
-(2,2): Empty space
-(3,2): Empty space
-(1,3): Empty space
-(3,3): Empty space
-(1,4): Empty space
-(2,4): Empty space
-(3,4): Empty space
-B moved to (3,4).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. . . . 
-. . B D 
-Preserving shell for next turn since B didn't find any robots around. (left shells: 8)
-B is thinking... 
---- Battlefield Status ---
-. . . . 
-. . . . 
-. . . . 
-. . B D 
-
---- Turn 16 END---
-
---- Turn 17 ---
---- Battlefield Status ---
-. . . . 
-. . . . 
-. . . . 
-. . B D 
-
-Robot's order: D --> B
-
-D's action order is move --> think --> fire --> look
-D cannot move to (3,4). This point is occupied by B.
---- Battlefield Status ---
-. . . . 
-. . . . 
-. . . . 
-. . B D 
-D is thinking... 
-D fires B at (3,4) (Left shells: 5/10)
- - MISS!
-D is now at (4,4), looking around ...
-(3,3): Empty space
-(4,3): Empty space
-(3,4): B
-
-B's action order is look --> fire --> think --> move
-B is now at (3,4), looking around ...
-(2,3): Empty space
-(3,3): Empty space
-(4,3): Empty space
-(2,4): Empty space
-(4,4): D
-B fires D at (4,4) (Left shells: 7/10)
- - MISS!
-B is thinking... 
-B moved to (2,3).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . D 
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . D 
+   1 2 3 4 
+1  . A . . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
 
 --- Turn 17 END---
 
 --- Turn 18 ---
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . D 
+   1 2 3 4 
+1  . A . . 
+2  . . . . 
+3  . . C . 
+4  . . . . 
 
-Robot's order: D --> B
+Robot's order: C --> A
 
-D's action order is move --> look --> think --> fire
-D moved to (3,3).
---- Battlefield Status ---
-. . . . 
-. . . . 
-. B D . 
-. . . . 
-D is now at (3,3), looking around ...
+C's action order is fire --> look --> move --> think
+C fires at (4,3). But it is an empty space! (Left shells: 4/10)
+C is now at (3,3), looking around ...
 (2,2): Empty space
 (3,2): Empty space
 (4,2): Empty space
-(2,3): B
+(2,3): Empty space
 (4,3): Empty space
 (2,4): Empty space
 (3,4): Empty space
 (4,4): Empty space
-D is thinking... 
-D fires B at (2,3) (Left shells: 4/10)
- - MISS!
+C moved to (4,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . A . . 
+2  . . . . 
+3  . . . . 
+4  . . . C 
+C is thinking... 
 
-B's action order is look --> think --> fire --> move
-B is now at (2,3), looking around ...
+A's action order is fire --> look --> think --> move
+A fires at (1,1). But it is an empty space! (Left shells: 6/10)
+A is now at (2,1), looking around ...
+(1,1): Empty space
+(3,1): Empty space
+(1,2): Empty space
+(2,2): Empty space
+(3,2): Empty space
+A is thinking... 
+A moved to (1,2).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  A . . . 
+3  . . . . 
+4  . . . C 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  A . . . 
+3  . . . . 
+4  . . . C 
+
+--- Turn 18 END---
+
+--- Turn 19 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  A . . . 
+3  . . . . 
+4  . . . C 
+
+Robot's order: A --> C
+
+A's action order is look --> fire --> think --> move
+A is now at (1,2), looking around ...
+(1,1): Empty space
+(2,1): Empty space
+(2,2): Empty space
+(1,3): Empty space
+(2,3): Empty space
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 6/10)
+A is thinking... 
+A moved to (2,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . A . . 
+4  . . . C 
+
+C's action order is fire --> look --> move --> think
+C can't fire that far! (Max 3)
+C is now at (4,4), looking around ...
+(3,3): Empty space
+(4,3): Empty space
+(3,4): Empty space
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . A . . 
+4  . . C . 
+C is thinking... 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . A . . 
+4  . . C . 
+
+--- Turn 19 END---
+
+--- Turn 20 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . A . . 
+4  . . C . 
+
+Robot's order: C --> A
+
+C's action order is move --> think --> look --> fire
+C moved to (4,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . A . . 
+4  . . . C 
+C is thinking... 
+C is now at (4,4), looking around ...
+(3,3): Empty space
+(4,3): Empty space
+(3,4): Empty space
+C can't fire that far! (Max 3)
+
+A's action order is look --> think --> fire --> move
+A is now at (2,3), looking around ...
 (1,2): Empty space
 (2,2): Empty space
 (3,2): Empty space
 (1,3): Empty space
-(3,3): D
+(3,3): Empty space
 (1,4): Empty space
 (2,4): Empty space
 (3,4): Empty space
-B is thinking... 
-B fires D at (3,3) (Left shells: 6/10)
-Target hit! D has been destroyed! D has no lives remaining! (Lives remaining: 0/3)
-B upgraded movement: HideBot
-B now has upgrades: TrackBot, HideBot (Total: 2/3)
-Attempting combination with 2 upgrades: TrackBot, HideBot
-Successfully combined B into HideTrackBot!
-B moved to (3,2).
+A is thinking... 
+Preserving shell for next turn since A didn't find any robots around. (Left shells: 6/10)
+A moved to (3,4).
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . A C 
 --- Battlefield Status ---
-. . . . 
-. . . . 
-. B . . 
-. . . . 
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . A C 
 
---- Turn 18 END---
+--- Turn 20 END---
+
+--- Turn 21 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . . A C 
+
+Robot's order: A --> C
+
+A's action order is look --> think --> fire --> move
+A is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): Empty space
+(4,4): C
+A is thinking... 
+A can't find the previous target or so far after moving. Skipping fire to save shell.
+A moved to (2,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . A . C 
+
+C's action order is fire --> move --> think --> look
+C can't fire that far! (Max 3)
+C moved to (3,4).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . A C . 
+C is thinking... 
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): A
+(4,4): Empty space
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . A C . 
+
+--- Turn 21 END---
+
+--- Turn 22 ---
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . . 
+4  . A C . 
+
+Robot's order: C --> A
+
+C's action order is look --> think --> fire --> move
+C is now at (3,4), looking around ...
+(2,3): Empty space
+(3,3): Empty space
+(4,3): Empty space
+(2,4): A
+(4,4): Empty space
+C is thinking... 
+C fires A at (2,4) (Left shells: 3/10)
+Target hit! A has been destroyed! A has no lives remaining! (Lives remaining: 0/3)
+C is RevealBot,LongShotBot,JumpBot. Cannot upgrade anymore, max upgrade 3 times
+C moved to (4,3).
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . C 
+4  . . . . 
+--- Battlefield Status ---
+   1 2 3 4 
+1  . . . . 
+2  . . . . 
+3  . . . C 
+4  . . . . 
+
+--- Turn 22 END---
 Simulation ends! 

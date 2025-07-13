@@ -1,7 +1,6 @@
 M by N : 4 4
-steps: 20
-robots: 4
+steps: 100
+robots: 3
 GenericRobot A 1 1
 GenericRobot B 2 1
-GenericRobot C 2 2
-GenericRobot D 1 2
+GenericRobot C random random
